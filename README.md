@@ -145,3 +145,57 @@ The github action is included in this sample, you can use it to publish your new
 ---
 
 More other plugin info, please check in [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample).
+
+🎯 Neue Funktionen hinzugefügt:
+1. Task Domain Models
+Task Interface mit allen relevanten Eigenschaften
+TaskStatus, TaskPriority Enums
+Recurrence Interface für wiederkehrende Aufgaben
+2. Task Parser
+Parst Tasks aus Markdown-Format
+Unterstützt alle Obsidian Tasks Konventionen:
+Status: [ ], [/], [x], [-]
+Prioritäten: 🔴🔼🔽
+Datumsangaben: 📅🛫⏳✅❌
+Wiederholung: 🔁
+Tags: #tag
+Abhängigkeiten: ⚠️
+3. Task Query Engine
+Vollständige Query-Sprache ähnlich wie Obsidian
+Filter nach: Status, Priorität, Datum, Tags, Pfad, Text
+Sortierung und Limitierung
+Beispiel-Queries:
+status:todo priority:high due:before tomorrow
+tag:work due:this week sort:priority
+4. Task Service
+CRUD-Operationen für Tasks
+Integration mit Siyuan API
+Automatisches Laden von Tasks aus Dokumenten
+Methoden für häufige Abfragen:
+getOverdueTasks()
+getTasksDueToday()
+getTasksDueThisWeek()
+5. User Interface
+Task Modal: Erstellen/Bearbeiten von Tasks
+Task Query Results: Anzeige gefilterter Tasks
+Sidebar Panel: Schnellzugriff auf Tasks
+Context Menu: Tasks aus markiertem Text erstellen
+6. Tastaturkürzel
+Ctrl+Shift+T: Task Query öffnen
+Ctrl+Alt+T: Neuer Task
+Ctrl+Shift+O: Überfällige Tasks
+Ctrl+Shift+D: Heutige Tasks
+7. Visuelle Features
+Farbcodierung nach Priorität
+Überfällige Tasks hervorheben
+Responsive Design für Mobile
+Dunkel-/Hell-Modus Support
+🚀 Verwendung:
+Task erstellen: Ctrl+Alt+T oder Kontextmenü
+Tasks filtern: Sidebar-Panel oder Ctrl+Shift+T
+Tasks markieren: Checkbox anklicken
+Tasks bearbeiten: ✏️ Button
+Query-Beispiele:
+status:todo - Alle offenen Tasks
+priority:high due:this week - Hohe Priorität diese Woche
+tag:work overdue - Überfällige Arbeitstasks

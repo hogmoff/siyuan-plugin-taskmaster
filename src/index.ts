@@ -1,174 +1,280 @@
-import {
-  Plugin,
-  getFrontend,
-  Dialog,
-} from "siyuan";
-import "@/index.scss";
-import PluginInfoString from '@/../plugin.json'
-import { createApp, App } from "vue";
-import { TaskRenderer } from "./renderer";
-import TaskModal from "./components/TaskModal.vue";
-
-let PluginInfo = {
-  version: '',
-}
-try {
-  PluginInfo = PluginInfoString
-} catch (err) {
-  console.log('Plugin info parse error: ', err)
-}
-const {
-  version,
-} = PluginInfo
-
-const EDIT_ICON_SVG = `<svg t="1670989982294" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4447" width="16" height="16"><path d="M823.381333 399.210667L625.066667 200.896 685.952 140.010667c16.597333-16.597333 43.52-16.597333 60.117333 0l77.312 77.312c16.597333 16.597333 16.597333 43.52 0 60.117333L823.381333 399.210667zM229.418667 864.853333l-74.069334-74.069333L576.426667 369.706667l198.314666 198.314666L353.664 989.12l-223.786667 34.901333 34.901333-223.786666 164.736-164.736-198.314666-198.314667L229.418667 864.853333z" p-id="4448" fill="currentColor"></path></svg>`;
+import { Plugin } from 'siyuan';
+import { TaskRenderer } from './renderer';
+import { TaskService } from './taskService';
+import { TaskQueryResults } from './taskQueryResults';
+import { TaskModal } from './taskModal';
+import './index.scss';
 
 export default class PluginSample extends Plugin {
-  // Run as mobile
-  public isMobile: boolean
-  // Run in browser
-  public isBrowser: boolean
-  // Run as local
-  public isLocal: boolean
-  // Run in Electron
-  public isElectron: boolean
-  // Run in window
-  public isInWindow: boolean
-  public platform: SyFrontendTypes
-  public readonly version = version
-  private vueApp: App | null = null;
-  private renderer: TaskRenderer;
+    private taskService: TaskService;
+    private renderer: TaskRenderer;
+    private taskQueryResults: TaskQueryResults;
 
-  async onload() {
-    const frontEnd = getFrontend();
-    this.platform = frontEnd as SyFrontendTypes
-    this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile"
-    this.isBrowser = frontEnd.includes('browser')
-    this.isLocal =
-      location.href.includes('127.0.0.1')
-      || location.href.includes('localhost')
-    this.isInWindow = location.href.includes('window.html')
+    onload() {
+        this.taskService = new TaskService();
+        this.renderer = new TaskRenderer();
+        this.taskQueryResults = new TaskQueryResults(this.taskService);
 
-    try {
-      require("@electron/remote")
-        .require("@electron/remote/main")
-      this.isElectron = true
-    } catch (err) {
-      this.isElectron = false
+        console.log("TaskMaster plugin loaded successfully");
+
+        this.addMenu();
+        this.addCommands();
     }
 
-    console.log("Plugin TaskMaster loaded successfully.");
-  }
-
-  async onLayoutReady() {
-    this.renderer = new TaskRenderer();
-    this.eventBus.on("ws-main", this.handleEvents.bind(this));
-    this.eventBus.on("click-blockicon", this.handleNewTaskCreation.bind(this));
-
-    setTimeout(() => {
-        document.querySelectorAll(".protyle-wysiwyg").forEach(el => this.renderer.process(el as HTMLElement));
-        this.addEditIconsToAllTasks();
-    }, 200);
-    console.log("Layout is ready and tasks are being processed.");
-  }
-
-  onunload() {
-    //destroy()
-  }
-
-  openSetting() {
-    window._sy_plugin_sample.openSetting()
-  }
-
-  private handleEvents({ detail }: any) {
-    if (detail.cmd === "transactions") {
-      for (const data of detail.data) {
-        for (const op of data.doOperations) {
-          setTimeout(() => this.addEditIconsToAllTasks(), 200);
-          if (op.action === "update" && op.id) {
-              const blockElement = document.querySelector(`.protyle-wysiwyg [data-node-id="${op.id}"]`);
-              if (blockElement?.getAttribute("data-subtype") === "t") {
-                const titleElement = blockElement.querySelector(".p");
-                const title = titleElement?.textContent?.replace(/^- \[[ xX]\]\s*/, "") ?? "";
-                console.log("Task block detected:", titleElement, title);
-                setTimeout(() => this.openTaskModal(op.id, false, title), 200)
-              }
-          }
-        }
-      }
+    onLayoutReady() {
+        this.renderer.process(document.body);
+        this.taskService.loadAllTasks();
+        this.addTaskQueryPanel();
     }
-  }
 
-  private addEditIconsToAllTasks() {
-      const taskListItems = document.querySelectorAll(".protyle-wysiwyg [data-type='NodeListItem'][data-subtype='t']");
-      taskListItems.forEach((taskNode: HTMLElement) => {
-          let icon = taskNode.querySelector(".task-master-edit-icon") as HTMLElement;
-          if (!icon) {
-            icon = document.createElement("span");
-            icon.className = "task-master-edit-icon";
-            icon.innerHTML = EDIT_ICON_SVG;
-            icon.style.marginLeft = "8px";
-            icon.style.cursor = "pointer";
-            icon.style.display = "inline-flex";
-            icon.style.alignItems = "center";
-            
-            // Find the title element and append icon after it
-            const titleElement = taskNode.querySelector(".p") as HTMLElement;
-            if (titleElement) {
-              titleElement.style.display = "inline-flex";
-              titleElement.style.alignItems = "center";
-              titleElement.appendChild(icon);
-            } else {
-              // Fallback: append to task node if title element not found
-              taskNode.style.display = "inline-flex";
-              taskNode.style.alignItems = "center";
-              taskNode.appendChild(icon);
+    onunload() {
+        console.log("TaskMaster plugin unloaded");
+    }
+
+    private addMenu() {
+        this.addCommand({
+            langKey: 'taskMaster',
+            hotkey: '',
+            callback: () => {
+                this.openTaskMaster();
             }
+        });
 
-            icon.addEventListener("click", (event) => {
-              event.stopPropagation();
-              const blockId = taskNode.getAttribute("data-node-id");
-              const titleElement = taskNode.querySelector(".p");
-              const title = titleElement ? titleElement.textContent : "";
-              this.openTaskModal(blockId, true, title);
+        document.addEventListener('contextmenu', (e) => {
+            const selection = window.getSelection()?.toString();
+            if (selection) {
+                this.showContextMenu(e, selection);
+            }
+        });
+    }
+
+    private addCommands() {
+        this.addCommand({
+            langKey: 'openTaskQuery',
+            hotkey: 'Ctrl+Shift+T',
+            callback: () => {
+                this.openTaskQuery();
+            }
+        });
+
+        this.addCommand({
+            langKey: 'createNewTask',
+            hotkey: 'Ctrl+Alt+T',
+            callback: () => {
+                this.createNewTask();
+            }
+        });
+
+        this.addCommand({
+            langKey: 'showOverdueTasks',
+            hotkey: 'Ctrl+Shift+O',
+            callback: () => {
+                this.showOverdueTasks();
+            }
+        });
+
+        this.addCommand({
+            langKey: 'showTodaysTasks',
+            hotkey: 'Ctrl+Shift+D',
+            callback: () => {
+                this.showTodaysTasks();
+            }
+        });
+    }
+
+    private addTaskQueryPanel() {
+        const dockPanel = document.createElement('div');
+        dockPanel.className = 'dock-panel task-query-panel';
+        dockPanel.style.cssText = `
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 300px;
+            max-height: 70vh;
+            background: var(--b3-theme-background);
+            border: 1px solid var(--b3-theme-surface-lighter);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        `;
+
+        const header = document.createElement('div');
+        header.className = 'task-query-panel-header';
+        header.innerHTML = `
+            <h4>Tasks</h4>
+            <button class="task-query-panel-close">&times;</button>
+        `;
+
+        const content = this.taskQueryResults.getContainer();
+        content.style.flex = '1';
+        content.style.overflow = 'auto';
+
+        dockPanel.appendChild(header);
+        dockPanel.appendChild(content);
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'task-query-toggle';
+        toggleBtn.innerHTML = '📋';
+        toggleBtn.style.cssText = `
+            position: fixed;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--b3-theme-primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 1001;
+        `;
+
+        toggleBtn.addEventListener('click', () => {
+            const isVisible = dockPanel.style.display === 'flex';
+            dockPanel.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) {
+                this.taskQueryResults.initialize();
+            }
+        });
+
+        const closeBtn = header.querySelector('.task-query-panel-close');
+        closeBtn?.addEventListener('click', () => {
+            dockPanel.style.display = 'none';
+        });
+
+        document.body.appendChild(toggleBtn);
+        document.body.appendChild(dockPanel);
+    }
+
+    private openTaskMaster() {
+        const modal = new TaskModal({
+            onSave: async (task) => {
+                await this.taskService.createTask(task);
+                this.taskQueryResults.initialize();
+            }
+        });
+        modal.open();
+    }
+
+    private openTaskQuery() {
+        const queryPanel = document.querySelector('.task-query-panel') as HTMLElement;
+        if (queryPanel) {
+            queryPanel.style.display = 'flex';
+            this.taskQueryResults.initialize();
+        }
+    }
+
+    private createNewTask() {
+        const modal = new TaskModal({
+            onSave: async (newTask) => {
+                await this.taskService.createTask(newTask);
+                this.taskQueryResults.initialize();
+            }
+        });
+        modal.open();
+    }
+
+    private async showOverdueTasks() {
+        const overdueTasks = await this.taskService.getOverdueTasks();
+        this.showTaskList('Overdue Tasks', overdueTasks);
+    }
+
+    private async showTodaysTasks() {
+        const todaysTasks = await this.taskService.getTasksDueToday();
+        this.showTaskList("Today's Tasks", todaysTasks);
+    }
+
+    private showTaskList(title: string, tasks: any[]) {
+        const modal = document.createElement('div');
+        modal.className = 'task-list-modal';
+        modal.innerHTML = `
+            <div class="task-list-content">
+                <div class="task-list-header">
+                    <h3>${title}</h3>
+                    <button class="task-list-close">&times;</button>
+                </div>
+                <div class="task-list-body">
+                    ${tasks.length === 0 ? '<p>No tasks found</p>' : 
+                        tasks.map(task => `
+                            <div class="task-list-item">
+                                <input type="checkbox" ${task.status === 'done' ? 'checked' : ''}>
+                                <span class="task-desc">${this.escapeHtml(task.description)}</span>
+                                ${task.dueDate ? `<span class="task-due">📅 ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                            </div>
+                        `).join('')
+                    }
+                </div>
+            </div>
+        `;
+
+        modal.querySelector('.task-list-close')?.addEventListener('click', () => modal.remove());
+        document.body.appendChild(modal);
+    }
+
+    private showContextMenu(event: MouseEvent, selectedText: string) {
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        menu.style.cssText = `
+            position: fixed;
+            left: ${event.clientX}px;
+            top: ${event.clientY}px;
+            background: var(--b3-theme-background);
+            border: 1px solid var(--b3-theme-surface-lighter);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            padding: 4px 0;
+        `;
+
+        const createTaskItem = document.createElement('div');
+        createTaskItem.textContent = 'Create Task from Selection';
+        createTaskItem.style.cssText = `
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        createTaskItem.addEventListener('click', () => {
+            const modal = new TaskModal({
+                onSave: async (task) => {
+                    task.description = selectedText;
+                    await this.taskService.createTask(task);
+                    this.taskQueryResults.initialize();
+                }
             });
-          }
-      });
-  }
+            modal.open();
+            menu.remove();
+        });
 
-  private handleNewTaskCreation({ detail }: any) {
-      const blockElements = detail.blockElements as HTMLElement[];
-      if (blockElements && blockElements.length > 0) {
-          const action: string = detail.action;
-          if (action === "insert" && blockElements[0].innerText.trim() === "") {
-              //setTimeout(() => this.openTaskModal(blockElements[0].getAttribute("data-node-id"), false, ""), 100);
-              setTimeout(() => this.addEditIconsToAllTasks(), 200);
-          }
-      }
-  }
+        menu.appendChild(createTaskItem);
+        document.body.appendChild(menu);
 
-  private openTaskModal(blockId: string, isEditing: boolean, initialTitle: string = "") {
-      const content = document.createElement("div");
-      content.style.height = "100%";
+        const closeMenu = (e: Event) => {
+            if (!menu.contains(e.target as Node)) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeMenu), 0);
+    }
 
-      new Dialog({
-          title: isEditing ? "Edit Task" : "New Task",
-          content: `<div id="task-master-modal-container" style="height: 100%;"></div>`,
-          width: "600px",
-          height: "400px",
-          destroyCallback: () => {
-              if (this.vueApp) {
-                  this.vueApp.unmount();
-                  this.vueApp = null;
-              }
-          },
-      });
+    private escapeHtml(text: string): string {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 
-      this.vueApp = createApp(TaskModal, {
-          blockId,
-          isEditing,
-          initialTitle,
-      });
-      this.vueApp.mount("#task-master-modal-container");
-  }
+    openSetting() {
+        const modal = new TaskModal({
+            onSave: async (task) => {
+                await this.taskService.createTask(task);
+                this.taskQueryResults.initialize();
+            }
+        });
+        modal.open();
+    }
 }
