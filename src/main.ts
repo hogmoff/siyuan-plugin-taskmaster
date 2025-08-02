@@ -24,7 +24,7 @@ export function init(plugin: Plugin) {
 
   const div = document.createElement('div')
   div.classList.toggle('plugin-sample-vite-vue-app')
-  div.id = this.name
+  div.id = plugin.name
   app = createApp(App)
   app.mount(div)
   document.body.appendChild(div)
@@ -32,6 +32,8 @@ export function init(plugin: Plugin) {
 
 export function destroy() {
   app.unmount()
-  const div = document.getElementById(this.name)
-  document.body.removeChild(div)
+  const div = document.getElementById(plugin.name)
+  if (div && div.parentNode) {
+    document.body.removeChild(div)
+  }
 }

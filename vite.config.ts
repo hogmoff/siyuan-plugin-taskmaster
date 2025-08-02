@@ -1,5 +1,6 @@
 /* eslint-disable node/prefer-global/process */
 import { resolve } from "node:path"
+import { promises as fs } from "node:fs"
 import vue from "@vitejs/plugin-vue"
 import fg from "fast-glob"
 import minimist from "minimist"
@@ -24,7 +25,6 @@ export default defineConfig(({
   } = env
   console.log('env=>', env)
 
-
   const siyuanWorkspacePath = VITE_SIYUAN_WORKSPACE_PATH
   let devDistDir = './dev'
   if (!siyuanWorkspacePath) {
@@ -42,6 +42,52 @@ export default defineConfig(({
   console.log()
   console.log("isWatch=>", isWatch)
   console.log("distDir=>", distDir)
+
+  // Zusätzliches Zielverzeichnis für den Build
+  const customBuildPath = env.VITE_CUSTOM_BUILD_PATH || null
+  console.log("customBuildPath=>", customBuildPath)
+
+  // Funktion zum Kopieren der Build-Dateien
+  async function copyBuildFiles() {
+    if (!customBuildPath || isWatch) {
+      console.log('Kein customBuildPath gesetzt oder Watch-Modus aktiv')
+      return
+    }
+    
+    try {
+      console.log(`\n🔄 Kopiere Build-Dateien nach: ${customBuildPath}`)
+      
+      // Stelle sicher, dass das Zielverzeichnis existiert
+      await fs.mkdir(customBuildPath, { recursive: true })
+      console.log(`✅ Verzeichnis erstellt: ${customBuildPath}`)
+      
+      // Kopiere alle Dateien aus dem dist-Verzeichnis
+      const files = await fg(["**/*"], { cwd: distDir, dot: true })
+      console.log(`📋 Gefunden: ${files.length} Dateien zu kopieren`)
+      
+      for (const file of files) {
+        const srcPath = resolve(distDir, file)
+        const destPath = resolve(customBuildPath, file)
+        
+        // Erstelle Unterverzeichnisse falls nötig
+        const destDir = resolve(destPath, "..")
+        await fs.mkdir(destDir, { recursive: true })
+        
+        // Kopiere Datei
+        await fs.copyFile(srcPath, destPath)
+      }
+      
+      console.log(`✅ Erfolgreich ${files.length} Dateien nach ${customBuildPath} kopiert`)
+      
+      // Zeige kopierte Dateien
+      const copiedFiles = await fs.readdir(customBuildPath)
+      console.log(`📁 Kopierte Dateien:`, copiedFiles)
+      
+    } catch (error) {
+      console.error("❌ Fehler beim Kopieren der Build-Dateien:", error)
+      throw error // Re-throw damit der Build fehlschlägt und das Problem sichtbar wird
+    }
+  }
 
   return {
     resolve: {
@@ -76,6 +122,10 @@ export default defineConfig(({
           },
         ],
       }),
+      {
+        name: "copy-build-files",
+        closeBundle: copyBuildFiles,
+      },
     ],
 
     // https://github.com/vitejs/vite/issues/1930

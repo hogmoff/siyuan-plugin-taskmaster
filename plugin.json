@@ -1,9 +1,9 @@
 {
-  "name": "plugin-sample-vite-vue",
-  "author": "wetoria",
-  "url": "https://github.com/Wetoria/plugin-sample-vite-vue",
+  "name": "siyuan-plugin-taskmaster",
+  "author": "hogmoff",
+  "url": "https://github.com/hogmoff/siyuan-plugin-taskmaster",
   "version": "0.0.1",
-  "minAppVersion": "2.10.14",
+  "minAppVersion": "3.2.0",
   "backends": [
     "all"
   ],
@@ -11,20 +11,22 @@
     "all"
   ],
   "displayName": {
-    "default": "plugin-sample-vite-vue",
-    "en_US": "plugin-sample-vite-vue",
-    "zh_CN": "plugin-sample-vite-vue"
+    "default": "Task Master",
+    "zh_CN": "任务大师"
   },
   "description": {
-    "default": "plugin-sample-vite-vue",
-    "en_US": "plugin-sample-vite-vue",
-    "zh_CN": "plugin-sample-vite-vue"
+    "default": "Advanced task management with a modal dialog",
+    "zh_CN": "受 Todoist 启发的带有模态框的高级任务管理。"
   },
   "readme": {
     "default": "README.md",
-    "en_US": "README.md",
     "zh_CN": "README_zh_CN.md"
   },
+  "icon": "icon.png",
+  "i18n": [
+    "en_US",
+    "zh_CN"
+  ],
   "funding": {
     "custom": []
   },
