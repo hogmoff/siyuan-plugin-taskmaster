@@ -67,6 +67,7 @@ export default class PluginSample extends Plugin {
 
     setTimeout(() => {
         document.querySelectorAll(".protyle-wysiwyg").forEach(el => this.renderer.process(el as HTMLElement));
+        this.addEditIconsToAllTasks();
     }, 200);
   }
 
@@ -100,20 +101,36 @@ export default class PluginSample extends Plugin {
   private addEditIconsToAllTasks() {
       const taskListItems = document.querySelectorAll(".protyle-wysiwyg [data-type='NodeListItem'][data-subtype='t']");
       taskListItems.forEach((taskNode: HTMLElement) => {
-          let icon = taskNode.querySelector(".task-master-edit-icon");
+          let icon = taskNode.querySelector(".task-master-edit-icon") as HTMLElement;
           if (!icon) {
-              icon = document.createElement("span");
-              icon.className = "task-master-edit-icon";
-              icon.innerHTML = EDIT_ICON_SVG;
+            icon = document.createElement("span");
+            icon.className = "task-master-edit-icon";
+            icon.innerHTML = EDIT_ICON_SVG;
+            icon.style.marginLeft = "8px";
+            icon.style.cursor = "pointer";
+            icon.style.display = "inline-flex";
+            icon.style.alignItems = "center";
+            
+            // Find the title element and append icon after it
+            const titleElement = taskNode.querySelector(".p") as HTMLElement;
+            if (titleElement) {
+              titleElement.style.display = "inline-flex";
+              titleElement.style.alignItems = "center";
+              titleElement.appendChild(icon);
+            } else {
+              // Fallback: append to task node if title element not found
+              taskNode.style.display = "inline-flex";
+              taskNode.style.alignItems = "center";
               taskNode.appendChild(icon);
+            }
 
-              icon.addEventListener("click", (event) => {
-                  event.stopPropagation();
-                  const blockId = taskNode.getAttribute("data-node-id");
-                  const titleElement = taskNode.querySelector(".p");
-                  const title = titleElement ? titleElement.textContent : "";
-                  this.openTaskModal(blockId, true, title);
-              });
+            icon.addEventListener("click", (event) => {
+              event.stopPropagation();
+              const blockId = taskNode.getAttribute("data-node-id");
+              const titleElement = taskNode.querySelector(".p");
+              const title = titleElement ? titleElement.textContent : "";
+              this.openTaskModal(blockId, true, title);
+            });
           }
       });
   }
