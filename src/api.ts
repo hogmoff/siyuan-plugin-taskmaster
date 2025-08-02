@@ -319,6 +319,15 @@ export async function getBlockByID(blockId: string): Promise<Block> {
   return data[0];
 }
 
+export async function getAllTags(): Promise<string[]> {
+  const sqlQuery = "SELECT DISTINCT TRIM(SUBSTRING(content, INSTR(content, '#') + 1, INSTR(SUBSTRING(content, INSTR(content, '#') + 1), '#') - 1)) AS tag FROM blocks WHERE content LIKE '%#%#%' AND SUBSTRING(content, INSTR(content, '#') + 1, INSTR(SUBSTRING(content, INSTR(content, '#') + 1), '#') - 1) REGEXP '^[A-Za-z/]+$' ORDER BY tag;";
+  const response = await sql(sqlQuery);
+  if (response && Array.isArray(response)) {
+    return response.map(item => item.tag).filter(tag => tag && typeof tag === 'string');
+  }
+  return [];
+}
+
 // **************************************** Template ****************************************
 
 export async function render(

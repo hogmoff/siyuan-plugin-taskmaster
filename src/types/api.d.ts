@@ -26,6 +26,8 @@ interface IResGetBlockKramdown {
 interface IResGetChildBlock {
   id: BlockId;
   type: BlockType;
+  content: string;
+  markdown: string;
   subtype?: BlockSubType;
 }
 

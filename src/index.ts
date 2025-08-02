@@ -69,6 +69,7 @@ export default class PluginSample extends Plugin {
         document.querySelectorAll(".protyle-wysiwyg").forEach(el => this.renderer.process(el as HTMLElement));
         this.addEditIconsToAllTasks();
     }, 200);
+    console.log("Layout is ready and tasks are being processed.");
   }
 
   onunload() {
@@ -138,10 +139,10 @@ export default class PluginSample extends Plugin {
   private handleNewTaskCreation({ detail }: any) {
       const blockElements = detail.blockElements as HTMLElement[];
       if (blockElements && blockElements.length > 0) {
-          const blockId = blockElements[0].getAttribute("data-node-id");
           const action: string = detail.action;
           if (action === "insert" && blockElements[0].innerText.trim() === "") {
-              setTimeout(() => this.openTaskModal(blockId, false, ""), 100);
+              //setTimeout(() => this.openTaskModal(blockElements[0].getAttribute("data-node-id"), false, ""), 100);
+              setTimeout(() => this.addEditIconsToAllTasks(), 200);
           }
       }
   }
