@@ -49,7 +49,7 @@ export default class PluginSample extends Plugin {
                                 const blockId = item.getAttribute('data-node-id');
                                 if (blockId) {
                                     const element = document.querySelector(`[data-node-id="${blockId}"]`);
-                                    if (element && !element.classList.contains('taskmaster-processing')) {
+                                    if (element && !element.classList.contains('taskmaster-processing') && !this.hasTaskData(element.textContent)) {
                                         this.showTaskEditor(element as HTMLElement, blockId);
                                     }
                                 }
@@ -59,6 +59,12 @@ export default class PluginSample extends Plugin {
                 }
             }
         }
+    }
+
+    private hasTaskData(text: string): boolean {
+        const dateEmojis = ['📅', '🛫', '⏳'];
+        const priorityEmojis = ['⏫', '🔼'];
+        return dateEmojis.some(emoji => text.includes(emoji)) || priorityEmojis.some(emoji => text.includes(emoji));
     }
 
     private showTaskEditor(element: HTMLElement, blockId: string) {
@@ -79,11 +85,11 @@ export default class PluginSample extends Plugin {
         `;
 
         const options = [
-            { label: 'due date', type: 'date' },
-            { label: 'start date', type: 'date' },
-            { label: 'scheduled date', type: 'date' },
-            { label: 'high prio', type: 'priority', value: 'high' },
-            { label: 'medium prio', type: 'priority', value: 'medium' }
+            { label: '📅 due date', type: 'date' },
+            { label: '🛫 start date', type: 'date' },
+            { label: '⏳ scheduled date', type: 'date' },
+            { label: '⏫ high prio', type: 'priority', value: 'high' },
+            { label: '🔼 medium prio', type: 'priority', value: 'medium' }
         ];
 
         const closePopup = (e?: Event) => {
@@ -241,7 +247,7 @@ export default class PluginSample extends Plugin {
         header.className = 'task-query-panel-header';
         header.innerHTML = `
             <h4>Tasks</h4>
-            <button class="task-query-panel-close">&times;</button>
+            <button class="task-query-panel-close">\u00d7</button>
         `;
 
         const content = this.taskQueryResults.getContainer();
@@ -332,7 +338,7 @@ export default class PluginSample extends Plugin {
             <div class="task-list-content">
                 <div class="task-list-header">
                     <h3>${title}</h3>
-                    <button class="task-list-close">&times;</button>
+                    <button class="task-list-close">\u00d7</button>
                 </div>
                 <div class="task-list-body">
                     ${tasks.length === 0 ? '<p>No tasks found</p>' : 
