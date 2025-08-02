@@ -3,6 +3,7 @@ import { TaskRenderer } from './renderer';
 import { TaskService } from './taskService';
 import { TaskQueryResults } from './taskQueryResults';
 import { TaskModal } from './taskModal';
+import { updateBlock } from './api';
 import './index.scss';
 
 export default class PluginSample extends Plugin {
@@ -19,6 +20,8 @@ export default class PluginSample extends Plugin {
 
         this.addMenu();
         this.addCommands();
+
+        this.eventBus.on('ws-main', this.handleWsMain.bind(this));
     }
 
     onLayoutReady() {
@@ -29,6 +32,139 @@ export default class PluginSample extends Plugin {
 
     onunload() {
         console.log("TaskMaster plugin unloaded");
+        this.eventBus.off('ws-main', this.handleWsMain.bind(this));
+    }
+
+    private handleWsMain(event: CustomEvent) {
+        if (event.detail.cmd === 'transactions') {
+            for (const data of event.detail.data) {
+                for (const op of data.doOperations) {
+                    if (op.action === 'update') {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = op.data;
+                        const listItems = tempDiv.querySelectorAll('[data-subtype="t"][data-type="NodeListItem"]');
+                        listItems.forEach(item => {
+                            const content = item.querySelector('[contenteditable="true"]');
+                            if (content && (content.textContent === '' || content.textContent === '\u200B')) {
+                                const blockId = item.getAttribute('data-node-id');
+                                if (blockId) {
+                                    const element = document.querySelector(`[data-node-id="${blockId}"]`);
+                                    if (element && !element.classList.contains('taskmaster-processing')) {
+                                        this.showTaskEditor(element as HTMLElement, blockId);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    private showTaskEditor(element: HTMLElement, blockId: string) {
+        element.classList.add('taskmaster-processing');
+        const rect = element.getBoundingClientRect();
+        const popup = document.createElement('div');
+        popup.className = 'task-editor-popup';
+        popup.style.cssText = `
+            position: absolute;
+            top: ${rect.bottom}px;
+            left: ${rect.left}px;
+            background: var(--b3-theme-background);
+            border: 1px solid var(--b3-theme-surface-lighter);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            padding: 8px;
+        `;
+
+        const options = [
+            { label: 'due date', type: 'date' },
+            { label: 'start date', type: 'date' },
+            { label: 'scheduled date', type: 'date' },
+            { label: 'high prio', type: 'priority', value: 'high' },
+            { label: 'medium prio', type: 'priority', value: 'medium' }
+        ];
+
+        const closePopup = (e?: Event) => {
+            if (e && popup.contains(e.target as Node)) {
+                return;
+            }
+            popup.remove();
+            element.classList.remove('taskmaster-processing');
+            document.removeEventListener('click', closePopup);
+        };
+
+        options.forEach(option => {
+            const item = document.createElement('div');
+            item.className = 'task-editor-item';
+            item.textContent = option.label;
+            item.onclick = () => {
+                if (option.type === 'date') {
+                    this.showDateSelector(item, (date) => {
+                        this.updateTask(blockId, `- [ ] ${this.getDateEmoji(option.label)} ${date}`);
+                        closePopup();
+                    });
+                } else {
+                    this.updateTask(blockId, `- [ ] ${this.getPriorityEmoji(option.value)}`);
+                    closePopup();
+                }
+            };
+            popup.appendChild(item);
+        });
+
+        document.body.appendChild(popup);
+        setTimeout(() => document.addEventListener('click', closePopup), 0);
+    }
+
+    private showDateSelector(parent: HTMLElement, onSelect: (date: string) => void) {
+        const dateSelector = document.createElement('div');
+        dateSelector.className = 'date-selector-popup';
+        
+        const today = new Date();
+        for (let i = 0; i < 5; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const dateItem = document.createElement('div');
+            dateItem.className = 'date-selector-item';
+            dateItem.textContent = date.toISOString().split('T')[0];
+            dateItem.onclick = () => {
+                onSelect(dateItem.textContent);
+                dateSelector.remove();
+            };
+            dateSelector.appendChild(dateItem);
+        }
+
+        const manualEntry = document.createElement('input');
+        manualEntry.type = 'date';
+        manualEntry.onchange = () => {
+            onSelect(manualEntry.value);
+            dateSelector.remove();
+        };
+        dateSelector.appendChild(manualEntry);
+
+        parent.appendChild(dateSelector);
+    }
+
+    private async updateTask(blockId: string, text: string) {
+        await updateBlock('markdown', text, blockId);
+    }
+
+    private getDateEmoji(dateType: string): string {
+        switch (dateType) {
+            case 'due date': return '📅';
+            case 'start date': return '🛫';
+            case 'scheduled date': return '⏳';
+            default: return '📅';
+        }
+    }
+
+    private getPriorityEmoji(priority: string): string {
+        switch (priority) {
+            case 'high': return '⏫';
+            case 'medium': return '🔼';
+            default: return '';
+        }
     }
 
     private addMenu() {
