@@ -27,175 +27,130 @@
 > That the repository name should match the plugin name, and the default branch must be `main`.
 
 
-2. Use `git clone` to clone the copied repo to your computer.
-3. Use `pnpm i` to install the dependencies.
+2. Use `git clone` to clone the repository to local.
 
-4. Copy the `.env.example` file as `.env`, set the `VITE_SIYUAN_WORKSPACE_PATH` to your SiYuan workspace.
+3. Run `pnpm install` to install dependencies.
 
+4. Modify `plugin.json` to your plugin information.
 
-> [!TIP]
->
-> If you prefer not to package the project directly into the workspace, you can use a `symbolic link` instead.
->
-> Writing directly into the Siyuan workspace allows you to sync via Siyuan's sync feature to other devices, while using a symbolic link will not be included in the sync.
->
-> This template does not provide specific details about symbolic links. For related information, please refer to [plugin-sample-vite-svelte](https://github.com/siyuan-note/plugin-sample-vite-svelte).
+5. Run `pnpm run dev` to start development.
 
-5. Use `pnpm dev` to run the project, you will see info like below
+6. Run `pnpm run build` to build the plugin.
 
-  ```
+7. Load the plugin in Siyuan as described below.
 
-  > plugin-sample-vite-vue@0.0.1 dev /path/to/your/plugin-sample-vite-vue
-  > vite build --watch
+## Load plugin in Siyuan
 
-  mode=> production
-  env=> {
-    VITE_SIYUAN_WORKSPACE_PATH: '/path/to/siyuan/workspace',
-    VITE_DEV_DIST_DIR: ''
-  }
+1. Open Siyuan settings.
+2. Go to `Settings` -> `About` -> `Advanced` -> `Plugin`.
+3. Click `Load plugin` and select the `dist` folder.
 
-  Siyuan workspace path is set:
-  /path/to/siyuan/workspace
+## Task Query Feature
 
-  Plugin will build to:
-  # ✅ the plugin will build into here
-  /path/to/siyuan/workspace/data/plugins/plugin-sample-vite-vue
+This plugin now includes a powerful task query feature similar to Obsidian Tasks plugin. You can create task queries directly in your documents using the following syntax:
 
-  isWatch=> true
-  distDir=> /path/to/siyuan/workspace/data/plugins/plugin-sample-vite-vue
-  vite v6.3.5 building for production...
+### Basic Usage
 
-  watching for file changes...
+Create a code block with language `tasks`:
 
-  build started...
-  ✓ 26 modules transformed.
-  rendering chunks (1)...LiveReload enabled
-  ../../Siyuan-plugin/data/plugins/plugin-sample-vite-vue/index.css    1.08 kB │ gzip:  0.41 kB
-  ../../Siyuan-plugin/data/plugins/plugin-sample-vite-vue/index.js   198.60 kB │ gzip: 46.59 kB
-  [vite-plugin-static-copy] Copied 7 items.
-  built in 502ms.
-  ```
-
-
-   If successed, restart your siyuan, and you will find the plugin in `Siyuan - Settings - Marketplace`, named as `plugin-sample-vite-vue`.
-6. Enable the plugin, and check the `App.vue` file to start your development.
-   
-   This file contains some example codes.
-
-
-> [!TIP]
->
-> More plugin code examples, please check [siyuan/plugin-sample/src/index.ts](https://github.com/siyuan-note/plugin-sample/blob/main/src/index.ts)
-
-
-
-## List on the Marketplace
-
-### Use Github Action
-
-1. You can create a new tag, use your new version number as the `Tag version` in your local.
-2. Then push the tag to Github. The Github Action will create a new Release for you.
-
-> [!TIP]
->
-> <div id="release-script"></div>This template provided a script to auto create tag and release. You can use `pnpm release` to create a patch version.
->
-> You can add `--mode=manual|patch|minor|major` arg to set release mode, or run with arg like `pnpm release:manual`. 
-> 
-> All the scripts please see the `package.json` file.
-
-The github action is included in this sample, you can use it to publish your new realse to marketplace automatically:
-
-1. In your repo setting page `https://github.com/OWNER/REPO/settings/actions`, down to Workflow Permissions and open the configuration like this:
-
-![img](./asset/action.png)
-
-2. Push a tag in the format `v*` and github will automatically create a new release with new bulit package.zip
-3. By default, it will only publish a pre-release, if you don't think this is necessary, change the settings in release.yml
-
-```yaml
-- name: Release
-    uses: ncipollo/release-action@v1
-    with.
-        allowUpdates: true
-        artifactErrorsFailBuild: true
-        artifacts: 'package.zip'
-        token: ${{ secrets.GITHUB_TOKEN }}
-        prerelease: true # change this to false
+```tasks
+status: todo, in-progress
+priority: high, urgent
+due: <2024-12-31
+tag: work,important
+sort: dueDate desc
+limit: 10
 ```
 
-### Manual
+### Available Filters
 
-1. Use `pnpm build` to generate `package.zip`
-2. Create a new Github release using your new version number as the "Tag version". See here for an example: https://github.com/siyuan-note/plugin-sample/releases
-3. Upload the file package.zip as binary attachments
-4. Publish the release
+- **Status**: `status: todo`, `status: done`, `status: todo,in-progress`
+- **Priority**: `priority: low`, `priority: medium`, `priority: high`, `priority: urgent`
+- **Due Date**: `due: 2024-12-31`, `due: <2024-12-31`, `due: >2024-12-31`
+- **Start Date**: `starts: 2024-12-31`, `starts: <2024-12-31`, `starts: >2024-12-31`
+- **Tags**: `tag: work`, `tag: work,important`, `-tag: archive`
+- **Path**: `path: projects/work*`
+- **Sort**: `sort: dueDate`, `sort: priority desc`, `sort: startDate`
+- **Limit**: `limit: 5`
+- **Text Search**: `meeting project` (searches in task descriptions)
 
-> [!NOTE]
-> If it is the first release, please create a pull request to the [Community Bazaar](https://github.com/siyuan-note/bazaar) repository and modify the plugins.json file in it. This file is the index of all community plugin repositories, the format is:
+### Examples
 
-```json
-{
-  "repos": [
-    "username/reponame"
-  ]
-}
+**All open tasks sorted by due date:**
+```tasks
+status: todo,in-progress
+sort: dueDate
 ```
 
----
+**Urgent tasks due this week:**
+```tasks
+priority: urgent
+status: todo
+due: >today
+due: <next week
+```
 
-More other plugin info, please check in [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample).
+**Tasks with specific tags:**
+```tasks
+tag: work,important
+-tag: archive
+status: todo
+sort: priority desc
+limit: 20
+```
 
-🎯 Neue Funktionen hinzugefügt:
-1. Task Domain Models
-Task Interface mit allen relevanten Eigenschaften
-TaskStatus, TaskPriority Enums
-Recurrence Interface für wiederkehrende Aufgaben
-2. Task Parser
-Parst Tasks aus Markdown-Format
-Unterstützt alle Obsidian Tasks Konventionen:
-Status: [ ], [/], [x], [-]
-Prioritäten: 🔴🔼🔽
-Datumsangaben: 📅🛫⏳✅❌
-Wiederholung: 🔁
-Tags: #tag
-Abhängigkeiten: ⚠️
-3. Task Query Engine
-Vollständige Query-Sprache ähnlich wie Obsidian
-Filter nach: Status, Priorität, Datum, Tags, Pfad, Text
-Sortierung und Limitierung
-Beispiel-Queries:
-status:todo priority:high due:before tomorrow
-tag:work due:this week sort:priority
-4. Task Service
-CRUD-Operationen für Tasks
-Integration mit Siyuan API
-Automatisches Laden von Tasks aus Dokumenten
-Methoden für häufige Abfragen:
-getOverdueTasks()
-getTasksDueToday()
-getTasksDueThisWeek()
-5. User Interface
-Task Modal: Erstellen/Bearbeiten von Tasks
-Task Query Results: Anzeige gefilterter Tasks
-Sidebar Panel: Schnellzugriff auf Tasks
-Context Menu: Tasks aus markiertem Text erstellen
-6. Tastaturkürzel
-Ctrl+Shift+T: Task Query öffnen
-Ctrl+Alt+T: Neuer Task
-Ctrl+Shift+O: Überfällige Tasks
-Ctrl+Shift+D: Heutige Tasks
-7. Visuelle Features
-Farbcodierung nach Priorität
-Überfällige Tasks hervorheben
-Responsive Design für Mobile
-Dunkel-/Hell-Modus Support
-🚀 Verwendung:
-Task erstellen: Ctrl+Alt+T oder Kontextmenü
-Tasks filtern: Sidebar-Panel oder Ctrl+Shift+T
-Tasks markieren: Checkbox anklicken
-Tasks bearbeiten: ✏️ Button
-Query-Beispiele:
-status:todo - Alle offenen Tasks
-priority:high due:this week - Hohe Priorität diese Woche
-tag:work overdue - Überfällige Arbeitstasks
+### Interactive Features
+
+- Click checkboxes to mark tasks as complete/incomplete
+- Use the refresh button to update query results
+- Error messages are displayed directly in the query block
+- Queries are automatically updated when documents change
+
+For more examples and detailed documentation, see [TASK_QUERY_README.md](./TASK_QUERY_README.md) and [examples/task-queries.md](./examples/task-queries.md).
+
+## Release Script
+
+After you have modified the plugin information in `plugin.json`, you can use the release script to automatically create a tag and release.
+
+```bash
+pnpm run release
+```
+
+This script will:
+1. Read the version from `plugin.json`
+2. Create a git tag with the version
+3. Push the tag to GitHub
+4. GitHub Actions will automatically build and create a release
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── api.ts              # API wrapper for Siyuan
+├── components/         # Vue components
+├── index.ts           # Plugin entry point
+├── index.scss         # Styles
+├── renderer.ts        # Task rendering and query processing
+├── taskModal.ts       # Task editing modal
+├── taskModels.ts      # Task data models
+├── taskParser.ts      # Task parsing utilities
+├── taskQuery.ts       # Task query engine
+├── taskQueryResults.ts # Task query results display
+├── taskService.ts     # Task data service
+├── types/             # TypeScript type definitions
+└── utils/             # Utility functions
+```
+
+### Available Scripts
+
+- `pnpm run dev` - Start development server
+- `pnpm run build` - Build for production
+- `pnpm run release` - Create release
+- `pnpm run lint` - Run ESLint
+- `pnpm run type-check` - Run TypeScript type checking
+
+## License
+
+MIT

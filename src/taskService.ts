@@ -12,31 +12,27 @@ export class TaskService {
         try {
             const taskBlocks = await sql(`
                 SELECT * FROM blocks 
-                WHERE type = 'l' 
+                WHERE type = 'i' 
                 AND subtype = 't' 
                 AND markdown LIKE '%- [%] %'
             `);
 
             for (const block of taskBlocks) {
-                try {
-                    const kramdown = await getBlockKramdown(block.id);
-                    const lines = kramdown.kramdown.split('\n');
-                    
+                try {                    
+                    const lines = block.markdown.split('\n');
                     for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
-                        if (line.trim().startsWith('- [')) {
-                            const task = TaskParser.parseTaskFromMarkdown(
-                                line,
-                                block.id,
-                                block.path,
-                                block.line || i + 1
-                            );
-                            
-                            if (task) {
-                                this.tasks.set(task.id, task);
-                                tasks.push(task);
-                            }
-                        }
+                        const task = TaskParser.parseTaskFromMarkdown(
+                            line,
+                            block.id,
+                            block.path,
+                            block.line || i + 1
+                        );
+                        
+                        if (task) {
+                            this.tasks.set(task.id, task);
+                            tasks.push(task);
+                        }                        
                     }
                 } catch (error) {
                     console.error('Error parsing task:', error);
@@ -49,9 +45,16 @@ export class TaskService {
         return tasks;
     }
 
+    async getAllTasks(): Promise<Task[]> {
+        if (this.tasks.size === 0) {
+            await this.loadAllTasks();
+        }
+        return Array.from(this.tasks.values());
+    }
+
     async getTasks(query?: TaskQuery): Promise<Task[]> {
-        let tasks = Array.from(this.tasks.values());
-        
+        let tasks = await this.getAllTasks();
+
         if (query) {
             tasks = TaskQueryEngine.filterTasks(tasks, query);
         }

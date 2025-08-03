@@ -1,9 +1,11 @@
-import { updateBlock, sql } from '../../api'
+import { updateBlock } from '../../api'
 import {
   hasDueDate,
   hasPrioData,
   hasScheduledDate,
   hasStartDate,
+  getDateEmoji,
+  getPriorityEmoji,
 } from '../tasks/taskhelpers'
 
 export function showTaskEditor(element: HTMLElement, blockId: string, content: string) {
@@ -126,21 +128,4 @@ function showDateSelector(parent: HTMLElement, onSelect: (date: string) => void)
     dateSelector.appendChild(manualEntry)
 
     parent.appendChild(dateSelector)
-}
-
-function getDateEmoji(dateType: string): string {
-    switch (dateType) {
-      case '📅 due date': return '📅'
-      case '🛫 start date': return '🛫'
-      case '⏳ scheduled date': return '⏳'
-      default: return '📅'
-    }
-}
-
-function getPriorityEmoji(priority: string): string {
-    switch (priority) {
-      case 'high': return '⏫'
-      case 'medium': return '🔼'
-      default: return ''
-    }
 }

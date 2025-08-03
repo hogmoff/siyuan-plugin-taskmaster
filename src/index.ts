@@ -1,5 +1,5 @@
 import { Plugin } from 'siyuan'
-import { TaskRenderer } from './renderer'
+import { TaskRenderer, TaskQueryRenderer } from './renderer'
 import { TaskModal } from './taskModal'
 import { TaskQueryResults } from './taskQueryResults'
 import { TaskService } from './taskService'
@@ -10,11 +10,13 @@ import './index.scss'
 export default class PluginSample extends Plugin {
   private taskService: TaskService
   private renderer: TaskRenderer
+  private taskQueryRenderer: TaskQueryRenderer
   private taskQueryResults: TaskQueryResults
 
   onload() {
     this.taskService = new TaskService()
     this.renderer = new TaskRenderer()
+    this.taskQueryRenderer = new TaskQueryRenderer(this.taskService)
     this.taskQueryResults = new TaskQueryResults(this.taskService)
 
     console.log("TaskMaster plugin loaded successfully")
@@ -25,8 +27,10 @@ export default class PluginSample extends Plugin {
     this.eventBus.on('ws-main', this.handleWsMain.bind(this))
   }
 
-  onLayoutReady() {
+  async onLayoutReady() {
     this.renderer.process(document.body)
+    await this.taskQueryRenderer.initialize()
+    this.taskQueryRenderer.processQueries(document.body)
     this.taskService.loadAllTasks()
     this.addTaskQueryPanel()
   }
@@ -37,17 +41,22 @@ export default class PluginSample extends Plugin {
   }
 
   private handleWsMain(event: CustomEvent) {
-    
+
     if (event.detail.cmd === 'transactions') {
       for (const data of event.detail.data) {
-        for (const op of data.doOperations) {          
+        for (const op of data.doOperations) {
           if (op.action === 'update') {
             const tempDiv = document.createElement('div')
             tempDiv.innerHTML = op.data
+
+            // Handle task updates and re-render queries
+            setTimeout(() => {
+              this.taskQueryRenderer.processQueries(document.body)
+            }, 100)
+
             const listItems = tempDiv.querySelectorAll('[data-subtype="t"][data-type="NodeListItem"]')
             listItems.forEach((item) => {
               const content = item.querySelector('[contenteditable="true"]')
-              console.log(content);
               if (content && content.textContent.length > 1 && content.textContent[-1] === ' ') {
                 const blockId = item.getAttribute('data-node-id')
                 if (blockId) {
@@ -55,7 +64,7 @@ export default class PluginSample extends Plugin {
                   if (element && !element.classList.contains('taskmaster-processing')) {
                     const txt = content.textContent;
                     showTaskEditor(element as HTMLElement, blockId, txt);
-                    return;                       
+                    return;
                   }
                 }
               }

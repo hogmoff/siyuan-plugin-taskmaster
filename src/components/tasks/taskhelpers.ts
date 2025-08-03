@@ -39,3 +39,20 @@ export function searchTask(blockId: string): string | null {
   
   return foundItem ? foundItem.getAttribute('data-node-id') : null
 }
+
+export function getDateEmoji(dateType: string): string {
+    switch (dateType) {
+      case '📅 due date': return '📅'
+      case '🛫 start date': return '🛫'
+      case '⏳ scheduled date': return '⏳'
+      default: return '📅'
+    }
+}
+
+export function getPriorityEmoji(priority: string): string {
+    switch (priority) {
+      case 'high': return '⏫'
+      case 'medium': return '🔼'
+      default: return ''
+    }
+}

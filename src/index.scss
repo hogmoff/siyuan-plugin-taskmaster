@@ -37,3 +37,87 @@
 .date-selector-item:hover {
     background-color: var(--b3-theme-surface-lighter);
 }
+
+// Task Query Styles
+.task-query-result {
+    border: 1px solid var(--b3-border-color);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 8px 0;
+    background: var(--b3-theme-surface);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    .task-list {
+        margin-top: 12px;
+
+        > div {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--b3-border-color-light);
+            font-size: 14px;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            input[type="checkbox"] {
+                margin-right: 8px;
+                cursor: pointer;
+            }
+
+            > div {
+                flex: 1;
+
+                span {
+                    &[style*="line-through"] {
+                        color: var(--b3-theme-on-surface-light);
+                    }
+                }
+
+                div {
+                    font-size: 12px;
+                    color: var(--b3-theme-on-surface-light);
+                    margin-top: 2px;
+                }
+            }
+        }
+    }
+
+    button {
+        margin-top: 8px;
+        padding: 4px 8px;
+        font-size: 12px;
+        border: 1px solid var(--b3-border-color);
+        border-radius: 4px;
+        background: var(--b3-theme-background);
+        color: var(--b3-theme-on-background);
+        cursor: pointer;
+
+        &:hover {
+            background: var(--b3-theme-surface-light);
+        }
+    }
+}
+
+.task-query-error {
+    border: 1px solid var(--b3-error-color);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 8px 0;
+    background: rgba(var(--b3-error-color-rgb), 0.1);
+    color: var(--b3-error-color);
+    font-family: monospace;
+}
+
+// Dark mode adjustments
+[data-theme-mode="dark"] {
+    .task-query-result {
+        background: var(--b3-theme-surface);
+        border-color: var(--b3-border-color);
+    }
+
+    .task-query-error {
+        background: rgba(var(--b3-error-color-rgb), 0.2);
+    }
+}

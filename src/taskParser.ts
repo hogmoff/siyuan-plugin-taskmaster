@@ -1,7 +1,8 @@
 import { Task, TaskStatus, TaskPriority, Recurrence } from './taskModels';
+import { getPriorityEmoji } from './components/tasks/taskhelpers';
 
 export class TaskParser {
-    private static readonly TASK_REGEX = /^\s*(-|\*|\d+\.)\s+\[(.)\]\s+(.*)$/;
+    private static readonly TASK_REGEX = /^\s*(-|\*|\d+\.)\s*\[([ xX-])\]\s+(.*)$/;
     private static readonly PRIORITY_REGEX = /\ud83d\udd3a|\u2b06\ufe0f|\ud83d\udd3d|\u23ec/g;
     private static readonly DATE_REGEX = /\ud83d\udcc5\s*(\d{4}-\d{2}-\d{2})/g;
     private static readonly START_DATE_REGEX = /\ud83d\udeeb\s*(\d{4}-\d{2}-\d{2})/g;
@@ -19,11 +20,13 @@ export class TaskParser {
         lineNumber: number
     ): Task | null {
         const match = line.match(this.TASK_REGEX);
+        console.log('Parsing line match:', match);
         if (!match) return null;
 
-        const [, , statusChar, description] = match;
+        const [, ,statusChar, description] = match;
         const status = this.parseStatus(statusChar);
-        
+        console.log('Parsed:', status, description);
+
         const task: Task = {
             id: this.generateTaskId(),
             description: description.trim(),
@@ -68,11 +71,9 @@ export class TaskParser {
     }
 
     private static parsePriority(description: string): TaskPriority | undefined {
-        if (description.includes('\ud83d\udd3a')) return TaskPriority.URGENT;
-        if (description.includes('\u2b06\ufe0f')) return TaskPriority.HIGH;
-        if (description.includes('\ud83d\udd3d')) return TaskPriority.LOW;
-        if (description.includes('\u23ec')) return TaskPriority.LOW;
-        return undefined;
+        if (description.includes('⏫')) return TaskPriority.HIGH;
+        if (description.includes('🔼')) return TaskPriority.MEDIUM;
+        return TaskPriority.LOW;
     }
 
     private static parseDate(description: string, regex: RegExp): Date | undefined {
@@ -137,7 +138,7 @@ export class TaskParser {
         let line = `${task.indentation}- [${statusChar}] ${task.description}`;
 
         if (task.priority) {
-            const priorityEmoji = this.getPriorityEmoji(task.priority);
+            const priorityEmoji = getPriorityEmoji(task.priority);
             line += ` ${priorityEmoji}`;
         }
 
@@ -183,26 +184,11 @@ export class TaskParser {
             case TaskStatus.IN_PROGRESS:
                 return '/';
             case TaskStatus.DONE:
-                return 'x';
+                return 'X';
             case TaskStatus.CANCELLED:
                 return '-';
             default:
                 return ' ';
-        }
-    }
-
-    private static getPriorityEmoji(priority: TaskPriority): string {
-        switch (priority) {
-            case TaskPriority.URGENT:
-                return '\ud83d\udd3a';
-            case TaskPriority.HIGH:
-                return '\u2b06\ufe0f';
-            case TaskPriority.MEDIUM:
-                return '';
-            case TaskPriority.LOW:
-                return '\ud83d\udd3d';
-            default:
-                return '';
         }
     }
 }
