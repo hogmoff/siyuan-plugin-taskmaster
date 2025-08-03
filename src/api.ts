@@ -328,6 +328,15 @@ export async function getAllTags(): Promise<string[]> {
   return [];
 }
 
+export async function getRootTask(text: string): Promise<Block> {
+  const sqlQuery = `SELECT * FROM blocks WHERE markdown = '- [ ] ${text}'`
+  const response = await sql(sqlQuery);
+  if (response){
+    return response[0];
+  }
+  return;
+}
+
 // **************************************** Template ****************************************
 
 export async function render(

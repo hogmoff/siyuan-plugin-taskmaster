@@ -22,3 +22,20 @@ export function hasPrioData(text: string): boolean {
 export function hasTaskData(text: string): boolean {
   return hasDueDate(text) && hasPrioData(text) && hasPrioData(text) && hasPrioData(text)
 }
+
+export function searchTask(blockId: string): string | null {
+  const listItems = Array.from(document.querySelectorAll('[data-subtype="t"][data-type="NodeListItem"]'))
+  
+  const foundItem = listItems.find((item) => {
+    const rootId = item.getAttribute('data-node-id')
+    const paragraphElement = item.querySelector('[data-type="NodeParagraph"]')
+    
+    if (rootId && paragraphElement) {
+      const blockId2 = paragraphElement.getAttribute('data-node-id')
+      return blockId === blockId2
+    }
+    return false
+  })
+  
+  return foundItem ? foundItem.getAttribute('data-node-id') : null
+}

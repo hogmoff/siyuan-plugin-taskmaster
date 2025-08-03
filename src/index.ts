@@ -1,16 +1,10 @@
 import { Plugin } from 'siyuan'
-import {
-  hasDueDate,
-  hasPrioData,
-  hasScheduledDate,
-  hasStartDate,
-  hasTaskData,
-} from './components/tasks/taskhelpers'
 import { TaskRenderer } from './renderer'
 import { TaskModal } from './taskModal'
 import { TaskQueryResults } from './taskQueryResults'
 import { TaskService } from './taskService'
 import { showTaskEditor } from './components/tasks/taskEditor'
+import { searchTask } from './components/tasks/taskhelpers'
 import './index.scss'
 
 export default class PluginSample extends Plugin {
@@ -43,9 +37,10 @@ export default class PluginSample extends Plugin {
   }
 
   private handleWsMain(event: CustomEvent) {
+    
     if (event.detail.cmd === 'transactions') {
       for (const data of event.detail.data) {
-        for (const op of data.doOperations) {
+        for (const op of data.doOperations) {          
           if (op.action === 'update') {
             const tempDiv = document.createElement('div')
             tempDiv.innerHTML = op.data
@@ -53,18 +48,28 @@ export default class PluginSample extends Plugin {
             listItems.forEach((item) => {
               const content = item.querySelector('[contenteditable="true"]')
               console.log(content);
-              if (content && (content.textContent === '' || content.textContent === '\u200B')) {
+              if (content && content.textContent.length > 1 && content.textContent[-1] === ' ') {
                 const blockId = item.getAttribute('data-node-id')
                 if (blockId) {
                   const element = document.querySelector(`[data-node-id="${blockId}"]`)
                   if (element && !element.classList.contains('taskmaster-processing')) {
                     const txt = content.textContent;
-                    showTaskEditor(element as HTMLElement, blockId, 
-                        hasDueDate(txt),
-                        hasStartDate(txt),
-                        hasScheduledDate(txt),
-                        hasPrioData(txt))
+                    showTaskEditor(element as HTMLElement, blockId, txt);
+                    return;                       
                   }
+                }
+              }
+            })
+            const listItems2 = tempDiv.querySelectorAll('[data-type="NodeParagraph"]')
+            listItems2.forEach((item) => {
+              const content2 = item.textContent;
+              // Last character is zero-width space ignore it, look to space at second last char
+              if (content2 && content2.trim().length > 1 && content2.charCodeAt(content2.length - 2) === 32) {
+                const blockId = item.getAttribute('data-node-id')
+                if (blockId) {
+                  const rootId = searchTask(blockId);
+                  const element = document.querySelector(`[data-node-id="${rootId}"]`)
+                  showTaskEditor(element as HTMLElement, blockId, content2);
                 }
               }
             })

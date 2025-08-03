@@ -1,6 +1,12 @@
-import { updateBlock } from '../../api'
+import { updateBlock, sql } from '../../api'
+import {
+  hasDueDate,
+  hasPrioData,
+  hasScheduledDate,
+  hasStartDate,
+} from '../tasks/taskhelpers'
 
-export function showTaskEditor(element: HTMLElement, blockId: string, due: boolean, start: boolean, schedule: boolean, prio: boolean) {
+export function showTaskEditor(element: HTMLElement, blockId: string, content: string) {
     element.classList.add('taskmaster-processing')
     const rect = element.getBoundingClientRect()
     const popup = document.createElement('div')
@@ -17,39 +23,39 @@ export function showTaskEditor(element: HTMLElement, blockId: string, due: boole
             padding: 8px;
         `
     let options: any[] = [];
-    if (!due) {
+    if (!hasDueDate(content)) {
         options.push(
         {        
             label: '📅 due date',
             type: 'date',
         });
     }
-    if (!start){
+    if (!hasStartDate(content)){
         options.push(
             {        
             label: '🛫 start date',
             type: 'date',
         });
     }
-    if (!schedule){
+    if (!hasScheduledDate(content)){
         options.push(
             {        
             label: '⏳ scheduled date',
             type: 'date',
         });
     }
-    if (!prio) {
+    if (!hasPrioData(content)) {
         options.push(
         {        
-            label: '⏫ high prio',
+            label: '⏫ high',
             type: 'priority',
             value: 'high',
         });
         options.push(
         {        
-            label: '🔼 medium prio',
+            label: '🔼 medium',
             type: 'priority',
-            value: 'high',
+            value: 'medium',
         });
     }
 
@@ -62,6 +68,11 @@ export function showTaskEditor(element: HTMLElement, blockId: string, due: boole
       document.removeEventListener('click', closePopup)
     }
 
+    // remove '- [ ]' at beginning and remove space at the end
+    content = content.replace(/^- \\[ \\]/, '');
+    content = content.trim();
+    console.log("Content", content)
+
     options.forEach((option) => {
       const item = document.createElement('div')
       item.className = 'task-editor-item'
@@ -69,11 +80,11 @@ export function showTaskEditor(element: HTMLElement, blockId: string, due: boole
       item.onclick = () => {
         if (option.type === 'date') {
           showDateSelector(item, (date) => {
-            updateTask(blockId, `- [ ] ${getDateEmoji(option.label)} ${date}`)
+            updateTask(blockId, ` ${content} ${getDateEmoji(option.label)} ${date}`)
             closePopup()
           })
         } else {
-          updateTask(blockId, `- [ ] ${getPriorityEmoji(option.value)}`)
+          updateTask(blockId, ` ${content} ${getPriorityEmoji(option.value)}`)
           closePopup()
         }
       }
@@ -85,7 +96,7 @@ export function showTaskEditor(element: HTMLElement, blockId: string, due: boole
   }
 
 async function updateTask(blockId: string, text: string) {
-    await updateBlock('markdown', text, blockId)
+  await updateBlock('markdown', text, blockId)
 }
 
 function showDateSelector(parent: HTMLElement, onSelect: (date: string) => void) {
@@ -128,8 +139,8 @@ function getDateEmoji(dateType: string): string {
 
 function getPriorityEmoji(priority: string): string {
     switch (priority) {
-      case '⏫ high': return '⏫'
-      case '🔼 medium': return '🔼'
+      case 'high': return '⏫'
+      case 'medium': return '🔼'
       default: return ''
     }
 }
