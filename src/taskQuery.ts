@@ -8,21 +8,21 @@ export class TaskQueryEngine {
             filteredTasks = filteredTasks.filter(task => 
                 query.status!.includes(task.status)
             );
-            console.log('Filtered tasks count after status filter:', filteredTasks.length);
+            //console.log('Filtered tasks count after status filter:', filteredTasks.length);
         }
 
         if (query.priority && query.priority.length > 0) {
             filteredTasks = filteredTasks.filter(task => 
                 task.priority && query.priority!.includes(task.priority)
             );
-            console.log('Filtered tasks count after priority filter:', filteredTasks.length);
+            //console.log('Filtered tasks count after priority filter:', filteredTasks.length);
         }
 
         if (query.dueBefore) {
             filteredTasks = filteredTasks.filter(task => 
                 task.dueDate && task.dueDate <= query.dueBefore!
             );
-            console.log('Filtered tasks count after dueDate filter:', filteredTasks.length);
+            //console.log('Filtered tasks count after dueDate filter:', filteredTasks.length);
         }
 
         if (query.dueAfter) {
@@ -31,7 +31,7 @@ export class TaskQueryEngine {
             );
         }
 
-        console.log('Filtered tasks count after dueAfter filter:', filteredTasks.length);
+        //console.log('Filtered tasks count after dueAfter filter:', filteredTasks.length);
 
         if (query.startsBefore) {
             filteredTasks = filteredTasks.filter(task => 
@@ -39,7 +39,7 @@ export class TaskQueryEngine {
             );
         }
 
-        console.log('Filtered tasks count after start date filter:', filteredTasks.length);
+        //console.log('Filtered tasks count after start date filter:', filteredTasks.length);
 
         if (query.startsAfter) {
             filteredTasks = filteredTasks.filter(task => 
@@ -47,7 +47,7 @@ export class TaskQueryEngine {
             );
         }
 
-        console.log('Filtered tasks count after start date filters:', filteredTasks.length);
+        //console.log('Filtered tasks count after start date filters:', filteredTasks.length);
 
         if (query.tags && query.tags.length > 0) {
             filteredTasks = filteredTasks.filter(task => 
@@ -55,7 +55,7 @@ export class TaskQueryEngine {
             );
         }
 
-        console.log('Filtered tasks count after tags filter:', filteredTasks.length);
+        //console.log('Filtered tasks count after tags filter:', filteredTasks.length);
 
         if (query.excludeTags && query.excludeTags.length > 0) {
             filteredTasks = filteredTasks.filter(task => 
@@ -63,16 +63,17 @@ export class TaskQueryEngine {
             );
         }
 
-        console.log('Filtered tasks count after excludeTags filter:', filteredTasks.length);
+        //console.log('Filtered tasks count after excludeTags filter:', filteredTasks.length);
 
-        if (query.text) {
+        if (query.text && query.text.trim() !== '') {
             const searchText = query.text.toLowerCase();
-            filteredTasks = filteredTasks.filter(task => 
-                task.description.toLowerCase().includes(searchText)
-            );
+            filteredTasks = filteredTasks.filter(task => {
+                const description = task.description || '';
+                return description.toLowerCase().includes(searchText);
+            });
         }
 
-        console.log('Filtered tasks count after text filter:', filteredTasks.length);
+        //console.log('Filtered tasks count after text filter:', filteredTasks.length);
 
         if (query.path) {
             const pathPattern = new RegExp(query.path.replace('*', '.*'));
@@ -81,7 +82,7 @@ export class TaskQueryEngine {
             );
         }
 
-        console.log('Filtered tasks count after path filter:', filteredTasks.length);
+        //console.log('Filtered tasks count after path filter:', filteredTasks.length);
 
         if (query.sortBy) {
             filteredTasks.sort((a, b) => {
@@ -117,7 +118,6 @@ export class TaskQueryEngine {
 
         if (query.limit && !isNaN(query.limit) && query.limit > 0) {
             filteredTasks = filteredTasks.slice(0, query.limit);
-            console.log('Filtered tasks count after limit filter:', filteredTasks.length);
         }
 
         return filteredTasks;
@@ -134,8 +134,10 @@ export class TaskQueryEngine {
 
     static parseQueryString(queryString: string): TaskQuery {
         const query: TaskQuery = {};
+        // Remove zero-width space characters (8203) and other invisible unicode characters
+        const cleanQueryString = queryString.replace(/\u200B/g, '').replace(/\uFEFF/g, '');
         // Split by newlines first, then trim each part
-        const parts = queryString.split('\n').map(part => part.trim()).filter(part => part.length > 0);
+        const parts = cleanQueryString.split('\n').map(part => part.trim()).filter(part => part.length > 0);
 
         for (const part of parts) {
             if (part.startsWith('status:')) {
@@ -192,7 +194,8 @@ export class TaskQueryEngine {
                     query.sortOrder = 'asc';
                 }
             } else {
-                query.text = query.text ? query.text + ' ' + part : part;
+                const trimmedPart = part.trim();
+                query.text = query.text ? query.text + ' ' + trimmedPart : trimmedPart;
             }
         }
 

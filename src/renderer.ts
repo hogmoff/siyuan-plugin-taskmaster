@@ -103,7 +103,6 @@ export class TaskQueryRenderer {
         if (!this.taskQueryEngine) return;
 
         const codeBlocks = element.querySelectorAll('div[data-type="NodeCodeBlock"]');
-        console.log("Codeblocks", codeBlocks)
         
         codeBlocks.forEach((block: HTMLElement) => {
             const textContent = block.textContent || '';
@@ -123,19 +122,16 @@ export class TaskQueryRenderer {
             if (!queryMatch) return;
 
             const queryString = queryMatch[1].trim();
-            console.log("Query String:", queryString);
             if (!queryString) return;
 
             // Parse die Query
             const query = this.taskQueryEngine.parseQueryString(queryString);
-            console.log("Parsed Query:", query);
             
             // Hole alle Tasks
             const allTasks = await this.taskService.getAllTasks();
             
             // Filter die Tasks basierend auf der Query
             const filteredTasks = this.taskQueryEngine.filterTasks(allTasks, query);
-            console.log("Filtered Tasks:", filteredTasks);
 
             // Erstelle das Ergebnis-Element
             const resultContainer = this.createQueryResultContainer(filteredTasks, queryString);

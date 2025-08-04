@@ -20,12 +20,14 @@ export class TaskParser {
         lineNumber: number
     ): Task | null {
         const match = line.match(this.TASK_REGEX);
-        console.log('Parsing line match:', match);
-        if (!match) return null;
+        if (!match) {
+            console.log('Not match:', line)
+            return null;
+        }
+            
 
         const [, ,statusChar, description] = match;
         const status = this.parseStatus(statusChar);
-        console.log('Parsed:', status, description);
 
         const task: Task = {
             id: this.generateTaskId(),

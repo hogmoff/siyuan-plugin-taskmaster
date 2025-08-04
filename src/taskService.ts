@@ -1,7 +1,7 @@
 import { Task, TaskQuery, TaskStatus } from './taskModels';
 import { TaskParser } from './taskParser';
 import { TaskQueryEngine } from './taskQuery';
-import { sql, getBlockKramdown } from './api';
+import { sql } from './api';
 
 export class TaskService {
     private tasks: Map<string, Task> = new Map();
@@ -12,9 +12,10 @@ export class TaskService {
         try {
             const taskBlocks = await sql(`
                 SELECT * FROM blocks 
-                WHERE type = 'i' 
+                WHERE type = 'i'
                 AND subtype = 't' 
                 AND markdown LIKE '%- [%] %'
+                LIMIT 10000
             `);
 
             for (const block of taskBlocks) {
@@ -22,6 +23,7 @@ export class TaskService {
                     const lines = block.markdown.split('\n');
                     for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
+                        console.log(line);
                         const task = TaskParser.parseTaskFromMarkdown(
                             line,
                             block.id,
