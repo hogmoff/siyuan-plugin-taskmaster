@@ -1,6 +1,6 @@
-import { Task, TaskStatus } from './components/tasks/taskModels';
-import { TaskService } from './components/tasks/taskService';
-import { TaskModal } from './components/tasks/taskModal';
+import { Task, TaskStatus } from './taskModels';
+import { TaskService } from './taskService';
+import { TaskModal } from './taskModal';
 
 export class TaskQueryResults {
     private container: HTMLElement;
