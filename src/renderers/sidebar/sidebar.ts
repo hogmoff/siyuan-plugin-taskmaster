@@ -1,124 +1,160 @@
 import { Task } from '../../types/task';
 
 export function createSidebar(this: any, tasks: Task[]): HTMLElement {
+    const sidebarContainer = document.createElement('div');
+    sidebarContainer.className = 'sidebar-container';
+    sidebarContainer.style.cssText = `
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+    `;
+
     const sidebar = document.createElement('div');
-    sidebar.className = 'task-sidebar';
+    sidebar.className = 'sidebar';
     sidebar.style.cssText = `
-        width: 200px;
-        background: #fafbfc;
-        border-right: 1px solid #e0e6e8;
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        z-index: 100;
+        width: 280px;
+        height: 100%;
+        background-color: var(--b3-theme-background);
+        border-left: 1px solid var(--b3-theme-surface-lighter);
+        padding: 16px;
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        transform: translateX(${this.sidebarCollapsed ? '-200px' : '0'});
-        transition: transform 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        position: relative;
     `;
 
     const sidebarHeader = document.createElement('div');
+    sidebarHeader.className = 'sidebar-header';
     sidebarHeader.style.cssText = `
-        padding: 16px;
-        background: #f4f6f8;
-        border-bottom: 1px solid #e0e6e8;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--b3-theme-surface-lighter);
     `;
 
-    const sidebarTitle = document.createElement('h4');
-    sidebarTitle.textContent = 'Projekte';
+    const sidebarTitle = document.createElement('h2');
+    sidebarTitle.textContent = 'Projects';
     sidebarTitle.style.cssText = `
-        margin: 0;
-        font-size: 14px;
+        font-size: 18px;
         font-weight: 600;
-        color: #202020;
+        margin: 0;
+        color: var(--b3-theme-on-background);
+        opacity: 1;
+        transition: opacity 0.3s ease;
     `;
 
-    const toggleButton = document.createElement('button');
-    toggleButton.innerHTML = this.sidebarCollapsed ? '▶' : '◀';
+    const toggleButton = document.createElement('div');
     toggleButton.className = 'sidebar-toggle-button';
     toggleButton.style.cssText = `
-        background: none;
-        border: none;
-        font-size: 16px;
         cursor: pointer;
-        color: #666;
-        padding: 4px;
-        border-radius: 4px;
-        transition: background-color 0.2s ease;
-    `;
-
-    toggleButton.addEventListener('click', () => {
-        this.toggleSidebar();
-    });
-
-    toggleButton.addEventListener('mouseenter', () => {
-        toggleButton.style.backgroundColor = '#e0e6e8';
-    });
-
-    toggleButton.addEventListener('mouseleave', () => {
-        toggleButton.style.backgroundColor = 'transparent';
-    });
-
-    sidebarHeader.appendChild(sidebarTitle);
-    sidebarHeader.appendChild(toggleButton);
-    sidebar.appendChild(sidebarHeader);
-
-    const tagsSection = createTagsSection.call(this, tasks);
-    sidebar.appendChild(tagsSection);
-
-    const collapsedToggle = document.createElement('button');
-    collapsedToggle.className = 'collapsed-toggle';
-    collapsedToggle.innerHTML = '▶';
-    collapsedToggle.style.cssText = `
-        position: absolute;
-        left: ${this.sidebarCollapsed ? '8px' : '-40px'};
-        top: 16px;
         width: 32px;
         height: 32px;
-        background: #fafbfc;
-        border: 1px solid #e0e6e8;
         border-radius: 6px;
-        cursor: pointer;
-        font-size: 12px;
-        color: #666;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background-color 0.3s ease, left 0.3s ease, box-shadow 0.3s ease;
-        z-index: 101;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+        background-color: transparent;
+        border: 1px solid var(--b3-theme-surface-lighter);
+        color: var(--b3-theme-on-surface);
+        position: absolute;
+        top: 16px;
+        left: -16px;
+        z-index: 102;
+        background-color: var(--b3-theme-background);
     `;
 
-    collapsedToggle.addEventListener('click', () => {
-        this.toggleSidebar();
+    const updateSidebarState = () => {
+        if (this.sidebarCollapsed) {
+            sidebar.style.width = '0px';
+            sidebar.style.padding = '0px';
+            sidebar.style.borderLeft = 'none';
+            sidebarTitle.style.opacity = '0';
+            toggleButton.innerHTML = `<svg width="16" height="16"><use xlink:href="#iconLeft"></use></svg>`;
+            toggleButton.setAttribute('aria-label', 'Expand sidebar');
+            toggleButton.style.left = '-16px';
+            toggleButton.style.transform = 'translateX(-100%)';
+        } else {
+            sidebar.style.width = '280px';
+            sidebar.style.padding = '16px';
+            sidebar.style.borderLeft = '1px solid var(--b3-theme-surface-lighter)';
+            sidebarTitle.style.opacity = '1';
+            toggleButton.innerHTML = `<svg width="16" height="16"><use xlink:href="#iconRight"></use></svg>`;
+            toggleButton.setAttribute('aria-label', 'Collapse sidebar');
+            toggleButton.style.left = '-16px';
+            toggleButton.style.transform = 'translateX(0)';
+        }
+    };
+
+    toggleButton.addEventListener('click', () => {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
+        updateSidebarState();
     });
 
-    collapsedToggle.addEventListener('mouseenter', () => {
-        collapsedToggle.style.backgroundColor = '#e0e6e8';
-        collapsedToggle.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+    toggleButton.addEventListener('mouseenter', () => {
+        toggleButton.style.backgroundColor = 'var(--b3-theme-surface-light)';
+        toggleButton.style.borderColor = 'var(--b3-theme-primary-light)';
+        toggleButton.style.transform = this.sidebarCollapsed ? 'translateX(-100%) scale(1.05)' : 'translateX(0) scale(1.05)';
     });
 
-    collapsedToggle.addEventListener('mouseleave', () => {
-        collapsedToggle.style.backgroundColor = '#fafbfc';
-        collapsedToggle.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+    toggleButton.addEventListener('mouseleave', () => {
+        toggleButton.style.backgroundColor = 'var(--b3-theme-background)';
+        toggleButton.style.borderColor = 'var(--b3-theme-surface-lighter)';
+        toggleButton.style.transform = this.sidebarCollapsed ? 'translateX(-100%)' : 'translateX(0)';
     });
 
-    sidebar.appendChild(collapsedToggle);
-    return sidebar;
+    sidebarHeader.appendChild(sidebarTitle);
+    sidebar.appendChild(sidebarHeader);
+
+    const tagsSection = this.createTagsSection(tasks);
+    sidebar.appendChild(tagsSection);
+
+    sidebarContainer.appendChild(sidebar);
+    sidebarContainer.appendChild(toggleButton);
+
+    // Initialize collapsed state if not set
+    if (this.sidebarCollapsed === undefined) {
+        this.sidebarCollapsed = false;
+    }
+
+    updateSidebarState();
+
+    return sidebarContainer;
 }
 
 export function createTagsSection(this: any, tasks: Task[]): HTMLElement {
-    const section = document.createElement('div');
-    section.className = 'tags-section';
-    section.style.cssText = `
-        flex: 1;
+    const tagsContainer = document.createElement('div');
+    tagsContainer.className = 'tags-container';
+    tagsContainer.style.cssText = `
         overflow-y: auto;
-        padding: 8px 0;
+        flex-grow: 1;
+        padding-right: 4px;
     `;
+
+    // Custom scrollbar styling
+    const style = document.createElement('style');
+    style.textContent = `
+        .tags-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .tags-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .tags-container::-webkit-scrollbar-thumb {
+            background: var(--b3-theme-surface-lighter);
+            border-radius: 3px;
+        }
+        .tags-container::-webkit-scrollbar-thumb:hover {
+            background: var(--b3-theme-surface);
+        }
+    `;
+    document.head.appendChild(style);
 
     const allTags = new Set<string>();
     tasks.forEach(task => {
@@ -127,59 +163,87 @@ export function createTagsSection(this: any, tasks: Task[]): HTMLElement {
         }
     });
 
-    const allProjectsItem = createTagItem.call(this, 'Alle Projekte', null, tasks.length);
-    section.appendChild(allProjectsItem);
+    const sortedTags = Array.from(allTags).sort();
 
-    const untaggedCount = tasks.filter(task => !task.tags || task.tags.length === 0).length;
-    if (untaggedCount > 0) {
-        const untaggedItem = createTagItem.call(this, 'Ohne Projekt', '', untaggedCount);
-        section.appendChild(untaggedItem);
+    const allProjectsCount = tasks.length;
+    tagsContainer.appendChild(this.createTagItem('All Projects', null, allProjectsCount));
+
+    const untaggedTasks = tasks.filter(task => !task.tags || task.tags.length === 0);
+    if (untaggedTasks.length > 0) {
+        tagsContainer.appendChild(this.createTagItem('Untagged', 'untagged', untaggedTasks.length));
     }
 
-    const sortedTags = Array.from(allTags).sort();
     sortedTags.forEach(tag => {
-        const tagCount = tasks.filter(task => task.tags && task.tags.includes(tag)).length;
-        const tagItem = createTagItem.call(this, `#${tag}`, tag, tagCount);
-        section.appendChild(tagItem);
+        const taskCount = tasks.filter(task => task.tags && task.tags.includes(tag)).length;
+        tagsContainer.appendChild(this.createTagItem(tag, tag, taskCount));
     });
 
-    return section;
+    return tagsContainer;
 }
 
 export function createTagItem(this: any, label: string, tag: string | null, count: number): HTMLElement {
     const item = document.createElement('div');
     item.className = 'tag-item';
-    const isSelected = this.selectedTag === tag;
-
+    item.dataset.tag = tag === null ? 'all' : tag;
     item.style.cssText = `
-        padding: 8px 16px;
-        cursor: pointer;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        transition: background-color 0.2s ease;
-        background-color: ${isSelected ? '#dc4c3e' : 'transparent'};
-        color: ${isSelected ? 'white' : '#202020'};
+        padding: 10px 12px;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 14px;
+        margin-bottom: 4px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
     `;
 
     const tagLabel = document.createElement('span');
     tagLabel.textContent = label;
     tagLabel.style.cssText = `
-        font-size: 13px;
-        font-weight: ${isSelected ? '600' : '400'};
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 8px;
+        color: var(--b3-theme-on-background);
     `;
 
-    const countSpan = document.createElement('span');
-    countSpan.textContent = count.toString();
-    countSpan.style.cssText = `
+    const taskCount = document.createElement('span');
+    taskCount.textContent = count.toString();
+    taskCount.style.cssText = `
+        background-color: var(--b3-theme-surface-lighter);
+        color: var(--b3-theme-on-surface);
+        padding: 3px 8px;
+        border-radius: 12px;
         font-size: 12px;
-        color: ${isSelected ? 'rgba(255,255,255,0.8)' : '#808080'};
-        background: ${isSelected ? 'rgba(255,255,255,0.2)' : '#f0f0f0'};
-        padding: 2px 6px;
-        border-radius: 10px;
+        font-weight: 500;
         min-width: 20px;
         text-align: center;
+        transition: all 0.2s ease;
     `;
+
+    item.appendChild(tagLabel);
+    item.appendChild(taskCount);
+
+    const updateSelection = () => {
+        const currentTag = this.selectedTag === null ? 'all' : this.selectedTag;
+        if (item.dataset.tag === currentTag) {
+            item.style.backgroundColor = 'var(--b3-theme-primary-light)';
+            item.style.borderColor = 'var(--b3-theme-primary)';
+            item.style.fontWeight = '600';
+            tagLabel.style.color = 'var(--b3-theme-primary)';
+            taskCount.style.backgroundColor = 'var(--b3-theme-primary)';
+            taskCount.style.color = 'var(--b3-theme-on-primary)';
+        } else {
+            item.style.backgroundColor = 'transparent';
+            item.style.borderColor = 'transparent';
+            item.style.fontWeight = 'normal';
+            tagLabel.style.color = 'var(--b3-theme-on-background)';
+            taskCount.style.backgroundColor = 'var(--b3-theme-surface-lighter)';
+            taskCount.style.color = 'var(--b3-theme-on-surface)';
+        }
+    };
 
     item.addEventListener('click', () => {
         this.selectedTag = tag;
@@ -187,18 +251,39 @@ export function createTagItem(this: any, label: string, tag: string | null, coun
     });
 
     item.addEventListener('mouseenter', () => {
-        if (!isSelected) {
-            item.style.backgroundColor = '#f5f5f5';
+        const currentTag = this.selectedTag === null ? 'all' : this.selectedTag;
+        if (item.dataset.tag !== currentTag) {
+            item.style.backgroundColor = 'var(--b3-theme-surface-light)';
+            item.style.borderColor = 'var(--b3-theme-surface)';
+            item.style.transform = 'translateX(-2px)';
         }
     });
 
     item.addEventListener('mouseleave', () => {
-        if (!isSelected) {
+        const currentTag = this.selectedTag === null ? 'all' : this.selectedTag;
+        if (item.dataset.tag !== currentTag) {
             item.style.backgroundColor = 'transparent';
+            item.style.borderColor = 'transparent';
+            item.style.transform = 'translateX(0)';
         }
     });
 
-    item.appendChild(tagLabel);
-    item.appendChild(countSpan);
+    // Set initial state
+    updateSelection();
+    
+    // Observer for updating selection state
+    const observer = new MutationObserver(() => {
+        updateSelection();
+    });
+    
+    // Observe changes in the parent container
+    if (item.parentElement?.parentElement?.parentElement) {
+        observer.observe(item.parentElement.parentElement.parentElement, { 
+            attributes: true, 
+            childList: true, 
+            subtree: true 
+        });
+    }
+
     return item;
 }

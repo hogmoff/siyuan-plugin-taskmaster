@@ -151,10 +151,6 @@ export class TaskQueryRenderer {
     private createTagsSection = createTagsSection;
     private createTagItem = createTagItem;
 
-    private toggleSidebar() {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
-        this.refreshCurrentView();
-    }
 
     /**
      * Erstellt den Header-Bereich mit Titel und Task-Anzahl
