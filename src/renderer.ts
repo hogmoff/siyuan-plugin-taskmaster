@@ -92,7 +92,7 @@ export class TaskQueryRenderer {
     async initialize() {
         // Dynamisch import TaskQueryEngine wenn verfügbar
         try {
-            const module = await import('./taskQuery');
+            const module = await import('./components/tasks/taskQuery');
             this.taskQueryEngine = module.TaskQueryEngine;
         } catch (error) {
             console.warn('TaskQueryEngine not available:', error);

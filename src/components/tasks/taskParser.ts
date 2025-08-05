@@ -1,5 +1,5 @@
 import { Task, TaskStatus, TaskPriority, Recurrence } from './taskModels';
-import { getPriorityEmoji } from './components/tasks/taskhelpers';
+import { getPriorityEmoji } from './taskhelpers';
 
 export class TaskParser {
     private static readonly TASK_REGEX = /^\s*(-|\*|\d+\.)\s*\[([ xX-])\]\s+(.*)$/;

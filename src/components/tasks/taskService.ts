@@ -1,7 +1,7 @@
 import { Task, TaskQuery, TaskStatus } from './taskModels';
 import { TaskParser } from './taskParser';
 import { TaskQueryEngine } from './taskQuery';
-import { sql } from './api';
+import { sql } from '../../api';
 
 export class TaskService {
     private tasks: Map<string, Task> = new Map();

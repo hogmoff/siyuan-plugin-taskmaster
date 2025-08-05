@@ -48,7 +48,6 @@ export class TaskModal {
                                 <option value="low" ${this.options.task?.priority === 'low' ? 'selected' : ''}>Low</option>
                                 <option value="medium" ${this.options.task?.priority === 'medium' ? 'selected' : ''}>Medium</option>
                                 <option value="high" ${this.options.task?.priority === 'high' ? 'selected' : ''}>High</option>
-                                <option value="urgent" ${this.options.task?.priority === 'urgent' ? 'selected' : ''}>Urgent</option>
                             </select>
                         </div>
                     </div>
