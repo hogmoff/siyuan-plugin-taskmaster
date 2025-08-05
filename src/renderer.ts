@@ -111,9 +111,6 @@ export class TaskRenderer {
                 priorityIcon.style.marginRight = '4px';
                 
                 switch (priority) {
-                    case 'urgent':
-                        priorityIcon.textContent = '🚨';
-                        break;
                     case 'high':
                         priorityIcon.textContent = '🔴';
                         break;
@@ -151,6 +148,10 @@ export class TaskQueryRenderer {
     private taskQueryEngine: any;
     private currentFilter: 'today' | 'next7days' | 'all' | 'date' = 'today';
     private selectedDate: Date | null = null;
+    private selectedTag: string | null = null;
+    private sidebarCollapsed: boolean = false;
+    private currentTasks: Task[] = [];
+    private currentQueryString: string = '';
 
     constructor(taskService: any) {
         this.taskService = taskService;
@@ -203,6 +204,12 @@ export class TaskQueryRenderer {
     }
 
     private createTodoistLikeContainer(tasks: Task[], queryString: string): HTMLElement {
+        this.currentTasks = tasks;
+        this.currentQueryString = queryString;
+
+        // Inject sidebar styles
+        this.injectSidebarStyles();
+
         const container = document.createElement('div');
         container.className = 'todoist-task-container';
         container.style.cssText = `
@@ -213,15 +220,32 @@ export class TaskQueryRenderer {
             margin: 16px 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
+            display: flex;
+            position: relative;
+        `;
+
+        // Sidebar
+        const sidebar = this.createSidebar(tasks);
+        container.appendChild(sidebar);
+
+        // Main content area
+        const mainContent = document.createElement('div');
+        mainContent.className = 'main-content';
+        mainContent.style.cssText = `
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s ease;
+            margin-left: ${this.sidebarCollapsed ? '0' : '200px'};
         `;
 
         // Header mit Filtern
         const header = this.createHeader(tasks.length);
-        container.appendChild(header);
+        mainContent.appendChild(header);
 
         // Filter Bar
         const filterBar = this.createFilterBar();
-        container.appendChild(filterBar);
+        mainContent.appendChild(filterBar);
 
         // Task Content
         const content = document.createElement('div');
@@ -232,13 +256,226 @@ export class TaskQueryRenderer {
         `;
 
         this.renderTasks(content, tasks);
-        container.appendChild(content);
+        mainContent.appendChild(content);
 
         // Refresh Button
         const refreshButton = this.createRefreshButton(queryString);
-        container.appendChild(refreshButton);
+        mainContent.appendChild(refreshButton);
 
+        container.appendChild(mainContent);
         return container;
+    }
+
+
+
+    private createSidebar(tasks: Task[]): HTMLElement {
+        const sidebar = document.createElement('div');
+        sidebar.className = 'task-sidebar';
+        sidebar.style.cssText = `
+            width: 200px;
+            background: #fafbfc;
+            border-right: 1px solid #e0e6e8;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(${this.sidebarCollapsed ? '-200px' : '0'});
+            transition: transform 0.3s ease;
+        `;
+
+        // Sidebar Header mit Toggle Button
+        const sidebarHeader = document.createElement('div');
+        sidebarHeader.style.cssText = `
+            padding: 16px;
+            background: #f4f6f8;
+            border-bottom: 1px solid #e0e6e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+
+        const sidebarTitle = document.createElement('h4');
+        sidebarTitle.textContent = 'Projekte';
+        sidebarTitle.style.cssText = `
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #202020;
+        `;
+
+        const toggleButton = document.createElement('button');
+        toggleButton.innerHTML = this.sidebarCollapsed ? '▶' : '◀';
+        toggleButton.className = 'sidebar-toggle-button';
+        toggleButton.style.cssText = `
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        `;
+
+        toggleButton.addEventListener('click', () => {
+            this.toggleSidebar();
+        });
+
+        toggleButton.addEventListener('mouseenter', () => {
+            toggleButton.style.backgroundColor = '#e0e6e8';
+        });
+
+        toggleButton.addEventListener('mouseleave', () => {
+            toggleButton.style.backgroundColor = 'transparent';
+        });
+
+        sidebarHeader.appendChild(sidebarTitle);
+        sidebarHeader.appendChild(toggleButton);
+        sidebar.appendChild(sidebarHeader);
+
+        // Tags Sektion
+        const tagsSection = this.createTagsSection(tasks);
+        sidebar.appendChild(tagsSection);
+
+        // Toggle Button für collapsed Sidebar
+        const collapsedToggle = document.createElement('button');
+        collapsedToggle.className = 'collapsed-toggle';
+        collapsedToggle.innerHTML = '▶';
+        collapsedToggle.style.cssText = `
+            position: absolute;
+            left: ${this.sidebarCollapsed ? '8px' : '-40px'};
+            top: 16px;
+            width: 32px;
+            height: 32px;
+            background: #fafbfc;
+            border: 1px solid #e0e6e8;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease, left 0.3s ease, box-shadow 0.3s ease;
+            z-index: 101;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        `;
+
+        collapsedToggle.addEventListener('click', () => {
+            this.toggleSidebar();
+        });
+
+        collapsedToggle.addEventListener('mouseenter', () => {
+            collapsedToggle.style.backgroundColor = '#e0e6e8';
+            collapsedToggle.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+        });
+
+        collapsedToggle.addEventListener('mouseleave', () => {
+            collapsedToggle.style.backgroundColor = '#fafbfc';
+            collapsedToggle.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        });
+
+        sidebar.appendChild(collapsedToggle);
+        return sidebar;
+    }
+
+    private createTagsSection(tasks: Task[]): HTMLElement {
+        const section = document.createElement('div');
+        section.className = 'tags-section';
+        section.style.cssText = `
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        `;
+
+        // Alle Tags sammeln
+        const allTags = new Set<string>();
+        tasks.forEach(task => {
+            if (task.tags) {
+                task.tags.forEach(tag => allTags.add(tag));
+            }
+        });
+
+        // "Alle Projekte" Option
+        const allProjectsItem = this.createTagItem('Alle Projekte', null, tasks.length);
+        section.appendChild(allProjectsItem);
+
+        // Ohne Tag Option
+        const untaggedCount = tasks.filter(task => !task.tags || task.tags.length === 0).length;
+        if (untaggedCount > 0) {
+            const untaggedItem = this.createTagItem('Ohne Projekt', '', untaggedCount);
+            section.appendChild(untaggedItem);
+        }
+
+        // Tag Items sortiert
+        const sortedTags = Array.from(allTags).sort();
+        sortedTags.forEach(tag => {
+            const tagCount = tasks.filter(task => task.tags && task.tags.includes(tag)).length;
+            const tagItem = this.createTagItem(`#${tag}`, tag, tagCount);
+            section.appendChild(tagItem);
+        });
+
+        return section;
+    }
+
+    private createTagItem(label: string, tag: string | null, count: number): HTMLElement {
+        const item = document.createElement('div');
+        item.className = 'tag-item';
+        const isSelected = this.selectedTag === tag;
+
+        item.style.cssText = `
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+            background-color: ${isSelected ? '#dc4c3e' : 'transparent'};
+            color: ${isSelected ? 'white' : '#202020'};
+        `;
+
+        const tagLabel = document.createElement('span');
+        tagLabel.textContent = label;
+        tagLabel.style.cssText = `
+            font-size: 13px;
+            font-weight: ${isSelected ? '600' : '400'};
+        `;
+
+        const countSpan = document.createElement('span');
+        countSpan.textContent = count.toString();
+        countSpan.style.cssText = `
+            font-size: 12px;
+            color: ${isSelected ? 'rgba(255,255,255,0.8)' : '#808080'};
+            background: ${isSelected ? 'rgba(255,255,255,0.2)' : '#f0f0f0'};
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 20px;
+            text-align: center;
+        `;
+
+        item.addEventListener('click', () => {
+            this.selectedTag = tag;
+            this.refreshCurrentView();
+        });
+
+        item.addEventListener('mouseenter', () => {
+            if (!isSelected) {
+                item.style.backgroundColor = '#f5f5f5';
+            }
+        });
+
+        item.addEventListener('mouseleave', () => {
+            if (!isSelected) {
+                item.style.backgroundColor = 'transparent';
+            }
+        });
+
+        item.appendChild(tagLabel);
+        item.appendChild(countSpan);
+        return item;
     }
 
     private createHeader(taskCount: number): HTMLElement {
@@ -252,6 +489,12 @@ export class TaskQueryRenderer {
             align-items: center;
         `;
 
+        const titleSection = document.createElement('div');
+        titleSection.style.cssText = `
+            display: flex;
+            flex-direction: column;
+        `;
+
         const title = document.createElement('h3');
         title.textContent = 'Aufgaben';
         title.style.cssText = `
@@ -261,6 +504,23 @@ export class TaskQueryRenderer {
             color: #202020;
         `;
 
+        // Aktueller Filter anzeigen
+        if (this.selectedTag !== null) {
+            const filterInfo = document.createElement('div');
+            filterInfo.style.cssText = `
+                font-size: 12px;
+                color: #666;
+                margin-top: 2px;
+            `;
+
+            if (this.selectedTag === '') {
+                filterInfo.textContent = 'Projekt: Ohne Projekt';
+            } else {
+                filterInfo.textContent = `Projekt: #${this.selectedTag}`;
+            }
+            titleSection.appendChild(filterInfo);
+        }
+
         const count = document.createElement('span');
         count.textContent = `${taskCount} Aufgabe${taskCount !== 1 ? 'n' : ''}`;
         count.style.cssText = `
@@ -269,10 +529,44 @@ export class TaskQueryRenderer {
             font-weight: normal;
         `;
 
-        header.appendChild(title);
+        titleSection.appendChild(title);
+        header.appendChild(titleSection);
         header.appendChild(count);
 
         return header;
+    }
+
+    private toggleSidebar() {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
+
+        const container = document.querySelector('.todoist-task-container');
+        if (!container) return;
+
+        const sidebar = container.querySelector('.task-sidebar') as HTMLElement;
+        const mainContent = container.querySelector('.main-content') as HTMLElement;
+        const collapsedToggle = container.querySelector('.collapsed-toggle') as HTMLElement;
+        const toggleButtonInside = container.querySelector('.sidebar-toggle-button') as HTMLElement;
+
+        if (sidebar && mainContent && collapsedToggle) {
+            // Sidebar Position
+            sidebar.style.transform = `translateX(${this.sidebarCollapsed ? '-200px' : '0'})`;
+
+            // Main Content Margin
+            mainContent.style.marginLeft = this.sidebarCollapsed ? '0' : '200px';
+
+            // Collapsed Toggle Position und Sichtbarkeit
+            collapsedToggle.style.left = this.sidebarCollapsed ? '8px' : '-40px';
+            collapsedToggle.style.opacity = this.sidebarCollapsed ? '1' : '0';
+            collapsedToggle.style.pointerEvents = this.sidebarCollapsed ? 'auto' : 'none';
+
+            // Update toggle button icons
+            if (toggleButtonInside) {
+                toggleButtonInside.innerHTML = this.sidebarCollapsed ? '▶' : '◀';
+            }
+
+            // Update collapsed toggle icon
+            collapsedToggle.innerHTML = this.sidebarCollapsed ? '▶' : '◀';
+        }
     }
 
     private createFilterBar(): HTMLElement {
@@ -421,19 +715,33 @@ export class TaskQueryRenderer {
     }
 
     private applyCurrentFilter(tasks: Task[]): Task[] {
+        let filteredTasks = tasks;
+
+        // Zuerst nach Tag filtern
+        if (this.selectedTag !== null) {
+            if (this.selectedTag === '') {
+                // Ohne Projekt (keine Tags)
+                filteredTasks = filteredTasks.filter(task => !task.tags || task.tags.length === 0);
+            } else {
+                // Spezifischer Tag
+                filteredTasks = filteredTasks.filter(task => task.tags && task.tags.includes(this.selectedTag!));
+            }
+        }
+
+        // Dann nach Datum filtern
         switch (this.currentFilter) {
             case 'today':
-                return tasks.filter(task => 
+                return filteredTasks.filter(task =>
                     task.dueDate && isToday(task.dueDate)
                 );
             case 'next7days':
-                return tasks.filter(task => 
+                return filteredTasks.filter(task =>
                     task.dueDate && isWithinDays(task.dueDate, 7)
                 );
             case 'date':
-                if (!this.selectedDate) return tasks;
-                return tasks.filter(task => 
-                    task.dueDate && 
+                if (!this.selectedDate) return filteredTasks;
+                return filteredTasks.filter(task =>
+                    task.dueDate &&
                     task.dueDate.toDateString() === this.selectedDate!.toDateString()
                 );
             case 'all':
@@ -899,15 +1207,18 @@ export class TaskQueryRenderer {
     private async refreshQuery(container: HTMLElement, queryString: string) {
         try {
             container.style.opacity = '0.5';
-            
+
+            // Inject sidebar styles when refreshing query to ensure styles are available
+            this.injectSidebarStyles();
+
             const allTasks = await this.taskService.getAllTasks();
-            const filteredTasks = queryString ? 
-                this.taskQueryEngine.filterTasks(allTasks, this.taskQueryEngine.parseQueryString(queryString)) : 
+            const filteredTasks = queryString ?
+                this.taskQueryEngine.filterTasks(allTasks, this.taskQueryEngine.parseQueryString(queryString)) :
                 allTasks;
 
             const newContainer = this.createTodoistLikeContainer(filteredTasks, queryString);
             container.parentNode?.replaceChild(newContainer, container);
-            
+
         } catch (error) {
             console.error('Error refreshing task query:', error);
         }
@@ -917,22 +1228,24 @@ export class TaskQueryRenderer {
         const container = document.querySelector('.todoist-task-container');
         if (!container) return;
 
-        try {
-            const allTasks = await this.taskService.getAllTasks();
-            const content = container.querySelector('.task-content') as HTMLElement;
-            if (content) {
-                this.renderTasks(content, allTasks);
-            }
+        const content = container.querySelector('.task-content') as HTMLElement;
+        const sidebar = container.querySelector('.task-sidebar');
 
-            // Update task count in header
-            const countSpan = container.querySelector('span') as HTMLElement;
-            if (countSpan) {
-                const filteredTasks = this.applyCurrentFilter(allTasks);
-                countSpan.textContent = `${filteredTasks.length} Aufgabe${filteredTasks.length !== 1 ? 'n' : ''}`;
-            }
-        } catch (error) {
-            console.error('Error refreshing current view:', error);
+        if (content) {
+            this.renderTasks(content, this.currentTasks);
         }
+
+        // Sidebar neu rendern um die aktualisierten Counts und Auswahl anzuzeigen
+        if (sidebar) {
+            const tagsSection = sidebar.querySelector('.tags-section');
+            if (tagsSection) {
+                const newTagsSection = this.createTagsSection(this.currentTasks);
+                tagsSection.parentNode?.replaceChild(newTagsSection, tagsSection);
+            }
+        }
+
+        // Filter buttons aktualisieren
+        this.updateFilterButtons();
     }
 
     private showError(block: HTMLElement, message: string) {
@@ -956,5 +1269,67 @@ export class TaskQueryRenderer {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // CSS für bessere Responsive Unterstützung
+    private injectSidebarStyles() {
+        if (document.getElementById('todoist-sidebar-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'todoist-sidebar-styles';
+        style.textContent = `
+            .todoist-task-container {
+                position: relative !important;
+                overflow: visible !important;
+            }
+
+            .task-sidebar {
+                position: absolute !important;
+                z-index: 100 !important;
+            }
+
+            .collapsed-toggle {
+                position: absolute !important;
+                z-index: 101 !important;
+            }
+
+            @media (max-width: 768px) {
+                .task-sidebar {
+                    width: 250px !important;
+                }
+
+                .main-content {
+                    margin-left: 0 !important;
+                }
+
+                .collapsed-toggle {
+                    left: 8px !important;
+                }
+            }
+
+            .task-sidebar::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .task-sidebar::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+
+            .task-sidebar::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 2px;
+            }
+
+            .task-sidebar::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+            /* Smooth transitions */
+            .task-sidebar, .main-content, .collapsed-toggle {
+                transition: all 0.3s ease !important;
+            }
+        `;
+
+        document.head.appendChild(style);
     }
 }
