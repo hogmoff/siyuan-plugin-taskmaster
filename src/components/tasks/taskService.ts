@@ -23,7 +23,7 @@ export class TaskService {
                     const lines = block.markdown.split('\n');
                     for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
-                        console.log(line);
+                        //console.log(line);
                         const task = TaskParser.parseTaskFromMarkdown(
                             line,
                             block.id,

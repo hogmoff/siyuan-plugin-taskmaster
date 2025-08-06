@@ -1,10 +1,11 @@
 import { Plugin } from 'siyuan'
-import { TaskRenderer, TaskQueryRenderer } from './renderer'
 import { TaskModal } from './components/tasks/taskModal'
 import { TaskQueryResults } from './components/tasks/taskQueryResults'
 import { TaskService } from './components/tasks/taskService'
 import { showTaskEditor } from './components/tasks/taskEditor'
 import { searchTask } from './components/tasks/taskhelpers'
+import { TaskRenderer } from './renderers/TaskRenderer';
+import { TaskQueryRenderer } from './renderers/TaskQueryRenderer';
 import './index.scss'
 
 export default class PluginSample extends Plugin {
@@ -29,7 +30,7 @@ export default class PluginSample extends Plugin {
 
   async onLayoutReady() {
     this.renderer.process(document.body)
-    await this.taskQueryRenderer.initialize()
+    await this.taskQueryRenderer.initialize() 
     this.taskQueryRenderer.processQueries(document.body)
     this.taskService.loadAllTasks()
     this.addTaskQueryPanel()

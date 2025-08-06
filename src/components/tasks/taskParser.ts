@@ -19,12 +19,7 @@ export class TaskParser {
         path: string,
         lineNumber: number
     ): Task | null {
-        const match = line.match(this.TASK_REGEX);
-        if (!match) {
-            console.log('Not match:', line)
-            return null;
-        }
-            
+        const match = line.match(this.TASK_REGEX);           
 
         const [, ,statusChar, description] = match;
         const status = this.parseStatus(statusChar);
