@@ -55,13 +55,14 @@ export class TaskQueryRenderer {
         container.style.cssText = `
             background: #ffffff;
             border: 1px solid #e0e6e8;
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin: 16px 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
             display: flex;
             position: relative;
+            min-height: 500px;
         `;
 
         const sidebar = createSidebar(this, tasks);
@@ -73,8 +74,9 @@ export class TaskQueryRenderer {
             flex: 1;
             display: flex;
             flex-direction: column;
-            transition: margin-left 0.3s ease;
-            margin-left: ${this.sidebarCollapsed ? '0' : '200px'};
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-left: ${this.sidebarCollapsed ? '0' : '280px'};
+            min-width: 0;
         `;
 
         const header = createHeader(this, tasks.length);
@@ -87,7 +89,8 @@ export class TaskQueryRenderer {
         content.className = 'task-content';
         content.style.cssText = `
             padding: 0;
-            min-height: 200px;
+            flex: 1;
+            overflow-y: auto;
         `;
 
         renderTasks(content, tasks, this);
@@ -132,33 +135,43 @@ export class TaskQueryRenderer {
         const isSelected = this.selectedTag === tag;
 
         item.style.cssText = `
-            padding: 8px 16px;
+            padding: 10px 16px;
+            margin: 2px 0;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background-color 0.2s ease;
-            background-color: ${isSelected ? '#dc4c3e' : 'transparent'};
-            color: ${isSelected ? 'white' : '#202020'};
+            transition: all 0.2s ease;
+            background-color: ${isSelected ? '#e8f2ff' : 'transparent'};
+            color: ${isSelected ? '#0066cc' : '#202020'};
+            border-radius: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 20px;
         `;
 
         const tagLabel = document.createElement('span');
         tagLabel.textContent = label;
         tagLabel.style.cssText = `
-            font-size: 13px;
-            font-weight: ${isSelected ? '600' : '400'};
+            font-weight: ${isSelected ? '600' : '500'};
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         `;
 
         const countSpan = document.createElement('span');
         countSpan.textContent = count.toString();
         countSpan.style.cssText = `
             font-size: 12px;
-            color: ${isSelected ? 'rgba(255,255,255,0.8)' : '#808080'};
-            background: ${isSelected ? 'rgba(255,255,255,0.2)' : '#f0f0f0'};
-            padding: 2px 6px;
-            border-radius: 10px;
+            font-weight: 600;
+            color: ${isSelected ? '#0066cc' : '#666666'};
+            background: ${isSelected ? '#cce5ff' : '#f5f5f5'};
+            padding: 2px 8px;
+            border-radius: 12px;
             min-width: 20px;
             text-align: center;
+            margin-left: 8px;
         `;
 
         item.addEventListener('click', () => {
@@ -168,7 +181,7 @@ export class TaskQueryRenderer {
 
         item.addEventListener('mouseenter', () => {
             if (!isSelected) {
-                item.style.backgroundColor = '#f5f5f5';
+                item.style.backgroundColor = '#f8f9fa';
             }
         });
 
@@ -220,21 +233,88 @@ export class TaskQueryRenderer {
             .task-sidebar {
                 position: absolute !important;
                 z-index: 100 !important;
+                background: #fafafa !important;
+                border-right: 1px solid #e0e6e8 !important;
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08) !important;
+            }
+
+            .task-sidebar.collapsed {
+                transform: translateX(-100%) !important;
             }
 
             .collapsed-toggle {
                 position: absolute !important;
                 z-index: 101 !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            .collapsed-toggle:hover {
+                transform: scale(1.05) !important;
+            }
+
+            .main-content {
+                transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             }
 
             @media (max-width: 768px) {
                 .task-sidebar {
-                    width: 250px !important;
+                    width: 260px !important;
                 }
 
                 .main-content {
                     margin-left: 0 !important;
                 }
+
+                .collapsed-toggle {
+                    right: -18px !important;
+                    left: auto !important;
+                }
+
+                .task-sidebar:not(.collapsed) + .main-content {
+                    margin-left: 260px !important;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .task-sidebar {
+                    width: 100% !important;
+                    border-radius: 0 !important;
+                }
+
+                .collapsed-toggle {
+                    right: 16px !important;
+                    top: 16px !important;
+                }
+            }
+
+            .task-sidebar::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .task-sidebar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .task-sidebar::-webkit-scrollbar-thumb {
+                background: #e0e6e8;
+                border-radius: 3px;
+            }
+
+            .task-sidebar::-webkit-scrollbar-thumb:hover {
+                background: #d0d0d0;
+            }
+
+            .tag-item {
+                user-select: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+            }
+
+            .tag-item:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
 
                 .collapsed-toggle {
                     left: 8px !important;
