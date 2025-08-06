@@ -1,7 +1,7 @@
 import { Task, TaskQuery, TaskStatus } from './taskModels';
 import { TaskParser } from './taskParser';
 import { TaskQueryEngine } from './taskQuery';
-import { sql } from '../../api';
+import { sql, updateBlock } from '../../api';
 
 export class TaskService {
     private tasks: Map<string, Task> = new Map();
@@ -70,7 +70,18 @@ export class TaskService {
 
     async updateTask(task: Task): Promise<void> {
         this.tasks.set(task.id, task);
-        console.log('Updating task:', task.id);
+
+        // Update the corresponding Siyuan block if blockId exists
+        if (task.blockId) {
+            try {
+                // Replace the old line with the updated task
+                const newLine = TaskParser.taskToMarkdown(task);                     
+                await updateBlock('markdown', newLine, task.blockId);     
+
+            } catch (error) {
+                console.error('Error updating task in Siyuan:', error);
+            }
+        }
     }
 
     async createTask(task: Task): Promise<Task> {

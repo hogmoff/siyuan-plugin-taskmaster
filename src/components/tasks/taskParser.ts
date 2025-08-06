@@ -10,7 +10,7 @@ export class TaskParser {
     private static readonly DONE_DATE_REGEX = /\u2705\s*(\d{4}-\d{2}-\d{2})/g;
     private static readonly CANCELLED_DATE_REGEX = /\u274c\s*(\d{4}-\d{2}-\d{2})/g;
     private static readonly RECURRENCE_REGEX = /\ud83d\udd01\s*([a-zA-Z0-9\s,]+)/g;
-    private static readonly TAG_REGEX = /#([\w-]+)/g;
+    private static readonly TAG_REGEX = /#([\w-]+)#/g;
     private static readonly DEPENDS_ON_REGEX = /\u26d4\s*([\w-]+)/g;
 
     static parseTaskFromMarkdown(
@@ -19,7 +19,9 @@ export class TaskParser {
         path: string,
         lineNumber: number
     ): Task | null {
-        const match = line.match(this.TASK_REGEX);           
+        const match = line.match(this.TASK_REGEX);
+        console.log(line, match);
+        if (!match) return null;
 
         const [, ,statusChar, description] = match;
         const status = this.parseStatus(statusChar);
@@ -97,7 +99,7 @@ export class TaskParser {
         const tags: string[] = [];
         let match: RegExpExecArray | null;
         while ((match = this.TAG_REGEX.exec(description)) !== null) {
-            tags.push(match[1]);
+            tags.push(match[0].slice(1, -1)); // Entferne das erste und letzte # Zeichen
         }
         return tags;
     }
@@ -123,6 +125,8 @@ export class TaskParser {
             .replace(this.TAG_REGEX, '')
             .replace(this.DEPENDS_ON_REGEX, '')
             .replace(/\s+/g, ' ')
+            .replace('⏫', '')
+            .replace('🔼', '')
             .trim();
     }
 
@@ -133,11 +137,6 @@ export class TaskParser {
     static taskToMarkdown(task: Task): string {
         const statusChar = this.getStatusChar(task.status);
         let line = `${task.indentation}- [${statusChar}] ${task.description}`;
-
-        if (task.priority) {
-            const priorityEmoji = getPriorityEmoji(task.priority);
-            line += ` ${priorityEmoji}`;
-        }
 
         if (task.dueDate) {
             line += ` \ud83d\udcc5 ${task.dueDate.toISOString().split('T')[0]}`;
@@ -163,8 +162,13 @@ export class TaskParser {
             line += ` \ud83d\udd01 ${task.recurrence.rule}`;
         }
 
+        if (task.priority) {
+            const priorityEmoji = getPriorityEmoji(task.priority);
+            line += ` ${priorityEmoji}`;
+        }
+
         if (task.tags.length > 0) {
-            line += ' ' + task.tags.map(tag => `#${tag}`).join(' ');
+            line += ' ' + task.tags.map(tag => `#${tag}#`).join(' ');
         }
 
         if (task.dependsOn.length > 0) {
