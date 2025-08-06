@@ -2,25 +2,33 @@ import { Task } from '../../types/task';
 import { TaskQueryRenderer } from '../TaskQueryRenderer';
 
 export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[]): HTMLElement {
-    const sidebar = document.createElement('div');
-    sidebar.className = 'task-sidebar';
-    sidebar.style.cssText = `
+    // Create container for sidebar and toggle button
+    const container = document.createElement('div');
+    container.style.cssText = `
         position: absolute;
         left: 0;
         top: 0;
         bottom: 0;
+        z-index: 100;
+    `;
+
+    const sidebar = document.createElement('div');
+    sidebar.className = 'task-sidebar';
+    sidebar.style.cssText = `
+        position: relative;
         width: 280px;
+        height: 100%;
         background: #fafafa;
         border-right: 1px solid #e0e0e0;
         display: flex;
         flex-direction: column;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 100;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
     `;
 
     if (rendererContext.sidebarCollapsed) {
-        sidebar.style.transform = 'translateX(-100%)';
+        sidebar.style.width = '0';
     }
 
     // Sidebar Content
@@ -31,6 +39,7 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         flex-direction: column;
         padding: 24px 16px;
         overflow: hidden;
+        min-width: 280px;
     `;
 
     // Header
@@ -64,25 +73,25 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
 
     sidebar.appendChild(sidebarContent);
 
-    // Toggle Button
+    // Toggle Button - now positioned independently
     const toggleButton = document.createElement('button');
     toggleButton.className = 'sidebar-toggle';
     toggleButton.setAttribute('aria-label', 'Toggle sidebar');
     toggleButton.style.cssText = `
         position: absolute;
         top: 24px;
-        right: -18px;
+        left: ${rendererContext.sidebarCollapsed ? '0' : '280px'};
         width: 36px;
         height: 36px;
         background: #ffffff;
         border: 1px solid #e0e0e0;
-        border-radius: 50%;
+        border-radius: 0 50% 50% 0;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 101;
     `;
 
@@ -96,8 +105,8 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         color: #666666;
         transition: transform 0.3s ease;
     `;
-    
-    toggleIcon.innerHTML = rendererContext.sidebarCollapsed 
+
+    toggleIcon.innerHTML = rendererContext.sidebarCollapsed
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>'
         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
 
@@ -105,12 +114,14 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
 
     toggleButton.addEventListener('click', () => {
         rendererContext.sidebarCollapsed = !rendererContext.sidebarCollapsed;
-        
+
         if (rendererContext.sidebarCollapsed) {
-            sidebar.style.transform = 'translateX(-100%)';
+            sidebar.style.width = '0';
+            toggleButton.style.left = '0';
             toggleIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
         } else {
-            sidebar.style.transform = 'translateX(0)';
+            sidebar.style.width = '280px';
+            toggleButton.style.left = '280px';
             toggleIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
         }
 
@@ -120,6 +131,21 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
             mainContent.style.marginLeft = rendererContext.sidebarCollapsed ? '0' : '280px';
         }
     });
+
+    toggleButton.addEventListener('mouseenter', () => {
+        toggleButton.style.backgroundColor = '#f5f5f5';
+        toggleButton.style.transform = 'scale(1.05)';
+    });
+
+    toggleButton.addEventListener('mouseleave', () => {
+        toggleButton.style.backgroundColor = '#ffffff';
+        toggleButton.style.transform = 'scale(1)';
+    });
+
+    container.appendChild(sidebar);
+    container.appendChild(toggleButton);
+
+    return container;
 
     toggleButton.addEventListener('mouseenter', () => {
         toggleButton.style.backgroundColor = '#f5f5f5';
