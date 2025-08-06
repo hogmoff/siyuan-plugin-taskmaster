@@ -12,7 +12,7 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
             ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(queryString))
             : allTasks;
 
-        const resultContainer = renderer.createTodoistLikeContainer(filteredTasks, queryString);
+        const resultContainer = renderer.createTodoContainer(filteredTasks, queryString);
         block.parentNode?.replaceChild(resultContainer, block);
 
     } catch (error) {
@@ -31,7 +31,7 @@ export async function refreshQuery(renderer: TaskQueryRenderer, container: HTMLE
             ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(queryString))
             : allTasks;
 
-        const newContainer = renderer.createTodoistLikeContainer(filteredTasks, queryString);
+        const newContainer = renderer.createTodoContainer(filteredTasks, queryString);
         container.parentNode?.replaceChild(newContainer, container);
 
     } catch (error) {

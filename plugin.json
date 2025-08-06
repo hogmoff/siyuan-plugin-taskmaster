@@ -16,7 +16,7 @@
   },
   "description": {
     "default": "Advanced task management with a modal dialog",
-    "zh_CN": "受 Todoist 启发的带有模态框的高级任务管理。"
+    "zh_CN": "受 Todo 启发的带有模态框的高级任务管理。"
   },
   "readme": {
     "default": "README.md",

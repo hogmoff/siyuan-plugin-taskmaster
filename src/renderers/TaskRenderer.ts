@@ -18,7 +18,7 @@ export class TaskRenderer {
             const priority = taskNode.getAttribute('custom-task-priority');
             const dueDateStr = taskNode.getAttribute('custom-handle-time');
             
-            // Prioritäts-Icon hinzufügen
+            // Add Priority-Icon
             if (priority) {
                 const priorityIcon = document.createElement('span');
                 priorityIcon.className = 'task-master-priority';
@@ -38,7 +38,7 @@ export class TaskRenderer {
                 taskNode.insertBefore(priorityIcon, taskNode.firstChild);
             }
             
-            // Fälligkeitsdatum hinzufügen
+            // Add due date
             if (dueDateStr) {
                 const dueDate = parseSiyuanDate(dueDateStr);
                 if (dueDate) {

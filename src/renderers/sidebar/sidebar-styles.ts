@@ -1,7 +1,7 @@
 export function toggleSidebar(this: any) {
     this.sidebarCollapsed = !this.sidebarCollapsed;
 
-    const container = document.querySelector('.todoist-task-container');
+    const container = document.querySelector('.todo-task-container');
     if (!container) return;
 
     const sidebar = container.querySelector('.task-sidebar') as HTMLElement;
@@ -24,12 +24,12 @@ export function toggleSidebar(this: any) {
 }
 
 export function injectSidebarStyles() {
-    if (document.getElementById('todoist-sidebar-styles')) return;
+    if (document.getElementById('todo-sidebar-styles')) return;
 
     const style = document.createElement('style');
-    style.id = 'todoist-sidebar-styles';
+    style.id = 'todo-sidebar-styles';
     style.textContent = `
-        .todoist-task-container {
+        .todo-task-container {
             position: relative !important;
             overflow: visible !important;
         }

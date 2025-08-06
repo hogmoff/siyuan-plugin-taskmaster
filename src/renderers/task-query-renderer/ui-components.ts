@@ -143,7 +143,7 @@ export function createFilterButton(rendererContext: TaskQueryRenderer, text: str
 }
 
 export function updateFilterButtons(rendererContext: TaskQueryRenderer) {
-    const container = document.querySelector('.todoist-task-container');
+    const container = document.querySelector('.todo-task-container');
     if (!container) return;
 
     const buttons = container.querySelectorAll('[data-filter]') as NodeListOf<HTMLElement>;
@@ -525,7 +525,7 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
     });
 
     refreshButton.addEventListener('click', () => {
-        refreshQuery(rendererContext, refreshButton.closest('.todoist-task-container') as HTMLElement, queryString);
+        refreshQuery(rendererContext, refreshButton.closest('.todo-task-container') as HTMLElement, queryString);
     });
 
     refreshContainer.appendChild(refreshButton);

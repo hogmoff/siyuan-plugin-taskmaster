@@ -44,14 +44,14 @@ export class TaskQueryRenderer {
         });
     }
 
-    public createTodoistLikeContainer(tasks: Task[], queryString: string): HTMLElement {
+    public createTodoContainer(tasks: Task[], queryString: string): HTMLElement {
         this.currentTasks = tasks;
         this.currentQueryString = queryString;
 
         this.injectSidebarStyles();
 
         const container = document.createElement('div');
-        container.className = 'todoist-task-container';
+        container.className = 'todo-task-container';
         container.style.cssText = `
             background: #ffffff;
             border: 1px solid #e0e6e8;
@@ -104,7 +104,7 @@ export class TaskQueryRenderer {
     }
 
     public async refreshCurrentView() {
-        const container = document.querySelector('.todoist-task-container');
+        const container = document.querySelector('.todo-task-container');
         if (!container) return;
 
         const content = container.querySelector('.task-content') as HTMLElement;
@@ -225,12 +225,12 @@ export class TaskQueryRenderer {
     }
 
     public injectSidebarStyles() {
-        if (document.getElementById('todoist-sidebar-styles')) return;
+        if (document.getElementById('todo-sidebar-styles')) return;
 
         const style = document.createElement('style');
-        style.id = 'todoist-sidebar-styles';
+        style.id = 'todo-sidebar-styles';
         style.textContent = `
-            .todoist-task-container {
+            .todo-task-container {
                 position: relative !important;
                 overflow: visible !important;
             }
