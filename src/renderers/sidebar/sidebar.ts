@@ -147,19 +147,6 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
 
     return container;
 
-    toggleButton.addEventListener('mouseenter', () => {
-        toggleButton.style.backgroundColor = '#f5f5f5';
-        toggleButton.style.transform = 'scale(1.05)';
-    });
-
-    toggleButton.addEventListener('mouseleave', () => {
-        toggleButton.style.backgroundColor = '#ffffff';
-        toggleButton.style.transform = 'scale(1)';
-    });
-
-    sidebar.appendChild(toggleButton);
-
-    return sidebar;
 }
 
 export function createTagsSection(rendererContext: TaskQueryRenderer, tasks: Task[]): HTMLElement {
@@ -207,7 +194,7 @@ export function createTagsSection(rendererContext: TaskQueryRenderer, tasks: Tas
     // Add "Untagged" item if needed
     const untaggedTasks = tasks.filter(task => !task.tags || task.tags.length === 0);
     if (untaggedTasks.length > 0) {
-        tagsContainer.appendChild(rendererContext.createTagItem('Untagged', 'untagged', untaggedTasks.length));
+        tagsContainer.appendChild(rendererContext.createTagItem('Untagged', '', untaggedTasks.length));
     }
 
     // Add individual tags

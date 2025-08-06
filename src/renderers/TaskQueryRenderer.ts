@@ -124,9 +124,14 @@ export class TaskQueryRenderer {
 
         updateFilterButtons(this);
 
-        // Replace sidebar to ensure event handlers and state are updated
-        const newSidebar = createSidebar(this, this.currentTasks);
-        container.replaceChild(newSidebar, sidebar);
+        // Update sidebar state without replacing the entire sidebar
+        if (sidebar) {
+            sidebar.classList.toggle('collapsed', this.sidebarCollapsed);
+            const mainContent = container.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
+            }
+        }
     }
 
     public createTagItem(label: string, tag: string | null, count: number): HTMLElement {
