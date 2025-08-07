@@ -20,7 +20,6 @@ export class TaskParser {
         lineNumber: number
     ): Task | null {
         const match = line.match(this.TASK_REGEX);
-        console.log(line, match);
         if (!match) return null;
 
         const [, ,statusChar, description] = match;

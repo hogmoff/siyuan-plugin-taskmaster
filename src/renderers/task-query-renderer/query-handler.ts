@@ -6,13 +6,14 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
         if (!queryMatch) return;
 
         const queryString = queryMatch[1].trim();
+        const cleanQueryString = queryString.replace(/\u200B/g, '').replace(/\uFEFF/g, '');
 
         const allTasks = await renderer.taskService.getAllTasks();
-        const filteredTasks = queryString
-            ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(queryString))
+        const filteredTasks = cleanQueryString
+            ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(cleanQueryString))
             : allTasks;
 
-        const resultContainer = renderer.createTodoContainer(filteredTasks, queryString);
+        const resultContainer = renderer.createTodoContainer(filteredTasks, cleanQueryString);
         block.parentNode?.replaceChild(resultContainer, block);
 
     } catch (error) {
@@ -23,7 +24,6 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
 
 export async function refreshQuery(rendererContext: TaskQueryRenderer, container: HTMLElement, queryString: string) {
     try {
-        console.log('Refreshing tasks with query:', queryString);
         const content = container.querySelector('.task-content') as HTMLElement;
         if (content) {
             content.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Lade...</div>';

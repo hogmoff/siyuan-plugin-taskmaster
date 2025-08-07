@@ -15,6 +15,7 @@ export class TaskService {
                 WHERE type = 'i'
                 AND subtype = 't' 
                 AND markdown LIKE '%- [%] %'
+                ORDER BY updated DESC 
                 LIMIT 10000
             `);
 
@@ -104,12 +105,12 @@ export class TaskService {
 
     async getTasksByQueryString(queryString: string): Promise<Task[]> {
         let query = null;
-        if (queryString.length > 0) {
+        if (queryString.trim().length > 0) {
             query = TaskQueryEngine.parseQueryString(queryString);
-            return this.getTasks(query);
+            return await this.getTasks(query);
         }
         else {
-            return this.getAllTasks();
+            return await this.loadAllTasks();
         }       
     }
 
