@@ -73,7 +73,6 @@ export function showTaskEditor(element: HTMLElement, blockId: string, content: s
     // remove '- [ ]' at beginning and remove space at the end
     content = content.replace(/^- \\[ \\]/, '');
     content = content.trim();
-    console.log("Content", content)
 
     options.forEach((option) => {
       const item = document.createElement('div')

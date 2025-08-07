@@ -59,6 +59,7 @@ export function formatDateGroup(date: Date): string {
     const diffTime = targetDate.getTime() - today.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
+    if (diffDays < 0) return "Überfällig";
     if (diffDays === 0) return "Heute";
     if (diffDays === 1) return "Morgen";
     if (diffDays === 2) return "Übermorgen";
@@ -106,4 +107,15 @@ export function isToday(date: Date): boolean {
     targetDate.setHours(0, 0, 0, 0);
     
     return targetDate.getTime() === today.getTime();
+}
+
+// Prüft ob ein Datum in der Vergangenheit liegt
+export function isOverdue(date: Date): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return targetDate.getTime() < today.getTime();
 }

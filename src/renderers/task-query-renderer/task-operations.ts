@@ -1,5 +1,5 @@
 import { Task, TaskGroup } from '../../types/task';
-import { isToday, isWithinDays, formatDateGroup } from '../../utils/dateUtils';
+import { isToday, isWithinDays, isOverdue, formatDateGroup } from '../../utils/dateUtils';
 
 export function applyCurrentFilter(
     tasks: Task[],
@@ -24,17 +24,18 @@ export function applyCurrentFilter(
     switch (filter) {
         case 'today':
             return filteredTasks.filter(task =>
-                task.dueDate && isToday(task.dueDate)
+                task.dueDate && (isToday(task.dueDate) || isOverdue(task.dueDate))
             );
         case 'next7days':
             return filteredTasks.filter(task =>
-                task.dueDate && isWithinDays(task.dueDate, 7)
+                task.dueDate && (isWithinDays(task.dueDate, 7) || isOverdue(task.dueDate))
             );
         case 'date':
             if (!selectedDate) return filteredTasks;
             return filteredTasks.filter(task =>
                 task.dueDate &&
-                task.dueDate.toDateString() === selectedDate!.toDateString()
+                (task.dueDate.toDateString() === selectedDate!.toDateString() || 
+                isOverdue(task.dueDate))
             );
         case 'all':
         default:
@@ -53,7 +54,6 @@ export function sortTasks(tasks: Task[]): Task[] {
         } else if (!a.dueDate && b.dueDate) {
             return 1;
         }
-
         
         const priorities = { urgent: 4, high: 3, medium: 2, low: 1 };
         const aPriority = priorities[a.priority || 'low'] || 1;
@@ -75,33 +75,30 @@ export function groupTasksByDate(tasks: Task[]): TaskGroup[] {
     const groups = new Map<string, TaskGroup>();
 
     tasks.forEach(task => {
-        let groupKey: string;
         let groupLabel: string;
         let groupDate: Date;
 
         if (task.dueDate) {
-            groupKey = task.dueDate.toDateString();
             groupLabel = formatDateGroup(task.dueDate);
             groupDate = task.dueDate;
         } else {
-            groupKey = 'no-date';
             groupLabel = 'Kein Datum';
-            groupDate = new Date(9999, 11, 31); 
+            groupDate = new Date(9999, 11, 31);
         }
 
-        if (!groups.has(groupKey)) {
-            groups.set(groupKey, {
+        if (!groups.has(groupLabel)) {
+            groups.set(groupLabel, {
                 date: groupDate,
                 label: groupLabel,
                 tasks: []
             });
         }
 
-        groups.get(groupKey)!.tasks.push(task);
+        groups.get(groupLabel)!.tasks.push(task);
     });
 
-    
     return Array.from(groups.values()).sort((a, b) =>
         a.date.getTime() - b.date.getTime()
     );
 }
+

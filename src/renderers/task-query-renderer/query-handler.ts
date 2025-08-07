@@ -30,7 +30,6 @@ export async function refreshQuery(rendererContext: TaskQueryRenderer, container
         }
 
         const tasks = await rendererContext.taskService.getTasksByQueryString(queryString);
-        console.log('Tasks fetched successfully:', tasks);
         rendererContext.currentTasks = tasks;        
         await rendererContext.refreshCurrentView();
         
