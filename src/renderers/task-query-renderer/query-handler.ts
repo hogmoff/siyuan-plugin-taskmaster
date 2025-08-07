@@ -21,20 +21,31 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
     }
 }
 
-export async function refreshQuery(renderer: TaskQueryRenderer, container: HTMLElement, queryString: string) {
+export async function refreshQuery(rendererContext: TaskQueryRenderer, container: HTMLElement, queryString: string) {
     try {
-        container.style.opacity = '0.5';
-        renderer.injectSidebarStyles();
+        console.log('Refreshing tasks with query:', queryString);
+        const content = container.querySelector('.task-content') as HTMLElement;
+        if (content) {
+            content.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Lade...</div>';
+        }
 
-        const allTasks = await renderer.taskService.getAllTasks();
-        const filteredTasks = queryString
-            ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(queryString))
-            : allTasks;
-
-        const newContainer = renderer.createTodoContainer(filteredTasks, queryString);
-        container.parentNode?.replaceChild(newContainer, container);
-
+        const tasks = await rendererContext.taskService.getTasksByQueryString(queryString);
+        console.log('Tasks fetched successfully:', tasks);
+        rendererContext.currentTasks = tasks;        
+        await rendererContext.refreshCurrentView();
+        
     } catch (error) {
-        console.error('Error refreshing task query:', error);
+        console.error('Fehler beim Aktualisieren der Tasks:', error);
+        
+        // Zeige Fehler an
+        const content = container.querySelector('.task-content') as HTMLElement;
+        if (content) {
+            content.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #e74c3c;">
+                    <strong>Fehler beim Laden der Tasks:</strong><br>
+                    ${error.message || 'Unbekannter Fehler'}
+                </div>
+            `;
+        }
     }
 }

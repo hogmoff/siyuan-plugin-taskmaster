@@ -23,7 +23,6 @@ export class TaskService {
                     const lines = block.markdown.split('\n');
                     for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
-                        //console.log(line);
                         const task = TaskParser.parseTaskFromMarkdown(
                             line,
                             block.id,
@@ -104,8 +103,14 @@ export class TaskService {
     }
 
     async getTasksByQueryString(queryString: string): Promise<Task[]> {
-        const query = TaskQueryEngine.parseQueryString(queryString);
-        return this.getTasks(query);
+        let query = null;
+        if (queryString.length > 0) {
+            query = TaskQueryEngine.parseQueryString(queryString);
+            return this.getTasks(query);
+        }
+        else {
+            return this.getAllTasks();
+        }       
     }
 
     async getTasksByTag(tag: string): Promise<Task[]> {

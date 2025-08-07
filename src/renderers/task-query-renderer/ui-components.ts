@@ -524,8 +524,11 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
         refreshButton.style.backgroundColor = 'white';
     });
 
-    refreshButton.addEventListener('click', () => {
-        refreshQuery(rendererContext, refreshButton.closest('.todo-task-container') as HTMLElement, queryString);
+    refreshButton.addEventListener('click', async () => {
+        const container = refreshButton.closest('.todo-task-container') as HTMLElement;
+        if (container) {
+            await refreshQuery(rendererContext, container, queryString);
+        }
     });
 
     refreshContainer.appendChild(refreshButton);
