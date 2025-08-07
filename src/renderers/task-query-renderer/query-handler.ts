@@ -14,8 +14,7 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
             : allTasks;
 
         const resultContainer = renderer.createTodoContainer(filteredTasks, cleanQueryString);
-        block.parentNode?.replaceChild(resultContainer, block);
-
+        block.parentNode?.replaceChild(resultContainer, block);        
     } catch (error) {
         console.error('Error processing task query:', error);
         renderer.showError(block, error.message);

@@ -69,14 +69,16 @@ export class TaskService {
     }
 
     async updateTask(task: Task): Promise<void> {
-        this.tasks.set(task.id, task);
-
-        // Update the corresponding Siyuan block if blockId exists
-        if (task.blockId) {
+        // set or reset donedate
+        const updatedTask = {
+            ...task,
+            doneDate: task.status === TaskStatus.DONE ? (task.doneDate || new Date()) : undefined
+        };
+        this.tasks.set(updatedTask.id, updatedTask);
+        if (updatedTask.blockId) {
             try {
-                // Replace the old line with the updated task
-                const newLine = TaskParser.taskToMarkdown(task);                     
-                await updateBlock('markdown', newLine, task.blockId);     
+                const newLine = TaskParser.taskToMarkdown(updatedTask);                     
+                await updateBlock('markdown', newLine, updatedTask.blockId);     
 
             } catch (error) {
                 console.error('Error updating task in Siyuan:', error);

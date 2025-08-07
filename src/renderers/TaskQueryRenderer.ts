@@ -3,8 +3,8 @@ import { Task } from '../types/task';
 import { createHeader, createFilterBar, updateFilterButtons, createRefreshButton } from './task-query-renderer/ui-components';
 import { processTaskQuery } from './task-query-renderer/query-handler';
 import { renderTasks } from './task-query-renderer/dom-manipulation';
-
 export class TaskQueryRenderer {
+    public isEnabled: boolean = false;
     public taskService: any;
     public taskQueryEngine: any;
     public currentFilter: 'today' | 'next7days' | 'all' | 'date' = 'today';
