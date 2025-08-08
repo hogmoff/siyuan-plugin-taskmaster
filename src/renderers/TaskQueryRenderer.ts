@@ -30,7 +30,7 @@ export class TaskQueryRenderer {
     }
 
     public processQueries(element: HTMLElement) {
-        if (!this.taskQueryEngine) return;
+        if (!this.taskQueryEngine || !this.isEnabled) return;
 
         const codeBlocks = element.querySelectorAll('div[data-type="NodeCodeBlock"]');
         

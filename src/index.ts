@@ -1,4 +1,4 @@
-import { Plugin } from 'siyuan'
+import { Plugin, Menu } from 'siyuan'
 import { TaskModal } from './components/tasks/taskModal'
 import { TaskQueryResults } from './components/tasks/taskQueryResults'
 import { TaskService } from './components/tasks/taskService'
@@ -6,6 +6,7 @@ import { showTaskEditor } from './components/tasks/taskEditor'
 import { searchTask } from './components/tasks/taskhelpers'
 import { TaskRenderer } from './renderers/TaskRenderer';
 import { TaskQueryRenderer } from './renderers/TaskQueryRenderer';
+import { addTaskQueryPanel } from './components/TaskQueryPanel';
 import './index.scss'
 
 export default class PluginSample extends Plugin {
@@ -13,11 +14,13 @@ export default class PluginSample extends Plugin {
   private renderer: TaskRenderer
   private taskQueryRenderer: TaskQueryRenderer
   private taskQueryResults: TaskQueryResults
+  private renderingEnabled: boolean = true
 
   onload() {
     this.taskService = new TaskService()
     this.renderer = new TaskRenderer()
     this.taskQueryRenderer = new TaskQueryRenderer(this.taskService)
+    this.taskQueryRenderer.isEnabled = this.renderingEnabled
     this.taskQueryResults = new TaskQueryResults(this.taskService)
 
     console.log("TaskMaster plugin loaded successfully")
@@ -33,7 +36,7 @@ export default class PluginSample extends Plugin {
     await this.taskQueryRenderer.initialize() 
     this.taskQueryRenderer.processQueries(document.body)
     this.taskService.loadAllTasks()
-    this.addTaskQueryPanel()
+    addTaskQueryPanel(this.taskQueryResults)
   }
 
   onunload() {
@@ -90,13 +93,13 @@ export default class PluginSample extends Plugin {
   }
 
   private addMenu() {
-    this.addCommand({
-      langKey: 'taskMaster',
-      hotkey: '',
-      callback: () => {
-        this.openTaskMaster()
-      },
-    })
+    // this.addCommand({
+    //   langKey: 'taskMaster',
+    //   hotkey: '',
+    //   callback: () => {
+    //     this.openTaskMaster()
+    //   },
+    // })
 
     document.addEventListener('contextmenu', (e) => {
       const selection = window.getSelection()?.toString()
@@ -115,108 +118,6 @@ export default class PluginSample extends Plugin {
       },
     })
 
-    this.addCommand({
-      langKey: 'createNewTask',
-      hotkey: 'Ctrl+Alt+T',
-      callback: () => {
-        this.createNewTask()
-      },
-    })
-
-    this.addCommand({
-      langKey: 'showOverdueTasks',
-      hotkey: 'Ctrl+Shift+O',
-      callback: () => {
-        this.showOverdueTasks()
-      },
-    })
-
-    this.addCommand({
-      langKey: 'showTodaysTasks',
-      hotkey: 'Ctrl+Shift+D',
-      callback: () => {
-        this.showTodaysTasks()
-      },
-    })
-  }
-
-  private addTaskQueryPanel() {
-    const dockPanel = document.createElement('div')
-    dockPanel.className = 'dock-panel task-query-panel'
-    dockPanel.style.cssText = `
-            position: fixed;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 300px;
-            max-height: 70vh;
-            background: var(--b3-theme-background);
-            border: 1px solid var(--b3-theme-surface-lighter);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-        `
-
-    const header = document.createElement('div')
-    header.className = 'task-query-panel-header'
-    header.innerHTML = `
-            <h4>Tasks</h4>
-            <button class="task-query-panel-close">\u00D7</button>
-        `
-
-    const content = this.taskQueryResults.getContainer()
-    content.style.flex = '1'
-    content.style.overflow = 'auto'
-
-    dockPanel.appendChild(header)
-    dockPanel.appendChild(content)
-
-    const toggleBtn = document.createElement('button')
-    toggleBtn.className = 'task-query-toggle'
-    toggleBtn.innerHTML = '📋'
-    toggleBtn.style.cssText = `
-            position: fixed;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--b3-theme-primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            z-index: 1001;
-        `
-
-    toggleBtn.addEventListener('click', () => {
-      const isVisible = dockPanel.style.display === 'flex'
-      dockPanel.style.display = isVisible ? 'none' : 'flex'
-      if (!isVisible) {
-        this.taskQueryResults.initialize()
-      }
-    })
-
-    const closeBtn = header.querySelector('.task-query-panel-close')
-    closeBtn?.addEventListener('click', () => {
-      dockPanel.style.display = 'none'
-    })
-
-    document.body.appendChild(toggleBtn)
-    document.body.appendChild(dockPanel)
-  }
-
-  private openTaskMaster() {
-    const modal = new TaskModal({
-      onSave: async (task) => {
-        await this.taskService.createTask(task)
-        this.taskQueryResults.initialize()
-      },
-    })
-    modal.open()
   }
 
   private openTaskQuery() {
@@ -225,26 +126,6 @@ export default class PluginSample extends Plugin {
       queryPanel.style.display = 'flex'
       this.taskQueryResults.initialize()
     }
-  }
-
-  private createNewTask() {
-    const modal = new TaskModal({
-      onSave: async (newTask) => {
-        await this.taskService.createTask(newTask)
-        this.taskQueryResults.initialize()
-      },
-    })
-    modal.open()
-  }
-
-  private async showOverdueTasks() {
-    const overdueTasks = await this.taskService.getOverdueTasks()
-    this.showTaskList('Overdue Tasks', overdueTasks)
-  }
-
-  private async showTodaysTasks() {
-    const todaysTasks = await this.taskService.getTasksDueToday()
-    this.showTaskList("Today's Tasks", todaysTasks)
   }
 
   private showTaskList(title: string, tasks: any[]) {
