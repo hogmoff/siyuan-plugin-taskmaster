@@ -8,7 +8,8 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
         const queryString = queryMatch[1].trim();
         const cleanQueryString = queryString.replace(/\u200B/g, '').replace(/\uFEFF/g, '');
 
-        const allTasks = await renderer.taskService.getAllTasks();
+        await renderer.taskService.refreshTasks();
+        const allTasks = await renderer.taskService.getAllTasks(); 
         const filteredTasks = cleanQueryString
             ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(cleanQueryString))
             : allTasks;
@@ -30,7 +31,7 @@ export async function refreshQuery(rendererContext: TaskQueryRenderer, container
 
         const tasks = await rendererContext.taskService.getTasksByQueryString(queryString);
         rendererContext.currentTasks = tasks;        
-        await rendererContext.refreshCurrentView();
+        await rendererContext.refreshCurrentView(tasks);
         
     } catch (error) {
         console.error('Fehler beim Aktualisieren der Tasks:', error);

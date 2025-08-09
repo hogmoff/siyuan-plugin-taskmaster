@@ -1,0 +1,86 @@
+/* Task Query Dock Styles */
+.task-query-dock {
+  --dock-primary: #4a90e2;
+  --dock-primary-light: #6ba3e8;
+  --dock-secondary: #7b68ee;
+  --dock-secondary-light: #9580f0;
+  --dock-success: #28a745;
+  --dock-warning: #ffc107;
+  --dock-error: #dc3545;
+  --dock-border: #e0e6e8;
+  --dock-bg-light: #f8f9fa;
+}
+
+.task-query-dock button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.task-query-dock button:active {
+  transform: translateY(0);
+}
+
+.task-query-dock textarea:focus {
+  outline: none;
+  border-color: var(--dock-primary);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.task-query-dock code {
+  background: rgba(74, 144, 226, 0.1);
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-family: var(--b3-font-family-code);
+}
+
+/* Dark theme support */
+.b3-theme-dark .task-query-dock {
+  --dock-border: #3a3a3a;
+  --dock-bg-light: #2a2a2a;
+}
+
+/* Animation for status updates */
+@keyframes statusUpdate {
+  0% { opacity: 0.5; transform: translateX(-5px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.task-query-dock #task-query-status {
+  animation: statusUpdate 0.3s ease-out;
+}
+
+/* Responsive design for smaller dock sizes */
+@media (max-width: 400px) {
+  .task-query-dock {
+    font-size: 11px;
+  }
+  
+  .task-query-dock button {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .task-query-dock textarea {
+    font-size: 11px;
+    min-height: 60px;
+  }
+}
+
+/* Scrollbar styling */
+.task-query-dock ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-query-dock ::-webkit-scrollbar-track {
+  background: var(--dock-bg-light);
+  border-radius: 3px;
+}
+
+.task-query-dock ::-webkit-scrollbar-thumb {
+  background: var(--dock-border);
+  border-radius: 3px;
+}
+
+.task-query-dock ::-webkit-scrollbar-thumb:hover {
+  background: var(--dock-primary);
+}

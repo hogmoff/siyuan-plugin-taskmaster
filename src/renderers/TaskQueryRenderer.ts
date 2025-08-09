@@ -5,6 +5,7 @@ import { processTaskQuery } from './task-query-renderer/query-handler';
 import { renderTasks } from './task-query-renderer/dom-manipulation';
 export class TaskQueryRenderer {
     public isEnabled: boolean = false;
+    public blockId: string;
     public taskService: any;
     public taskQueryEngine: any;
     public currentFilter: 'today' | 'next7days' | 'all' | 'date' = 'today';
@@ -24,6 +25,7 @@ export class TaskQueryRenderer {
         try {
             const module = await import('../components/tasks/taskQuery');
             this.taskQueryEngine = module.TaskQueryEngine;
+            this.blockId = '';
         } catch (error) {
             console.warn('TaskQueryEngine not available:', error);
         }
@@ -39,6 +41,8 @@ export class TaskQueryRenderer {
             const trimmedContent = textContent.trim();
 
             if (trimmedContent.startsWith('tasks')) {
+                this.blockId = block.getAttribute('data-node-id'); 
+                console.log('Processing task query for block:', this.blockId);
                 processTaskQuery(this, block, trimmedContent);
             }
         });
@@ -103,7 +107,7 @@ export class TaskQueryRenderer {
         return container;
     }
 
-    public async refreshCurrentView() {
+    public async refreshCurrentView(tasks: Task[]) {
         const container = document.querySelector('.todo-task-container');
         if (!container) return;
 
@@ -111,13 +115,13 @@ export class TaskQueryRenderer {
         const sidebar = container.querySelector('.task-sidebar');
 
         if (content) {
-            renderTasks(content, this.currentTasks, this);
+            renderTasks(content, tasks, this);
         }
 
         if (sidebar) {
             const tagsSection = sidebar.querySelector('.tags-section');
             if (tagsSection) {
-                const newTagsSection = createTagsSection(this, this.currentTasks);
+                const newTagsSection = createTagsSection(this, tasks);
                 tagsSection.parentNode?.replaceChild(newTagsSection, tagsSection);
             }
         }
@@ -181,7 +185,7 @@ export class TaskQueryRenderer {
 
         item.addEventListener('click', () => {
             this.selectedTag = tag;
-            this.refreshCurrentView();
+            this.refreshCurrentView(this.currentTasks);
         });
 
         item.addEventListener('mouseenter', () => {

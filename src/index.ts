@@ -1,4 +1,4 @@
-import { Plugin, Menu } from 'siyuan'
+import { Plugin } from 'siyuan'
 import { TaskModal } from './components/tasks/taskModal'
 import { TaskQueryResults } from './components/tasks/taskQueryResults'
 import { TaskService } from './components/tasks/taskService'
@@ -6,7 +6,7 @@ import { showTaskEditor } from './components/tasks/taskEditor'
 import { searchTask } from './components/tasks/taskhelpers'
 import { TaskRenderer } from './renderers/TaskRenderer';
 import { TaskQueryRenderer } from './renderers/TaskQueryRenderer';
-import { addTaskQueryPanel } from './components/TaskQueryPanel';
+import { initTaskQueryEditor } from './components/TaskQueryDock'
 import './index.scss'
 
 export default class PluginSample extends Plugin {
@@ -28,20 +28,48 @@ export default class PluginSample extends Plugin {
     this.addMenu()
     this.addCommands()
 
+        this.addDock({
+        type: 'task-query-editor',
+        config: {
+            position: 'RightBottom',
+            size: {
+                width: 350,
+                height: 400,
+            },
+            icon: 'iconEdit',
+            title: 'Task Query Editor'
+        },
+        data: {
+            plugin: this,
+            initTaskQueryEditor: initTaskQueryEditor
+        },
+        async init() {
+            //@ts-ignore
+            await this.data.initTaskQueryEditor(this.element, this.data.plugin);
+        }
+    });
+
     this.eventBus.on('ws-main', this.handleWsMain.bind(this))
+    this.eventBus.on('loaded-protyle-static', this.onLayoutReady.bind(this))
   }
 
   async onLayoutReady() {
     this.renderer.process(document.body)
-    await this.taskQueryRenderer.initialize() 
+    await this.taskQueryRenderer.initialize()
     this.taskQueryRenderer.processQueries(document.body)
-    this.taskService.loadAllTasks()
-    addTaskQueryPanel(this.taskQueryResults)
+    this.taskService.loadAllTasks();
+    //addTaskQueryPanel(this.taskQueryResults)
+
+    // Make services available to the dock
+    (this as any).taskQueryRenderer = this.taskQueryRenderer;
+    (this as any).taskService = this.taskService;
+
   }
 
   onunload() {
     console.log("TaskMaster plugin unloaded")
     this.eventBus.off('ws-main', this.handleWsMain.bind(this))
+    this.eventBus.off('loaded-protyle-static', this.onLayoutReady.bind(this))
   }
 
   private handleWsMain(event: CustomEvent) {
@@ -93,14 +121,6 @@ export default class PluginSample extends Plugin {
   }
 
   private addMenu() {
-    // this.addCommand({
-    //   langKey: 'taskMaster',
-    //   hotkey: '',
-    //   callback: () => {
-    //     this.openTaskMaster()
-    //   },
-    // })
-
     document.addEventListener('contextmenu', (e) => {
       const selection = window.getSelection()?.toString()
       if (selection) {
@@ -126,34 +146,6 @@ export default class PluginSample extends Plugin {
       queryPanel.style.display = 'flex'
       this.taskQueryResults.initialize()
     }
-  }
-
-  private showTaskList(title: string, tasks: any[]) {
-    const modal = document.createElement('div')
-    modal.className = 'task-list-modal'
-    modal.innerHTML = `
-            <div class="task-list-content">
-                <div class="task-list-header">
-                    <h3>${title}</h3>
-                    <button class="task-list-close">\u00D7</button>
-                </div>
-                <div class="task-list-body">
-                    ${tasks.length === 0
-                        ? '<p>No tasks found</p>'
-                        : tasks.map((task) => `
-                            <div class="task-list-item">
-                                <input type="checkbox" ${task.status === 'done' ? 'checked' : ''}>
-                                <span class="task-desc">${this.escapeHtml(task.description)}</span>
-                                ${task.dueDate ? `<span class="task-due">📅 ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
-                            </div>
-                        `).join('')
-                    }
-                </div>
-            </div>
-        `
-
-    modal.querySelector('.task-list-close')?.addEventListener('click', () => modal.remove())
-    document.body.appendChild(modal)
   }
 
   private showContextMenu(event: MouseEvent, selectedText: string) {
@@ -200,12 +192,6 @@ export default class PluginSample extends Plugin {
       }
     }
     setTimeout(() => document.addEventListener('click', closeMenu), 0)
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div')
-    div.textContent = text
-    return div.innerHTML
   }
 
   openSetting() {
