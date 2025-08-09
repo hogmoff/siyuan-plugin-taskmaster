@@ -4,6 +4,8 @@ export class TaskQueryEngine {
     static filterTasks(tasks: Task[], query: TaskQuery): Task[] {
         let filteredTasks = [...tasks];
 
+        console.log('Initial tasks count:', tasks.length, query);
+
         if (query.status && query.status.length > 0) {
             filteredTasks = filteredTasks.filter(task => 
                 query.status!.includes(task.status)
@@ -20,7 +22,7 @@ export class TaskQueryEngine {
 
         if (query.dueBefore) {
             filteredTasks = filteredTasks.filter(task => 
-                task.dueDate && task.dueDate <= query.dueBefore!
+                task.dueDate && task.dueDate < query.dueBefore!
             );
             //console.log('Filtered tasks count after dueDate filter:', filteredTasks.length);
         }
@@ -150,7 +152,18 @@ export class TaskQueryEngine {
                 query.priority = priorities as any;
             } else if (part.startsWith('due:')) {
                 const dateStr = part.substring(4).trim();
-                if (dateStr.startsWith('<')) {
+                if (dateStr === 'today') {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    query.dueAfter = today;
+                    query.dueBefore = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                } else if (dateStr === 'tomorrow') {
+                    const tomorrow = new Date();
+                    tomorrow.setHours(0, 0, 0, 0);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    query.dueAfter = tomorrow;
+                    query.dueBefore = new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000);
+                } else if (dateStr.startsWith('<')) {
                     query.dueBefore = new Date(dateStr.substring(1));
                 } else if (dateStr.startsWith('>')) {
                     query.dueAfter = new Date(dateStr.substring(1));
@@ -161,7 +174,18 @@ export class TaskQueryEngine {
                 }
             } else if (part.startsWith('starts:')) {
                 const dateStr = part.substring(7).trim();
-                if (dateStr.startsWith('<')) {
+                if (dateStr === 'today') {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    query.startsAfter = today;
+                    query.startsBefore = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                } else if (dateStr === 'tomorrow') {
+                    const tomorrow = new Date();
+                    tomorrow.setHours(0, 0, 0, 0);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    query.startsAfter = tomorrow;
+                    query.startsBefore = new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000);
+                } else if (dateStr.startsWith('<')) {
                     query.startsBefore = new Date(dateStr.substring(1));
                 } else if (dateStr.startsWith('>')) {
                     query.startsAfter = new Date(dateStr.substring(1));

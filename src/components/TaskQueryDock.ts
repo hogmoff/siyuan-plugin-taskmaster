@@ -61,7 +61,7 @@ export class TaskQueryDock {
         querySection.appendChild(queryLabel);
 
         const queryTextarea = document.createElement('textarea');
-        queryTextarea.placeholder = 'tasks';
+        queryTextarea.placeholder = '';
         queryTextarea.style.cssText = `
             width: 100%;
             height: 120px;
@@ -114,32 +114,6 @@ export class TaskQueryDock {
         });
         buttonsSection.appendChild(updateButton);
 
-        // Refresh Button
-        const refreshButton = document.createElement('button');
-        refreshButton.textContent = 'Refresh All';
-        refreshButton.style.cssText = `
-            flex: 1;
-            padding: 8px 12px;
-            background: var(--b3-theme-secondary);
-            color: var(--b3-theme-on-secondary);
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        `;
-        refreshButton.addEventListener('click', () => {
-            plugin.taskQueryDock.refreshAllQueries(plugin);
-        });
-        refreshButton.addEventListener('mouseenter', () => {
-            refreshButton.style.background = 'var(--b3-theme-secondary-light)';
-        });
-        refreshButton.addEventListener('mouseleave', () => {
-            refreshButton.style.background = 'var(--b3-theme-secondary)';
-        });
-        buttonsSection.appendChild(refreshButton);
-
         element.appendChild(buttonsSection);
 
         // Status Section
@@ -188,17 +162,14 @@ export class TaskQueryDock {
         `;
         examplesSection.innerHTML = `
             <strong>Examples:</strong><br>
-            • <code>tasks</code> - Show all tasks<br>
-            • <code>tasks filter: status: done</code><br>
-            • <code>tasks sort: priority: medium</code><br>
-            • <code>tasks limit: 5</code>
+            • <code></code> - Show all tasks<br>
+            • <code>status: done</code> - Show only done tasks<br>
+            • <code>priority: medium</code> - Show only tasks with priority medium<br>
+            • <code>limit: 5</code> - Show only the first 5 tasks<br>
         `;
         element.appendChild(examplesSection);
 
         this.element = element;
-
-        // Load current query from active document
-        //await loadCurrentQuery(queryTextarea, blockId);
 
     }
 
@@ -210,11 +181,9 @@ export class TaskQueryDock {
 
             const query = '```tasks\n' + queryString;
             await updateBlock('markdown', query, plugin.taskQueryRenderer.blockId);
-            console.log('Task query updated successfully', query);
 
             await new Promise(r => setTimeout(r, 200));
-
-            // Refresh data and re-process queries
+            
             await plugin.taskService.refreshTasks();
             plugin.taskQueryRenderer.processQueries(document.body);
 
@@ -256,7 +225,6 @@ export class TaskQueryDock {
         const result = await sql(
             `SELECT content FROM blocks WHERE id = '${blockId}'`
         );
-        console.log('Query result:', blockId);
         if (result && result.length > 0) {
             console.log('Loaded current query content:', result[0].content);
             textarea.value = result[0].content.trim();

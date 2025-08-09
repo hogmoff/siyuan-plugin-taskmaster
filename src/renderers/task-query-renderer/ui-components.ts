@@ -88,7 +88,7 @@ export function createFilterBar(rendererContext: TaskQueryRenderer): HTMLElement
         if (target.value) {
             rendererContext.selectedDate = new Date(target.value);
             rendererContext.currentFilter = 'date';
-            rendererContext.refreshCurrentView();
+            rendererContext.refreshCurrentView(rendererContext.currentTasks);
         }
     });
 
@@ -122,7 +122,7 @@ export function createFilterButton(rendererContext: TaskQueryRenderer, text: str
         rendererContext.currentFilter = filter;
         rendererContext.selectedDate = null;
         updateFilterButtons(rendererContext);
-        rendererContext.refreshCurrentView();
+        rendererContext.refreshCurrentView(rendererContext.currentTasks);
     });
 
     button.addEventListener('mouseenter', () => {
@@ -462,7 +462,7 @@ export function openTaskEditModal(task: Task, rendererContext: TaskQueryRenderer
 
         try {
             await rendererContext.taskService.updateTask(task);
-            rendererContext.refreshCurrentView();
+            rendererContext.refreshCurrentView(rendererContext.currentTasks);
             document.body.removeChild(overlay);
         } catch (error) {
             console.error('Error updating task:', error);

@@ -42,7 +42,6 @@ export class TaskQueryRenderer {
 
             if (trimmedContent.startsWith('tasks')) {
                 this.blockId = block.getAttribute('data-node-id'); 
-                console.log('Processing task query for block:', this.blockId);
                 processTaskQuery(this, block, trimmedContent);
             }
         });

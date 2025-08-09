@@ -54,7 +54,7 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
     `;
 
     const title = document.createElement('h2');
-    title.textContent = 'Projects';
+    title.textContent = 'Tags';
     title.style.cssText = `
         font-size: 20px;
         font-weight: 700;
@@ -189,12 +189,12 @@ export function createTagsSection(rendererContext: TaskQueryRenderer, tasks: Tas
     `;
 
     // Add "All Projects" item
-    tagsContainer.appendChild(rendererContext.createTagItem('All Projects', null, tasks.length));
+    tagsContainer.appendChild(rendererContext.createTagItem('Alle Tags', null, tasks.length));
 
     // Add "Untagged" item if needed
     const untaggedTasks = tasks.filter(task => !task.tags || task.tags.length === 0);
     if (untaggedTasks.length > 0) {
-        tagsContainer.appendChild(rendererContext.createTagItem('Untagged', '', untaggedTasks.length));
+        tagsContainer.appendChild(rendererContext.createTagItem('Ohne Tag', '', untaggedTasks.length));
     }
 
     // Add individual tags
