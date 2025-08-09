@@ -6,7 +6,7 @@ import { showTaskEditor } from './components/tasks/taskEditor'
 import { searchTask } from './components/tasks/taskhelpers'
 import { TaskRenderer } from './renderers/TaskRenderer';
 import { TaskQueryRenderer } from './renderers/TaskQueryRenderer';
-import { initTaskQueryEditor } from './components/TaskQueryDock'
+import { TaskQueryDock } from './components/TaskQueryDock';
 import './index.scss'
 
 export default class PluginSample extends Plugin {
@@ -14,14 +14,16 @@ export default class PluginSample extends Plugin {
   private renderer: TaskRenderer
   private taskQueryRenderer: TaskQueryRenderer
   private taskQueryResults: TaskQueryResults
+  private taskQueryDock: TaskQueryDock;
   private renderingEnabled: boolean = true
 
-  onload() {
+  async onload() {
     this.taskService = new TaskService()
     this.renderer = new TaskRenderer()
     this.taskQueryRenderer = new TaskQueryRenderer(this.taskService)
     this.taskQueryRenderer.isEnabled = this.renderingEnabled
     this.taskQueryResults = new TaskQueryResults(this.taskService)
+    this.taskQueryDock = new TaskQueryDock();
 
     console.log("TaskMaster plugin loaded successfully")
 
@@ -41,7 +43,7 @@ export default class PluginSample extends Plugin {
         },
         data: {
             plugin: this,
-            initTaskQueryEditor: initTaskQueryEditor
+            initTaskQueryEditor: this.taskQueryDock.initTaskQueryEditor
         },
         async init() {
             //@ts-ignore
@@ -51,6 +53,7 @@ export default class PluginSample extends Plugin {
 
     this.eventBus.on('ws-main', this.handleWsMain.bind(this))
     this.eventBus.on('loaded-protyle-static', this.onLayoutReady.bind(this))
+    this.eventBus.on('loaded-protyle-dynamic', this.handleWsMain.bind(this))
   }
 
   async onLayoutReady() {
@@ -59,10 +62,7 @@ export default class PluginSample extends Plugin {
     this.taskQueryRenderer.processQueries(document.body)
     this.taskService.loadAllTasks();
     //addTaskQueryPanel(this.taskQueryResults)
-
-    // Make services available to the dock
-    (this as any).taskQueryRenderer = this.taskQueryRenderer;
-    (this as any).taskService = this.taskService;
+    await this.taskQueryDock.updateBlockId(this.taskQueryRenderer.blockId);
 
   }
 
@@ -70,6 +70,7 @@ export default class PluginSample extends Plugin {
     console.log("TaskMaster plugin unloaded")
     this.eventBus.off('ws-main', this.handleWsMain.bind(this))
     this.eventBus.off('loaded-protyle-static', this.onLayoutReady.bind(this))
+    this.eventBus.off('loaded-protyle-dynamic', this.handleWsMain.bind(this))
   }
 
   private handleWsMain(event: CustomEvent) {
@@ -192,6 +193,24 @@ export default class PluginSample extends Plugin {
       }
     }
     setTimeout(() => document.addEventListener('click', closeMenu), 0)
+  }
+
+  public refreshTaskViews() {
+    // Ensure query renderer is turned on and re-scan/refresh the document
+    this.taskQueryRenderer.isEnabled = true
+    this.taskQueryRenderer.refreshAll(document.body)
+  }
+
+  public refreshEditor() {
+    try {
+      // @ts-ignore - if global app reload exists in SiYuan, call it
+      if (typeof (window as any).reloadApp === 'function') {
+        (window as any).reloadApp()
+        return
+      }
+    } catch {}
+    // Fallback: full page reload
+    window.location.reload()
   }
 
   openSetting() {

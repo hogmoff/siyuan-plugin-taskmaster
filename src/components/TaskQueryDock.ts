@@ -1,265 +1,292 @@
 import './TaskQueryDock.css'
 import { sql, updateBlock } from '@/api'
 
-export async function initTaskQueryEditor(element: HTMLElement, plugin: any) {
-    console.log('Initializing Task Query Editor with element:', element);
+export class TaskQueryDock {
+    public element: HTMLElement;
+    public blockId: string;
 
-    // Add CSS class for styling
-    element.classList.add('task-query-dock');
+    constructor() {
+        this.updateTaskQuery = this.updateTaskQuery.bind(this);
+        this.refreshAllQueries = this.refreshAllQueries.bind(this);
+    }
 
-    // Dock-Container stylen
-    element.style.cssText = `
-        padding: 16px;
-        background: var(--b3-theme-background);
-        color: var(--b3-theme-text);
-        font-family: var(--b3-font-family);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        overflow: hidden;
-    `;
+    public async initTaskQueryEditor(element: HTMLElement, plugin: any) {
+        console.log('Initializing Task Query Editor with element:', element);
 
-    // Header
-    const header = document.createElement('div');
-    header.style.cssText = `
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--b3-theme-text);
-        margin-bottom: 8px;
-        border-bottom: 1px solid var(--b3-theme-border);
-        padding-bottom: 8px;
-    `;
-    header.textContent = 'Task Query Editor';
-    element.appendChild(header);
+        // Add CSS class for styling
+        element.classList.add('task-query-dock');
 
-    // Query Input Section
-    const querySection = document.createElement('div');
-    querySection.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        flex: 1;
-    `;
+        // Dock-Container stylen
+        element.style.cssText = `
+            padding: 16px;
+            background: var(--b3-theme-background);
+            color: var(--b3-theme-text);
+            font-family: var(--b3-font-family);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+        `;
 
-    const queryLabel = document.createElement('label');
-    queryLabel.textContent = 'Query String:';
-    queryLabel.style.cssText = `
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--b3-theme-text-lighter);
-    `;
-    querySection.appendChild(queryLabel);
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = `
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--b3-theme-text);
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--b3-theme-border);
+            padding-bottom: 8px;
+        `;
+        header.textContent = 'Task Query Editor';
+        element.appendChild(header);
 
-    const queryTextarea = document.createElement('textarea');
-    queryTextarea.placeholder = 'tasks';
-    queryTextarea.style.cssText = `
-        width: 100%;
-        height: 120px;
-        padding: 8px;
-        border: 1px solid var(--b3-theme-border);
-        border-radius: 4px;
-        background: var(--b3-theme-background-light);
-        color: var(--b3-theme-text);
-        font-family: var(--b3-font-family-code);
-        font-size: 12px;
-        resize: vertical;
-        min-height: 80px;
-    `;
-    querySection.appendChild(queryTextarea);
+        // Query Input Section
+        const querySection = document.createElement('div');
+        querySection.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        `;
 
-    element.appendChild(querySection);
+        const queryLabel = document.createElement('label');
+        queryLabel.textContent = 'Query String:';
+        queryLabel.style.cssText = `
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--b3-theme-text-lighter);
+        `;
+        querySection.appendChild(queryLabel);
+
+        const queryTextarea = document.createElement('textarea');
+        queryTextarea.placeholder = 'tasks';
+        queryTextarea.style.cssText = `
+            width: 100%;
+            height: 120px;
+            padding: 8px;
+            border: 1px solid var(--b3-theme-border);
+            border-radius: 4px;
+            background: var(--b3-theme-background-light);
+            color: var(--b3-theme-text);
+            font-family: var(--b3-font-family-code);
+            font-size: 12px;
+            resize: vertical;
+            min-height: 80px;
+        `;
+        querySection.appendChild(queryTextarea);
+
+        element.appendChild(querySection);
 
 
-    // Buttons Section
-    const buttonsSection = document.createElement('div');
-    buttonsSection.style.cssText = `
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    `;
+        // Buttons Section
+        const buttonsSection = document.createElement('div');
+        buttonsSection.style.cssText = `
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        `;
 
-    // Update Button
-    const updateButton = document.createElement('button');
-    updateButton.textContent = 'Update Queries';
-    updateButton.style.cssText = `
-        flex: 1;
-        padding: 8px 12px;
-        background: var(--b3-theme-primary);
-        color: var(--b3-theme-on-primary);
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        transition: background-color 0.2s;
-    `;
-    updateButton.addEventListener('click', () => {
-        updateTaskQuery(plugin, queryTextarea.value);
-    });
-    updateButton.addEventListener('mouseenter', () => {
-        updateButton.style.background = 'var(--b3-theme-primary-light)';
-    });
-    updateButton.addEventListener('mouseleave', () => {
-        updateButton.style.background = 'var(--b3-theme-primary)';
-    });
-    buttonsSection.appendChild(updateButton);
+        // Update Button
+        const updateButton = document.createElement('button');
+        updateButton.textContent = 'Update Queries';
+        updateButton.style.cssText = `
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--b3-theme-primary);
+            color: var(--b3-theme-on-primary);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        `;
+        updateButton.addEventListener('click', () => {
+            plugin.taskQueryDock.updateTaskQuery(plugin, queryTextarea.value);
+        });
+        updateButton.addEventListener('mouseenter', () => {
+            updateButton.style.background = 'var(--b3-theme-primary-light)';
+        });
+        updateButton.addEventListener('mouseleave', () => {
+            updateButton.style.background = 'var(--b3-theme-primary)';
+        });
+        buttonsSection.appendChild(updateButton);
 
-    // Refresh Button
-    const refreshButton = document.createElement('button');
-    refreshButton.textContent = 'Refresh All';
-    refreshButton.style.cssText = `
-        flex: 1;
-        padding: 8px 12px;
-        background: var(--b3-theme-secondary);
-        color: var(--b3-theme-on-secondary);
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        transition: background-color 0.2s;
-    `;
-    refreshButton.addEventListener('click', () => {
-        refreshAllQueries(plugin);
-    });
-    refreshButton.addEventListener('mouseenter', () => {
-        refreshButton.style.background = 'var(--b3-theme-secondary-light)';
-    });
-    refreshButton.addEventListener('mouseleave', () => {
-        refreshButton.style.background = 'var(--b3-theme-secondary)';
-    });
-    buttonsSection.appendChild(refreshButton);
+        // Refresh Button
+        const refreshButton = document.createElement('button');
+        refreshButton.textContent = 'Refresh All';
+        refreshButton.style.cssText = `
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--b3-theme-secondary);
+            color: var(--b3-theme-on-secondary);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        `;
+        refreshButton.addEventListener('click', () => {
+            plugin.taskQueryDock.refreshAllQueries(plugin);
+        });
+        refreshButton.addEventListener('mouseenter', () => {
+            refreshButton.style.background = 'var(--b3-theme-secondary-light)';
+        });
+        refreshButton.addEventListener('mouseleave', () => {
+            refreshButton.style.background = 'var(--b3-theme-secondary)';
+        });
+        buttonsSection.appendChild(refreshButton);
 
-    element.appendChild(buttonsSection);
+        element.appendChild(buttonsSection);
 
-    // Status Section
-    const statusSection = document.createElement('div');
-    statusSection.style.cssText = `
-        margin-top: 12px;
-        padding: 8px;
-        background: var(--b3-theme-background-light);
-        border-radius: 4px;
-        border: 1px solid var(--b3-theme-border);
-        min-height: 60px;
-        max-height: 120px;
-        overflow-y: auto;
-    `;
+        // Status Section
+        const statusSection = document.createElement('div');
+        statusSection.style.cssText = `
+            margin-top: 12px;
+            padding: 8px;
+            background: var(--b3-theme-background-light);
+            border-radius: 4px;
+            border: 1px solid var(--b3-theme-border);
+            min-height: 60px;
+            max-height: 120px;
+            overflow-y: auto;
+        `;
 
-    const statusLabel = document.createElement('div');
-    statusLabel.textContent = 'Status:';
-    statusLabel.style.cssText = `
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--b3-theme-text-lighter);
-        margin-bottom: 4px;
-    `;
-    statusSection.appendChild(statusLabel);
+        const statusLabel = document.createElement('div');
+        statusLabel.textContent = 'Status:';
+        statusLabel.style.cssText = `
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--b3-theme-text-lighter);
+            margin-bottom: 4px;
+        `;
+        statusSection.appendChild(statusLabel);
 
-    const statusContent = document.createElement('div');
-    statusContent.id = 'task-query-status';
-    statusContent.style.cssText = `
-        font-size: 11px;
-        color: var(--b3-theme-text);
-        font-family: var(--b3-font-family-code);
-        white-space: pre-wrap;
-    `;
-    statusContent.textContent = 'Ready to process queries...';
-    statusSection.appendChild(statusContent);
+        const statusContent = document.createElement('div');
+        statusContent.id = 'task-query-status';
+        statusContent.style.cssText = `
+            font-size: 11px;
+            color: var(--b3-theme-text);
+            font-family: var(--b3-font-family-code);
+            white-space: pre-wrap;
+        `;
+        statusContent.textContent = 'Ready to process queries...';
+        statusSection.appendChild(statusContent);
 
-    element.appendChild(statusSection);
+        element.appendChild(statusSection);
 
-    // Query Examples Section
-    const examplesSection = document.createElement('div');
-    examplesSection.style.cssText = `
-        margin-top: 8px;
-        font-size: 11px;
-        color: var(--b3-theme-text-lighter);
-        line-height: 1.4;
-    `;
-    examplesSection.innerHTML = `
-        <strong>Examples:</strong><br>
-        • <code>tasks</code> - Show all tasks<br>
-        • <code>tasks filter: status: done</code><br>
-        • <code>tasks sort: priority: medium</code><br>
-        • <code>tasks limit: 5</code>
-    `;
-    element.appendChild(examplesSection);
+        // Query Examples Section
+        const examplesSection = document.createElement('div');
+        examplesSection.style.cssText = `
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--b3-theme-text-lighter);
+            line-height: 1.4;
+        `;
+        examplesSection.innerHTML = `
+            <strong>Examples:</strong><br>
+            • <code>tasks</code> - Show all tasks<br>
+            • <code>tasks filter: status: done</code><br>
+            • <code>tasks sort: priority: medium</code><br>
+            • <code>tasks limit: 5</code>
+        `;
+        element.appendChild(examplesSection);
 
-    // Load current query from active document
-    //await loadCurrentQuery(queryTextarea, plugin.taskQueryRenderer.blockId);
+        this.element = element;
 
-}
+        // Load current query from active document
+        //await loadCurrentQuery(queryTextarea, blockId);
 
-async function updateTaskQuery(plugin: any, queryString: string) {
-    const statusElement = document.getElementById('task-query-status');
+    }
 
-    try {        
-        updateStatus(statusElement, 'Updating task query...', 'info');
+    public async updateTaskQuery(plugin: any, queryString: string) {
+        const statusElement = document.getElementById('task-query-status');
 
-        // Trigger re-processing of queries
-        if (plugin.taskQueryRenderer && plugin.renderer) {
+        try {        
+            this.updateStatus(statusElement, 'Updating task query...', 'info');
+
             const query = '```tasks\n' + queryString;
             await updateBlock('markdown', query, plugin.taskQueryRenderer.blockId);
-            console.log('Task queries updated successfully', query);   
+            console.log('Task query updated successfully', query);
+
+            await new Promise(r => setTimeout(r, 200));
+
+            // Refresh data and re-process queries
             await plugin.taskService.refreshTasks();
             plugin.taskQueryRenderer.processQueries(document.body);
-            await plugin.taskQueryRenderer.refreshCurrentView(await plugin.taskService.getAllTasks());
-            updateStatus(statusElement, `Updated query block and refreshed results`, 'success');
-        } else {
-            updateStatus(statusElement, 'Warning: TaskQueryRenderer not available', 'warning');
+
+            await new Promise(r => setTimeout(r, 200));
+            plugin.refreshTaskViews();
+            plugin.refreshEditor();
+
+            this.updateStatus(statusElement, `Updated query block and refreshed results`, 'success');
+
+
+        } catch (error) {
+            console.error('Error updating task queries:', error);
+            this.updateStatus(statusElement, `Error: ${error.message}`, 'error');
         }
-
-    } catch (error) {
-        console.error('Error updating task queries:', error);
-        updateStatus(statusElement, `Error: ${error.message}`, 'error');
     }
-}
 
-async function refreshAllQueries(plugin: any) {
-    const statusElement = document.getElementById('task-query-status');
+    public async refreshAllQueries(plugin: any) {
+        const statusElement = document.getElementById('task-query-status');
 
-    try {
-        updateStatus(statusElement, 'Refreshing all task queries...', 'info');
+        try {
+            this.updateStatus(statusElement, 'Refreshing all task queries...', 'info');
 
-        if (plugin.taskQueryRenderer) {
-            await plugin.taskService.refreshTasks();
-            plugin.taskQueryRenderer.processQueries(document.body);
-            await plugin.taskQueryRenderer.refreshCurrentView(await plugin.taskService.getAllTasks());
-            
-            updateStatus(statusElement, 'All task queries refreshed successfully', 'success');
-        } else {
-            updateStatus(statusElement, 'Error: TaskQueryRenderer not available', 'error');
+            if (plugin.taskQueryRenderer) {
+                await plugin.taskService.refreshTasks();
+                plugin.taskQueryRenderer.processQueries(document.body);
+                
+                this.updateStatus(statusElement, 'All task queries refreshed successfully', 'success');
+            } else {
+                this.updateStatus(statusElement, 'Error: TaskQueryRenderer not available', 'error');
+            }
+
+        } catch (error) {
+            console.error('Error refreshing queries:', error);
+            this.updateStatus(statusElement, `Error: ${error.message}`, 'error');
         }
-
-    } catch (error) {
-        console.error('Error refreshing queries:', error);
-        updateStatus(statusElement, `Error: ${error.message}`, 'error');
     }
-}
 
-export async function loadCurrentQuery(textarea: HTMLTextAreaElement, blockId: string) {
-    const result = await sql(
-        `SELECT content FROM blocks WHERE id = '${blockId}'`
-    );
-    console.log('Query result:', blockId);
-    if (result && result.length > 0) {
-        console.log('Loaded current query content:', result[0].content);
-        textarea.value = result[0].content.trim();
+    private async loadCurrentQuery(textarea: HTMLTextAreaElement, blockId: string) {
+        const result = await sql(
+            `SELECT content FROM blocks WHERE id = '${blockId}'`
+        );
+        console.log('Query result:', blockId);
+        if (result && result.length > 0) {
+            console.log('Loaded current query content:', result[0].content);
+            textarea.value = result[0].content.trim();
+        }
     }
-}
 
-function updateStatus(statusElement: HTMLElement | null, message: string, type: 'info' | 'success' | 'warning' | 'error') {
-    if (!statusElement) return;
+    private updateStatus(statusElement: HTMLElement | null, message: string, type: 'info' | 'success' | 'warning' | 'error') {
+        if (!statusElement) return;
 
-    const timestamp = new Date().toLocaleTimeString();
-    const colors = {
-        info: 'var(--b3-theme-primary)',
-        success: '#28a745',
-        warning: '#ffc107',
-        error: '#dc3545'
-    };
+        const timestamp = new Date().toLocaleTimeString();
+        const colors = {
+            info: 'var(--b3-theme-primary)',
+            success: '#28a745',
+            warning: '#ffc107',
+            error: '#dc3545'
+        };
 
-    statusElement.style.color = colors[type];
-    statusElement.textContent = `[${timestamp}] ${message}`;
+        statusElement.style.color = colors[type];
+        statusElement.textContent = `[${timestamp}] ${message}`;
+    }
+
+    public async updateBlockId(blockId: string) {
+        this.blockId = blockId;
+        const queryTextarea = this.getQuerytext();
+        if (queryTextarea) {
+            await this.loadCurrentQuery(queryTextarea, blockId);
+        }
+    }
+
+    private getQuerytext(): HTMLTextAreaElement | null {        
+        return document.body.querySelector('textarea') as HTMLTextAreaElement;
+    }
 }

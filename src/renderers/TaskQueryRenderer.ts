@@ -108,6 +108,7 @@ export class TaskQueryRenderer {
     }
 
     public async refreshCurrentView(tasks: Task[]) {
+        this.currentTasks = tasks;
         const container = document.querySelector('.todo-task-container');
         if (!container) return;
 
@@ -353,6 +354,36 @@ export class TaskQueryRenderer {
         `;
 
         document.head.appendChild(style);
+    }
+
+    public refreshAll(root: HTMLElement = document.body) {
+      if (!this.taskQueryEngine || !this.isEnabled) return;
+
+      // 1) Re-process already rendered containers (they now carry the query string)
+      const containers = root.querySelectorAll<HTMLElement>('.todo-task-container[data-task-query]');
+      containers.forEach((container) => {
+        const query = (container.dataset.taskQuery || '').trim();
+        if (query && query.startsWith('tasks')) {
+          // Keep the last seen blockId for context (if present)
+          this.blockId = container.dataset.taskQueryBlockId || this.blockId || '';
+          // processTaskQuery replaces the given element with a fresh, re-rendered container
+          processTaskQuery(this, container, query);
+        }
+      });
+
+      // 2) Process any code blocks that might not have been rendered yet
+      this.processQueries(root);
+    }
+
+    // NEW: Refresh the nearest todo container for a given element (e.g., a button inside)
+    public refreshContainerFromElement(el: HTMLElement) {
+      const container = el.closest<HTMLElement>('.todo-task-container');
+      if (!container) return;
+      const query = (container.dataset.taskQuery || '').trim();
+      if (query && query.startsWith('tasks')) {
+        this.blockId = container.dataset.taskQueryBlockId || this.blockId || '';
+        processTaskQuery(this, container, query);
+      }
     }
 }
 
