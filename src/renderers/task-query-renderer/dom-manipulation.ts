@@ -4,8 +4,6 @@ import { createTaskItem } from './ui-components';
 
 export function renderTasks(container: HTMLElement, tasks: Task[], rendererContext: any) {
     container.innerHTML = '';
-
-    console.log('Rendering tasks with context:', rendererContext, tasks);
     let filteredTasks = applyCurrentFilter(tasks, rendererContext.currentFilter, rendererContext.selectedDate, rendererContext.selectedTag);
     const sortedTasks = sortTasks(filteredTasks);
     const groupedTasks = groupTasksByDate(sortedTasks);

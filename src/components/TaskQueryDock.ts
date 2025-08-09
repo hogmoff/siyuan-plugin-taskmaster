@@ -11,7 +11,6 @@ export class TaskQueryDock {
     }
 
     public async initTaskQueryEditor(element: HTMLElement, plugin: any) {
-        console.log('Initializing Task Query Editor with element:', element);
 
         // Add CSS class for styling
         element.classList.add('task-query-dock');
@@ -226,7 +225,6 @@ export class TaskQueryDock {
             `SELECT content FROM blocks WHERE id = '${blockId}'`
         );
         if (result && result.length > 0) {
-            console.log('Loaded current query content:', result[0].content);
             textarea.value = result[0].content.trim();
         }
     }

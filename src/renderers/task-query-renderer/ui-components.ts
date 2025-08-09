@@ -2,6 +2,8 @@ import { Task } from '../../types/task';
 import { getRelativeDateString } from '../../utils/dateUtils';
 import { TaskQueryRenderer } from '../TaskQueryRenderer';
 import { refreshQuery } from './query-handler';
+import { openTab } from 'siyuan';
+import { getRootId } from '../../api';
 
 export function createHeader(rendererContext: TaskQueryRenderer, taskCount: number): HTMLElement {
     const header = document.createElement('div');
@@ -278,8 +280,28 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         });
     }
 
+    const openInNewTabIcon = document.createElement('div');
+    openInNewTabIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right-from-square"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="m21 3-9 9"/><path d="M15 3h6v6"/></svg>`;
+    openInNewTabIcon.style.cssText = `
+        margin-left: 12px;
+        color: #808080;
+        display: flex;
+        align-items: center;
+    `;
+    openInNewTabIcon.addEventListener('click', async (e) => {
+        const root_id = await getRootId(task.blockId);
+        e.stopPropagation();
+        openTab({
+            app: rendererContext.app,
+            doc: {
+                id: root_id,
+                action: ['cb-get-focus']
+            },
+        });
+    });
+
     taskDiv.addEventListener('click', (e) => {
-        if (e.target !== checkbox) {
+        if (e.target !== checkbox && !openInNewTabIcon.contains(e.target as Node)) {
             openTaskEditModal(task, rendererContext);
         }
     });
@@ -288,9 +310,11 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
     taskDiv.appendChild(priorityIndicator);
     taskDiv.appendChild(content);
     taskDiv.appendChild(tagsContainer);
+    taskDiv.appendChild(openInNewTabIcon);
 
     return taskDiv;
 }
+
 
 export function openTaskEditModal(task: Task, rendererContext: TaskQueryRenderer) {
     const overlay = document.createElement('div');

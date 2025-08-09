@@ -4,8 +4,6 @@ export class TaskQueryEngine {
     static filterTasks(tasks: Task[], query: TaskQuery): Task[] {
         let filteredTasks = [...tasks];
 
-        console.log('Initial tasks count:', tasks.length, query);
-
         if (query.status && query.status.length > 0) {
             filteredTasks = filteredTasks.filter(task => 
                 query.status!.includes(task.status)

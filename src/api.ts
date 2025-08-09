@@ -314,7 +314,7 @@ export async function sql(sql: string): Promise<any[]> {
 }
 
 export async function getBlockByID(blockId: string): Promise<Block> {
-  let sqlScript = `select * from blocks where id ='${blockId}'`;
+  let sqlScript = `SELECT * FROM blocks WHERE id ='${blockId}'`;
   let data = await sql(sqlScript);
   return data[0];
 }
@@ -335,6 +335,13 @@ export async function getRootTask(text: string): Promise<Block> {
     return response[0];
   }
   return;
+}
+
+export async function getRootId(blockId: string): Promise<string> {
+  const block = await getBlockByID(blockId);
+  if (block && block.root_id) {
+    return block.root_id;
+  }
 }
 
 // **************************************** Template ****************************************

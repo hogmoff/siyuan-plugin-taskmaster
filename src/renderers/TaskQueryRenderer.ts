@@ -4,7 +4,7 @@ import { createHeader, createFilterBar, updateFilterButtons, createRefreshButton
 import { processTaskQuery } from './task-query-renderer/query-handler';
 import { renderTasks } from './task-query-renderer/dom-manipulation';
 export class TaskQueryRenderer {
-    public isEnabled: boolean = false;
+    public app: any;
     public blockId: string;
     public taskService: any;
     public taskQueryEngine: any;
@@ -15,24 +15,25 @@ export class TaskQueryRenderer {
     public currentTasks: Task[] = [];
     public currentQueryString: string = '';
 
-    constructor(taskService: any) {
+    constructor(app: any, taskService: any) {
         this.taskService = taskService;
-        this.initialize();
+        this.initialize(app);
         this.taskQueryEngine = null;
     }
 
-    async initialize() {
+    async initialize(app: any) {
         try {
             const module = await import('../components/tasks/taskQuery');
             this.taskQueryEngine = module.TaskQueryEngine;
             this.blockId = '';
+            this.app = app;
         } catch (error) {
             console.warn('TaskQueryEngine not available:', error);
         }
     }
 
     public processQueries(element: HTMLElement) {
-        if (!this.taskQueryEngine || !this.isEnabled) return;
+        if (!this.taskQueryEngine) return;
 
         const codeBlocks = element.querySelectorAll('div[data-type="NodeCodeBlock"]');
         
@@ -356,7 +357,7 @@ export class TaskQueryRenderer {
     }
 
     public refreshAll(root: HTMLElement = document.body) {
-      if (!this.taskQueryEngine || !this.isEnabled) return;
+      if (!this.taskQueryEngine) return;
 
       // 1) Re-process already rendered containers (they now carry the query string)
       const containers = root.querySelectorAll<HTMLElement>('.todo-task-container[data-task-query]');

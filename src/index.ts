@@ -15,13 +15,11 @@ export default class PluginSample extends Plugin {
   private taskQueryRenderer: TaskQueryRenderer
   private taskQueryResults: TaskQueryResults
   private taskQueryDock: TaskQueryDock;
-  private renderingEnabled: boolean = true
 
   async onload() {
     this.taskService = new TaskService()
     this.renderer = new TaskRenderer()
-    this.taskQueryRenderer = new TaskQueryRenderer(this.taskService)
-    this.taskQueryRenderer.isEnabled = this.renderingEnabled
+    this.taskQueryRenderer = new TaskQueryRenderer(this.app, this.taskService)
     this.taskQueryResults = new TaskQueryResults(this.taskService)
     this.taskQueryDock = new TaskQueryDock();
 
@@ -58,12 +56,12 @@ export default class PluginSample extends Plugin {
 
   async onLayoutReady() {
     this.renderer.process(document.body)
-    await this.taskQueryRenderer.initialize()
+    await this.taskQueryRenderer.initialize(this.app)
     this.taskQueryRenderer.processQueries(document.body)
     this.taskService.loadAllTasks();
     //addTaskQueryPanel(this.taskQueryResults)
     await this.taskQueryDock.updateBlockId(this.taskQueryRenderer.blockId);
-
+    
   }
 
   onunload() {
@@ -197,7 +195,6 @@ export default class PluginSample extends Plugin {
 
   public refreshTaskViews() {
     // Ensure query renderer is turned on and re-scan/refresh the document
-    this.taskQueryRenderer.isEnabled = true
     this.taskQueryRenderer.refreshAll(document.body)
   }
 
