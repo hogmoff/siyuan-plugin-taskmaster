@@ -7,6 +7,7 @@ import { searchTask } from './components/tasks/taskhelpers'
 import { TaskRenderer } from './renderers/TaskRenderer';
 import { TaskQueryRenderer } from './renderers/TaskQueryRenderer';
 import { TaskQueryDock } from './components/TaskQueryDock';
+import { reloadUI } from './api';
 import './index.scss'
 
 export default class PluginSample extends Plugin {
@@ -194,20 +195,8 @@ export default class PluginSample extends Plugin {
   }
 
   public refreshTaskViews() {
-    // Ensure query renderer is turned on and re-scan/refresh the document
     this.taskQueryRenderer.refreshAll(document.body)
-  }
-
-  public refreshEditor() {
-    try {
-      // @ts-ignore - if global app reload exists in SiYuan, call it
-      if (typeof (window as any).reloadApp === 'function') {
-        (window as any).reloadApp()
-        return
-      }
-    } catch {}
-    // Fallback: full page reload
-    window.location.reload()
+    reloadUI();
   }
 
   openSetting() {
