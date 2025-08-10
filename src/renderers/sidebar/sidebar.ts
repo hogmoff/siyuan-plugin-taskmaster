@@ -73,7 +73,7 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
 
     sidebar.appendChild(sidebarContent);
 
-    // Toggle Button - now positioned independently
+    // Toggle Button
     const toggleButton = document.createElement('button');
     toggleButton.className = 'sidebar-toggle';
     toggleButton.setAttribute('aria-label', 'Toggle sidebar');
@@ -81,7 +81,7 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         position: absolute;
         top: 24px;
         left: ${rendererContext.sidebarCollapsed ? '0' : '280px'};
-        width: 36px;
+        width: 24px;
         height: 36px;
         background: #ffffff;
         border: 1px solid #e0e0e0;

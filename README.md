@@ -1,96 +1,129 @@
-# Siyuan Plugin Template - Vite & Vue3
+# Task Master for SiYuan
 
-[简体中文](./README_zh_CN.md)
+English | 简体中文: see README_zh_CN.md
 
-> Consistent with [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample).
+Task Master adds advanced, Obsidian‑Tasks–style task management to SiYuan. It lets you write tasks in plain Markdown, render interactive task lists, and run powerful queries via simple code blocks. A docked “Task Query Editor” helps you craft and update queries with one click.
 
-1. Use Vite for packaging
-2. Use Vue3 for development
-3. Provides a github action template to automatically generate package.zip and upload to new release
-4. Provides a script to auto create tag and release. [link](#release-script)
+## What It Does
 
-> [!NOTE]
->
-> Before your start, you need install [NodeJS](https://nodejs.org/en/download) and [pnpm](https://pnpm.io/installation) first.
+- Interactive queries: Render tasks from your vault using `tasks` code blocks.
+- Filters and sorting: Filter by status, priority, due/start dates, tags, path, and text; sort by due/start/priority/description; limit results.
+- Date intelligence: Use relative keywords like `today`/`tomorrow`; see human‑readable relative labels and date grouping in the UI.
+- Tag sidebar: Browse by tag (including “no tag”), toggle quick date scopes (Today, Next 7 days, Pick a date), and refresh results.
+- Inline actions: Check/uncheck to toggle done, open the source document, or edit a task in a modal.
+- Query dock: A right‑bottom dock (“Task Query Editor”) to preview, edit, and update the nearest query block.
+- Auto refresh: Results update when documents change; refresh buttons are available when needed.
 
-> [!WARNING]
->
-> For your first attempt, please do not modify anything. Load the plugin template in Siyuan as described below before making any changes.
->
-> For example, deleting README_zh_CN.md will also cause the plugin to fail to load.
+## How To Use
 
-## Get started
+1) Install and load the plugin
+- In SiYuan: Settings → About → Advanced → Plugin → Load plugin → select this plugin’s `dist` folder.
 
-1. Use the `Use the template` button to make a copy of this repo as template.  
-> [!WARNING]
->
-> That the repository name should match the plugin name, and the default branch must be `main`.
+2) Write tasks in Markdown
+- Use normal list items with checkboxes and optional metadata:
+  - Status: `- [ ]` todo, `- [/]` in progress, `- [x]` done, `- [-]` cancelled
+  - Priority: ⏫ high, 🔼 medium, default is low
+  - Dates: 📅 due, 🛫 start, ⏳ scheduled, ✅ done, ❌ cancelled (format YYYY-MM-DD)
+  - Tags: surround with `#tag#` (supports nested like `#project/alpha#`)
+  - Dependencies: ⛔task_id
 
+Example task line:
+- [ ] Write release notes 📅 2024-09-01 🛫 2024-08-28 🔼 #release/notes#
 
-2. Use `git clone` to clone the repository to local.
-
-3. Run `pnpm install` to install dependencies.
-
-4. Modify `plugin.json` to your plugin information.
-
-5. Run `pnpm run dev` to start development.
-
-6. Run `pnpm run build` to build the plugin.
-
-7. Load the plugin in Siyuan as described below.
-
-## Load plugin in Siyuan
-
-1. Open Siyuan settings.
-2. Go to `Settings` -> `About` -> `Advanced` -> `Plugin`.
-3. Click `Load plugin` and select the `dist` folder.
-
-## Task Query Feature
-
-This plugin now includes a powerful task query feature similar to Obsidian Tasks plugin. You can create task queries directly in your documents using the following syntax:
-
-### Basic Usage
-
-Create a code block with language `tasks`:
+3) Create a task query
+- Add a fenced code block with language `tasks` inside any document:
 
 ```tasks
-status: todo, in-progress
-priority: high, urgent
+status: todo,in_progress
+priority: high,medium
 due: <2024-12-31
 tag: work,important
+-tag: archive
+path: projects/work*
 sort: dueDate desc
 limit: 10
+review
 ```
 
-### Available Filters
+The block above renders matching tasks, sorted by due date (descending) and limited to 10. Free text lines (here: `review`) do a case‑insensitive substring search in the task description.
 
-- **Status**: `status: todo`, `status: done`, `status: todo,in-progress`
-- **Priority**: `priority: low`, `priority: medium`, `priority: high`, `priority: urgent`
-- **Due Date**: `due: 2024-12-31`, `due: <2024-12-31`, `due: >2024-12-31`
-- **Start Date**: `starts: 2024-12-31`, `starts: <2024-12-31`, `starts: >2024-12-31`
-- **Tags**: `tag: work`, `tag: work,important`, `-tag: archive`
-- **Path**: `path: projects/work*`
-- **Sort**: `sort: dueDate`, `sort: priority desc`, `sort: startDate`
-- **Limit**: `limit: 5`
-- **Text Search**: `meeting project` (searches in task descriptions)
+4) Use the Task Query Editor dock (optional)
+- Open the “Task Query Editor” dock (right‑bottom) to tweak the nearest query block. Click Update to write the query back and refresh results.
 
-### Examples
+## Query Language Reference
 
-**All open tasks sorted by due date:**
+Write one directive per line inside a `tasks` code block. Unrecognized lines are treated as free‑text search.
+
+### Filters
+
+- Status: `status: todo` | `done` | `in_progress` | `cancelled`
+  - Multiple: `status: todo,in_progress`
+- Priority: `priority: low` | `medium` | `high`
+  - Multiple: `priority: high,medium`
+- Due date: absolute or relative
+  - Exact day: `due: 2024-12-31`
+  - Before: `due: <2024-12-31`
+  - After: `due: >2024-01-01`
+  - Today: `due: today`
+  - Tomorrow: `due: tomorrow`
+- Start date: same forms as due
+  - `starts: 2024-09-01` | `starts: <2024-09-01` | `starts: >2024-09-01` | `starts: today` | `starts: tomorrow`
+- Tags: include/exclude
+  - Include any of: `tag: work,important`
+  - Exclude any of: `-tag: archive,deprecated`
+- Path: prefix match with a simple wildcard
+  - `path: projects/work*` (single `*` wildcard expands to `.*`)
+- Text search: any other line(s)
+  - Case‑insensitive substring match on the full text you provide. Multiple lines are concatenated into a single phrase.
+
+Notes
+- Status must use underscore: `in_progress` (not `in-progress`).
+- Only `low|medium|high` priorities are parsed from tasks. “Urgent” isn’t stored by the parser and won’t sort as a higher level.
+- Tags match if any of the listed tags are present; excluded tags remove tasks that contain any of those tags.
+
+### Sorting
+
+- Directive: `sort: <field> [desc]`
+- Fields: `dueDate` | `startDate` | `priority` | `description`
+- Order: ascending by default; add `desc` for descending
+
+Examples
+- `sort: dueDate` (earliest first)
+- `sort: priority desc` (high before medium before low)
+
+### Limit
+
+- Directive: `limit: <positive integer>`
+- Example: `limit: 20`
+
+## Date Handling Details
+
+- Absolute dates: use `YYYY-MM-DD`.
+- Relative keywords: `today`, `tomorrow`.
+- Ranges: combine operators, e.g. `due: >2024-09-01` and `due: <2024-09-30`.
+- Inclusivity: exact day is implemented as `[00:00, 24:00)`; `>`/`<` map to `>=`/`<` at midnight of the given date.
+- Time zone: comparisons use your local time zone as provided by the browser/SiYuan runtime.
+- UI grouping: the renderer groups tasks by human‑readable buckets like “Today”, “Tomorrow”, “Overdue”, or weekday+date.
+- Quick filters: the tag sidebar offers Today, Next 7 days, or a specific date picker; overdue items are included in these time scopes.
+
+## Examples
+
+All open tasks by due date
 ```tasks
-status: todo,in-progress
+status: todo,in_progress
 sort: dueDate
 ```
 
-**Urgent tasks due this week:**
+High‑priority tasks due this month
 ```tasks
-priority: urgent
+priority: high
 status: todo
-due: >today
-due: <next week
+due: >2024-09-01
+due: <2024-10-01
+sort: dueDate
 ```
 
-**Tasks with specific tags:**
+Tasks with specific tags, excluding archived
 ```tasks
 tag: work,important
 -tag: archive
@@ -99,57 +132,25 @@ sort: priority desc
 limit: 20
 ```
 
-### Interactive Features
-
-- Click checkboxes to mark tasks as complete/incomplete
-- Use the refresh button to update query results
-- Error messages are displayed directly in the query block
-- Queries are automatically updated when documents change
-
-For more examples and detailed documentation, see [TASK_QUERY_README.md](./TASK_QUERY_README.md) and [examples/task-queries.md](./examples/task-queries.md).
-
-## Release Script
-
-After you have modified the plugin information in `plugin.json`, you can use the release script to automatically create a tag and release.
-
-```bash
-pnpm run release
+Overdue tasks
+```tasks
+due: <today
+status: todo
+sort: dueDate
 ```
 
-This script will:
-1. Read the version from `plugin.json`
-2. Create a git tag with the version
-3. Push the tag to GitHub
-4. GitHub Actions will automatically build and create a release
+## Tips & Notes
+
+- Check/uncheck in the list to toggle done; done tasks get a ✅ done date automatically.
+- Click the open‑in‑tab icon to jump to the task’s source document.
+- If you see odd matches, remove invisible characters; the engine strips zero‑width spaces automatically.
+- The simple `*` wildcard in `path:` replaces only the first `*` and matches greedily.
 
 ## Development
 
-### Project Structure
-
-```
-src/
-├── api.ts              # API wrapper for Siyuan
-├── components/         # Vue components
-├── index.ts           # Plugin entry point
-├── index.scss         # Styles
-├── renderer.ts        # Task rendering and query processing
-├── taskModal.ts       # Task editing modal
-├── taskModels.ts      # Task data models
-├── taskParser.ts      # Task parsing utilities
-├── taskQuery.ts       # Task query engine
-├── taskQueryResults.ts # Task query results display
-├── taskService.ts     # Task data service
-├── types/             # TypeScript type definitions
-└── utils/             # Utility functions
-```
-
-### Available Scripts
-
-- `pnpm run dev` - Start development server
-- `pnpm run build` - Build for production
-- `pnpm run release` - Create release
-- `pnpm run lint` - Run ESLint
-- `pnpm run type-check` - Run TypeScript type checking
+- Build: `pnpm install` then `pnpm run build`
+- Dev: `pnpm run dev`
+- Release helper: `pnpm run release` (tags and triggers GitHub Action)
 
 ## License
 
