@@ -3,7 +3,7 @@ import { getRelativeDateString } from '../../utils/dateUtils';
 import { TaskQueryRenderer } from '../TaskQueryRenderer';
 import { refreshQuery } from './query-handler';
 import { openTab } from 'siyuan';
-import { getRootId } from '../../api';
+import { getRootId, updateBlock, pushMsg, pushErrMsg } from '../../api';
 
 export function createHeader(rendererContext: TaskQueryRenderer, taskCount: number): HTMLElement {
     const header = document.createElement('div');
@@ -525,12 +525,12 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
         padding: 12px 20px;
         border-top: 1px solid #e0e6e8;
         background: #fafbfc;
+        display: flex;
+        gap: 8px;
     `;
 
-    const refreshButton = document.createElement('button');
-    refreshButton.innerHTML = '🔄 Aktualisieren';
-    refreshButton.style.cssText = `
-        padding: 8px 16px;
+    const buttonBaseCss = `
+        padding: 8px 12px;
         font-size: 13px;
         border: 1px solid #e0e6e8;
         border-radius: 6px;
@@ -539,6 +539,10 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
         cursor: pointer;
         transition: all 0.2s ease;
     `;
+
+    const refreshButton = document.createElement('button');
+    refreshButton.innerHTML = '🔄 Aktualisieren';
+    refreshButton.style.cssText = buttonBaseCss;
 
     refreshButton.addEventListener('mouseenter', () => {
         refreshButton.style.backgroundColor = '#f5f5f5';
@@ -555,6 +559,60 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
         }
     });
 
+    const saveButton = document.createElement('button');
+    saveButton.innerHTML = '💾 UI speichern';
+    saveButton.style.cssText = buttonBaseCss;
+
+    saveButton.addEventListener('mouseenter', () => {
+        saveButton.style.backgroundColor = '#f5f5f5';
+    });
+
+    saveButton.addEventListener('mouseleave', () => {
+        saveButton.style.backgroundColor = 'white';
+    });
+
+    saveButton.addEventListener('click', async () => {
+        try {
+            const container = saveButton.closest('.todo-task-container') as HTMLElement | null;
+            const fullQuery = ((rendererContext as any).currentFullQueryString || rendererContext.currentQueryString || '').toString();
+            const lines = fullQuery.split('\n').map(l => l.trim());
+            const nonUi = lines.filter(l => !/^ui\./i.test(l) && l.length > 0);
+
+            // Collect current UI state
+            const heightPx = container ? Math.round(container.getBoundingClientRect().height) : undefined;
+            const uiLines: string[] = [];
+            if (heightPx && heightPx > 0) uiLines.push(`ui.height: ${heightPx}`);
+            uiLines.push(`ui.sidebar: ${rendererContext.sidebarCollapsed ? 'collapsed' : 'open'}`);
+            uiLines.push(`ui.filter: ${rendererContext.currentFilter}`);
+            if (rendererContext.currentFilter === 'date' && rendererContext.selectedDate) {
+                uiLines.push(`ui.selectedDate: ${rendererContext.selectedDate.toISOString().split('T')[0]}`);
+            }
+            if (typeof rendererContext.selectedTag !== 'undefined') {
+                const tag = rendererContext.selectedTag;
+                uiLines.push(`ui.selectedTag: ${tag === null ? 'null' : tag}`);
+            }
+
+            const newBody = [...nonUi, ...uiLines].join('\n');
+            const newContent = `tasks\n${newBody}`;
+
+            if (!rendererContext.blockId) {
+                await navigator.clipboard.writeText(newContent);
+                await pushMsg('Block-ID fehlt. Inhalt in die Zwischenablage kopiert.');
+                return;
+            }
+
+            await updateBlock('markdown', newContent, rendererContext.blockId);
+            await pushMsg('UI-Einstellungen im Codeblock gespeichert.');
+
+            // Trigger a re-render of the nearest container
+            if (container) rendererContext.refreshContainerFromElement(container);
+        } catch (err: any) {
+            console.error('Fehler beim Speichern der UI-Einstellungen:', err);
+            await pushErrMsg('Konnte nicht speichern. Siehe Konsole.');
+        }
+    });
+
     refreshContainer.appendChild(refreshButton);
+    refreshContainer.appendChild(saveButton);
     return refreshContainer;
 }

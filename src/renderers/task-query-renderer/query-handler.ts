@@ -1,5 +1,70 @@
 import { TaskQueryRenderer } from '../TaskQueryRenderer';
 
+type UiSettings = {
+    height?: number | 'auto';
+    maxHeight?: number;
+    sidebar?: 'open' | 'collapsed';
+    filter?: 'today' | 'next7days' | 'all' | 'date';
+    selectedDate?: string; // YYYY-MM-DD for 'date' filter
+    selectedTag?: string | null; // '' means untagged
+};
+
+function parseUiSettingsAndStrip(content: string): { ui: UiSettings, stripped: string } {
+    const lines = content.split('\n');
+    const ui: UiSettings = {};
+    const kept: string[] = [];
+
+    for (const raw of lines) {
+        const line = raw.trim();
+        if (/^ui\./i.test(line)) {
+            const [keyRaw, valueRaw = ''] = line.split(':');
+            const key = keyRaw.trim().toLowerCase();
+            const value = valueRaw.trim();
+            switch (key) {
+                case 'ui.height': {
+                    if (value.toLowerCase() === 'auto') ui.height = 'auto';
+                    else {
+                        const n = parseInt(value, 10);
+                        if (!Number.isNaN(n) && n > 0) ui.height = n;
+                    }
+                    break;
+                }
+                case 'ui.maxheight': {
+                    const n = parseInt(value, 10);
+                    if (!Number.isNaN(n) && n > 0) ui.maxHeight = n;
+                    break;
+                }
+                case 'ui.sidebar': {
+                    const v = value.toLowerCase();
+                    if (v === 'collapsed' || v === 'open') ui.sidebar = v as any;
+                    break;
+                }
+                case 'ui.filter': {
+                    const v = value.toLowerCase();
+                    if (v === 'today' || v === 'next7days' || v === 'all' || v === 'date') ui.filter = v as any;
+                    break;
+                }
+                case 'ui.selecteddate': {
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) ui.selectedDate = value;
+                    break;
+                }
+                case 'ui.selectedtag': {
+                    // empty string means untagged
+                    ui.selectedTag = value === 'all' ? null : value;
+                    break;
+                }
+                default:
+                    // Unknown ui.* directive — ignore silently
+                    break;
+            }
+        } else if (line.length > 0) {
+            kept.push(raw);
+        }
+    }
+
+    return { ui, stripped: kept.join('\n') };
+}
+
 export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLElement, content: string) {
     try {
         const queryMatch = content.match(/tasks\s*\n?([\s\S]*)/);
@@ -8,14 +73,30 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
         const queryString = queryMatch[1].trim();
         const cleanQueryString = queryString.replace(/\u200B/g, '').replace(/\uFEFF/g, '');
 
+        // Keep full original for saving back later
+        (renderer as any).currentFullQueryString = cleanQueryString;
+
+        // Parse UI directives and strip them from the filter query
+        const { ui, stripped } = parseUiSettingsAndStrip(cleanQueryString);
+
+        // Apply UI defaults to renderer
+        if (ui.sidebar) renderer.sidebarCollapsed = ui.sidebar === 'collapsed';
+        if (ui.filter) renderer.currentFilter = ui.filter;
+        if (ui.selectedDate && ui.filter === 'date') renderer.selectedDate = new Date(ui.selectedDate);
+        if (typeof ui.selectedTag !== 'undefined') renderer.selectedTag = ui.selectedTag;
+        (renderer as any).uiSettings = ui;
+
         await renderer.taskService.refreshTasks();
         const allTasks = await renderer.taskService.getAllTasks(); 
-        const filteredTasks = cleanQueryString
-            ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(cleanQueryString))
+        const filteredTasks = stripped
+            ? renderer.taskQueryEngine.filterTasks(allTasks, renderer.taskQueryEngine.parseQueryString(stripped))
             : allTasks;
 
-        const resultContainer = renderer.createTodoContainer(filteredTasks, cleanQueryString);
-        block.parentNode?.replaceChild(resultContainer, block);        
+        // Use the stripped (filter-only) query for refresh calls, but persist full query on the element
+        const resultContainer = renderer.createTodoContainer(filteredTasks, stripped);
+        resultContainer.dataset.taskQuery = "```tasks\n" + cleanQueryString;
+        resultContainer.dataset.taskQueryBlockId = renderer.blockId || '';
+        block.parentNode?.replaceChild(resultContainer, block);
     } catch (error) {
         console.error('Error processing task query:', error);
         renderer.showError(block, error.message);

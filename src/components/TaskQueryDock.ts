@@ -188,7 +188,6 @@ export class TaskQueryDock {
 
             await new Promise(r => setTimeout(r, 200));
             plugin.refreshTaskViews();
-            plugin.refreshEditor();
 
             this.updateStatus(statusElement, `Updated query block and refreshed results`, 'success');
 

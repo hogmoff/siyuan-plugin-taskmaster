@@ -146,6 +146,30 @@ sort: dueDate
 - If you see odd matches, remove invisible characters; the engine strips zero‑width spaces automatically.
 - The simple `*` wildcard in `path:` replaces only the first `*` and matches greedily.
 
+**UI Settings In Codeblocks**
+- Define renderer behavior and persist layout state directly inside the `tasks` codeblock using `ui.*` directives. These do not affect task filtering; they only control the UI.
+- Supported directives:
+  - `ui.height`: auto or pixel number (e.g., 420). Container is also resizable via drag (CSS vertical resize).
+  - `ui.maxHeight`: pixel limit for container height (e.g., 800).
+  - `ui.sidebar`: open or collapsed.
+  - `ui.filter`: today, next7days, all, or date.
+  - `ui.selectedDate`: YYYY-MM-DD (used when `ui.filter: date`).
+  - `ui.selectedTag`: all for all tags, '' for untagged, or a tag string.
+
+Example
+```tasks
+status: todo,in_progress
+sort: dueDate desc
+ui.height: 420
+ui.maxHeight: 800
+ui.sidebar: open
+ui.filter: today
+```
+
+Saving UI state
+- Click the footer button “💾 UI speichern” in the rendered container to write the current UI state (height, sidebar state, filter, date, and tag) back into the codeblock.
+- If writing the codeblock isn’t possible (e.g., missing block ID), the plugin copies the updated block content to the clipboard and shows a notification.
+
 ## Development
 
 - Build: `pnpm install` then `pnpm run build`
