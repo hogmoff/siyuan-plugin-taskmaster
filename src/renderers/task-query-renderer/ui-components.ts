@@ -85,6 +85,15 @@ export function createFilterBar(rendererContext: TaskQueryRenderer): HTMLElement
         cursor: pointer;
     `;
 
+    // Vorbelegen, falls processTaskQuery bereits ein Datum gesetzt hat
+    if (rendererContext.currentFilter === 'date' && rendererContext.selectedDate) {
+        try {
+            datePicker.value = rendererContext.selectedDate.toISOString().split('T')[0];
+        } catch {
+            // still fallback: leer lassen
+        }
+    }
+
     datePicker.addEventListener('change', (e) => {
         const target = e.target as HTMLInputElement;
         if (target.value) {
@@ -156,6 +165,21 @@ export function updateFilterButtons(rendererContext: TaskQueryRenderer) {
         btn.style.color = isActive ? 'white' : '#202020';
         btn.style.borderColor = isActive ? '#dc4c3e' : '#e0e6e8';
     });
+
+    // Datepicker
+    const datePicker = container.querySelector('input[type="date"]') as HTMLInputElement | null;
+    if (datePicker) {
+        if (rendererContext.currentFilter === 'date' && rendererContext.selectedDate) {
+            try {
+                const v = rendererContext.selectedDate.toISOString().split('T')[0];
+                if (datePicker.value !== v) datePicker.value = v;
+            } catch {
+                // ignore
+            }
+        } else if (rendererContext.currentFilter !== 'date') {
+            datePicker.value = '';
+        }
+    }
 }
 
 export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): HTMLElement {

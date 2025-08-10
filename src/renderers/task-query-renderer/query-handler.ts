@@ -86,6 +86,27 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
         if (typeof ui.selectedTag !== 'undefined') renderer.selectedTag = ui.selectedTag;
         (renderer as any).uiSettings = ui;
 
+        // If there is an exact due date filter in the code block (e.g., "due: 2024-12-31"),
+        // prefill the UI datepicker to match it when no explicit UI override was provided.
+        // This helps keep the UI in sync with the query.
+        try {
+            const lines = stripped.split('\n').map(l => l.trim()).filter(Boolean);
+            const dueExactLine = lines.find(l => /^due:\s*\d{4}-\d{2}-\d{2}$/i.test(l));
+            if (dueExactLine) {
+                const dateStr = dueExactLine.split(':')[1].trim();
+                const exactDate = new Date(dateStr);
+                // Only set if UI did not explicitly set something else
+                if (!ui.filter) {
+                    renderer.currentFilter = 'date';
+                }
+                if (!ui.selectedDate && (!renderer.selectedDate || renderer.currentFilter === 'date')) {
+                    renderer.selectedDate = exactDate;
+                }
+            }
+        } catch {
+            // ignore best-effort UI prefill
+        }
+
         await renderer.taskService.refreshTasks();
         const allTasks = await renderer.taskService.getAllTasks(); 
         const filteredTasks = stripped
