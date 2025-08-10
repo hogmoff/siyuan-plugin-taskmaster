@@ -56,6 +56,24 @@ export class TaskQueryRenderer {
 
         const container = document.createElement('div');
         container.className = 'todo-task-container';
+
+        // Apply height settings from UI directives (see README: ui.height, ui.maxHeight)
+        const ui: any = (this as any).uiSettings || {};
+        let heightCss = '';
+        if (ui && typeof ui.height !== 'undefined') {
+            if (ui.height === 'auto') {
+                heightCss += 'height: auto;';
+            } else if (typeof ui.height === 'number' && ui.height > 0) {
+                heightCss += `height: ${ui.height}px;`;
+            }
+        } else {
+            // default height when none specified
+            heightCss += 'height: 500px;';
+        }
+        if (ui && typeof ui.maxHeight === 'number' && ui.maxHeight > 0) {
+            heightCss += `max-height: ${ui.maxHeight}px;`;
+        }
+
         container.style.cssText = `
             background: #ffffff;
             border: 1px solid #e0e6e8;
@@ -66,7 +84,8 @@ export class TaskQueryRenderer {
             overflow: auto;
             display: flex;
             position: relative;
-            height: 500px;
+            resize: vertical;
+            ${heightCss}
         `;
 
         const sidebar = createSidebar(this, tasks);
@@ -386,4 +405,3 @@ export class TaskQueryRenderer {
       }
     }
 }
-
