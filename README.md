@@ -151,6 +151,7 @@ sort: dueDate
 - Supported directives:
   - `ui.height`: auto or pixel number (e.g., 420). Container is also resizable via drag (CSS vertical resize).
   - `ui.maxHeight`: pixel limit for container height (e.g., 800).
+  - `ui.elements`: all (default) or tasks. When `tasks`, only the task list is rendered — no header, filter bar, sidebar, or footer buttons.
   - `ui.sidebar`: open or collapsed.
   - `ui.filter`: today, next7days, all, or date.
   - `ui.selectedDate`: YYYY-MM-DD (used when `ui.filter: date`).
@@ -164,6 +165,7 @@ ui.height: 420
 ui.maxHeight: 800
 ui.sidebar: open
 ui.filter: today
+ui.elements: tasks
 ```
 
 Saving UI state

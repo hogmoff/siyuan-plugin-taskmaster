@@ -7,6 +7,7 @@ type UiSettings = {
     filter?: 'today' | 'next7days' | 'all' | 'date';
     selectedDate?: string; // YYYY-MM-DD for 'date' filter
     selectedTag?: string | null; // '' means untagged
+    elements?: 'all' | 'tasks'; // controls which UI elements to render
 };
 
 function parseUiSettingsAndStrip(content: string): { ui: UiSettings, stripped: string } {
@@ -27,6 +28,11 @@ function parseUiSettingsAndStrip(content: string): { ui: UiSettings, stripped: s
                         const n = parseInt(value, 10);
                         if (!Number.isNaN(n) && n > 0) ui.height = n;
                     }
+                    break;
+                }
+                case 'ui.elements': {
+                    const v = value.toLowerCase();
+                    if (v === 'all' || v === 'tasks') ui.elements = v as any;
                     break;
                 }
                 case 'ui.maxheight': {

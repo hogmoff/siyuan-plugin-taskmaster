@@ -89,3 +89,11 @@ status: todo
 -due: *
 sort: priority desc
 ```
+
+## Beispiel 11: Nur Aufgabenliste ohne UI-Elemente
+
+```tasks
+status: todo
+sort: dueDate
+ui.elements: tasks
+```

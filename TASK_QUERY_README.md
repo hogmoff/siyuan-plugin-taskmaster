@@ -101,6 +101,31 @@ Die angezeigten Aufgaben sind interaktiv:
 - **Refresh-Button**: Aktualisiert die Abfrage mit aktuellen Daten
 - **Fehlermeldungen**: Werden direkt im Query-Block angezeigt
 
+## UI‑Einstellungen im Codeblock
+
+Du kannst das Rendering über `ui.*` Direktiven im `tasks`‑Codeblock steuern. Diese beeinflussen nur die Darstellung, nicht die Filterlogik.
+
+- `ui.elements`: all (Standard) oder tasks. Bei `tasks` wird nur die Aufgabenliste gerendert – ohne Header, Filterleiste, Sidebar und Footer‑Buttons.
+- `ui.height`: `auto` oder Pixel (z. B. `420`). Der Container ist zudem per Drag vertikal vergrößer-/verkleinerbar.
+- `ui.maxHeight`: Maximale Höhe in Pixeln (z. B. `800`).
+- `ui.sidebar`: `open` oder `collapsed` (nur relevant bei `ui.elements: all`).
+- `ui.filter`: `today`, `next7days`, `all` oder `date`.
+- `ui.selectedDate`: `YYYY-MM-DD` (relevant bei `ui.filter: date`).
+- `ui.selectedTag`: `all` für alle, `''` für ungetaggt oder ein Tag‑String.
+
+Beispiel:
+```tasks
+status: todo
+sort: dueDate desc
+ui.height: 420
+ui.maxHeight: 800
+ui.sidebar: open
+ui.filter: today
+ui.elements: tasks
+```
+
+Hinweis: In `tasks`‑Nur‑Listenmodus gibt es keinen „💾 UI speichern“‑Button. Passe die Direktiven im Codeblock an oder stelle wieder auf `ui.elements: all` um.
+
 ## Technische Hinweise
 
 - Die Abfragen werden in Echtzeit verarbeitet

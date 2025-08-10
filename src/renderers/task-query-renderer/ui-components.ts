@@ -611,6 +611,9 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
             if (existingUi && typeof existingUi.maxHeight === 'number' && existingUi.maxHeight > 0) {
                 uiLines.push(`ui.maxHeight: ${existingUi.maxHeight}`);
             }
+            if (existingUi && typeof existingUi.elements === 'string') {
+                uiLines.push(`ui.elements: ${existingUi.elements}`);
+            }
             uiLines.push(`ui.sidebar: ${rendererContext.sidebarCollapsed ? 'collapsed' : 'open'}`);
             uiLines.push(`ui.filter: ${rendererContext.currentFilter}`);
             if (rendererContext.currentFilter === 'date' && rendererContext.selectedDate) {

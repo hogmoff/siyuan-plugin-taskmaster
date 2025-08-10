@@ -88,8 +88,13 @@ export class TaskQueryRenderer {
             ${heightCss}
         `;
 
-        const sidebar = createSidebar(this, tasks);
-        container.appendChild(sidebar);
+        const elementsMode = (ui && ui.elements) ? ui.elements : 'all';
+
+        // Only create sidebar in 'all' mode
+        if (elementsMode === 'all') {
+            const sidebar = createSidebar(this, tasks);
+            container.appendChild(sidebar);
+        }
 
         const mainContent = document.createElement('div');
         mainContent.className = 'main-content';
@@ -98,15 +103,19 @@ export class TaskQueryRenderer {
             display: flex;
             flex-direction: column;
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-left: ${this.sidebarCollapsed ? '0' : '280px'};
+            margin-left: ${elementsMode === 'all' ? (this.sidebarCollapsed ? '0' : '280px') : '0'};
             min-width: 0;
         `;
 
-        const header = createHeader(this, tasks.length);
-        mainContent.appendChild(header);
+        if (elementsMode === 'all') {
+            const header = createHeader(this, tasks.length);
+            mainContent.appendChild(header);
+        }
 
-        const filterBar = createFilterBar(this);
-        mainContent.appendChild(filterBar);
+        if (elementsMode === 'all') {
+            const filterBar = createFilterBar(this);
+            mainContent.appendChild(filterBar);
+        }
 
         const content = document.createElement('div');
         content.className = 'task-content';
@@ -119,8 +128,10 @@ export class TaskQueryRenderer {
         renderTasks(content, tasks, this);
         mainContent.appendChild(content);
 
-        const refreshButton = createRefreshButton(this, queryString);
-        mainContent.appendChild(refreshButton);
+        if (elementsMode === 'all') {
+            const refreshButton = createRefreshButton(this, queryString);
+            mainContent.appendChild(refreshButton);
+        }
 
         container.appendChild(mainContent);
         return container;
