@@ -51,12 +51,27 @@ const TaskItem = ({
     }
   };
 
-  const getStatusColor = (status: Task['status']): string => {
-    switch (status) {
-      case 'done': return 'text-green-600 bg-green-50 border-green-200';
-      case 'in_progress': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'cancelled': return 'text-gray-500 bg-gray-50 border-gray-200';
-      default: return 'text-gray-700 bg-white border-gray-200';
+  const getPriorityBgClass = (priority: TaskPriority): string => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-50 border-red-200';
+      case 'medium':
+        return 'bg-orange-50 border-orange-200';
+      case 'low':
+      default:
+        return 'bg-white border-gray-200';
+    }
+  };
+
+  const getPriorityAccentClass = (priority: TaskPriority): string => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-400';
+      case 'medium':
+        return 'bg-orange-400';
+      case 'low':
+      default:
+        return 'bg-gray-200';
     }
   };
 
@@ -86,13 +101,20 @@ const TaskItem = ({
   return (
     <div 
       className={cn(
-        "group relative p-4 rounded-lg border transition-all duration-200 hover:shadow-md bg-white",
-        getStatusColor(task.status),
+        "group relative p-4 rounded-lg border transition-all duration-200 hover:shadow-md",
+        getPriorityBgClass(task.priority),
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Priority accent on the left */}
+      <span
+        className={cn(
+          'absolute left-0 top-0 bottom-0 w-1 rounded-l-lg',
+          getPriorityAccentClass(task.priority)
+        )}
+      />
       <div className="flex items-start gap-3">
         {/* Status Checkbox */}
         <div className="flex items-center mt-0.5">
@@ -106,14 +128,6 @@ const TaskItem = ({
         {/* Task Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            {/* Priority Indicator */}
-            {task.priority === 'high' && (
-              <span className="text-red-500 text-sm font-bold">⏫</span>
-            )}
-            {task.priority === 'medium' && (
-              <span className="text-yellow-500 text-sm font-bold">🔼</span>
-            )}
-            
             {/* Task Content */}
             <div className="flex items-center justify-between w-full">
               <p className={cn(
