@@ -1,0 +1,556 @@
+
+'use client';
+
+import { useState } from 'react';
+import { TaskFilter, TaskSort, Task } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { 
+  Search, 
+  Filter, 
+  SortAsc, 
+  SortDesc, 
+  X,
+  Calendar,
+  Tag,
+  CheckCircle2,
+  Circle,
+  Clock,
+  XCircle
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface FilterPanelProps {
+  filter: TaskFilter;
+  sort: TaskSort;
+  onFilterChange: (filter: TaskFilter) => void;
+  onSortChange: (sort: TaskSort) => void;
+  onClearFilters: () => void;
+  availableTags: string[];
+  className?: string;
+  // Advanced query mode
+  queryString?: string;
+  onQueryChange?: (query: string) => void;
+}
+
+const FilterPanel = ({ 
+  filter, 
+  sort, 
+  onFilterChange, 
+  onSortChange, 
+  onClearFilters,
+  availableTags,
+  className,
+  queryString = '',
+  onQueryChange,
+}: FilterPanelProps) => {
+  const [searchValue, setSearchValue] = useState(filter.searchQuery || '');
+  const [showAdvanced, setShowAdvanced] = useState(!!queryString);
+
+  // --- Query helper utils ---
+  const splitLines = (q: string) => (q || '').replace(/\u200B|\uFEFF/g, '').split('\n');
+  const joinLines = (lines: string[]) => lines.filter(l => l.trim().length > 0).join('\n');
+  const getDirective = (q: string, key: string) => splitLines(q).find(l => l.trim().toLowerCase().startsWith(`${key.toLowerCase()}:`));
+  const setDirective = (q: string, key: string, value?: string) => {
+    let lines = splitLines(q);
+    const idx = lines.findIndex(l => l.trim().toLowerCase().startsWith(`${key.toLowerCase()}:`));
+    if (!value || !value.trim()) {
+      if (idx >= 0) lines.splice(idx, 1);
+      return joinLines(lines);
+    }
+    const newLine = `${key}: ${value.trim()}`;
+    if (idx >= 0) lines[idx] = newLine; else lines.push(newLine);
+    return joinLines(lines);
+  };
+  const getList = (q: string, key: string): string[] => {
+    const line = getDirective(q, key);
+    if (!line) return [];
+    const raw = line.split(':').slice(1).join(':').trim();
+    return raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  };
+  const setList = (q: string, key: string, items: string[]) => setDirective(q, key, items.join(','));
+  const toggleListItem = (key: string, value: string) => {
+    if (!onQueryChange) return;
+    const list = getList(queryString, key);
+    const exists = list.some(v => v.toLowerCase() === value.toLowerCase());
+    const next = exists ? list.filter(v => v.toLowerCase() !== value.toLowerCase()) : [...list, value];
+    onQueryChange(setList(queryString, key, next));
+  };
+  const setDueQuick = (value: 'today' | 'tomorrow' | 'clear') => {
+    if (!onQueryChange) return;
+    if (value === 'clear') onQueryChange(setDirective(queryString, 'due', ''));
+    else onQueryChange(setDirective(queryString, 'due', value));
+  };
+  const setStartsQuick = (value: 'today' | 'tomorrow' | 'clear') => {
+    if (!onQueryChange) return;
+    if (value === 'clear') onQueryChange(setDirective(queryString, 'starts', ''));
+    else onQueryChange(setDirective(queryString, 'starts', value));
+  };
+  const setDueDate = (date: string) => onQueryChange && onQueryChange(setDirective(queryString, 'due', date));
+  const setStartsDate = (date: string) => onQueryChange && onQueryChange(setDirective(queryString, 'starts', date));
+  const setSort = (field: string, direction: 'asc' | 'desc' = 'asc') => onQueryChange && onQueryChange(setDirective(queryString, 'sort', `${field}${direction === 'desc' ? ' desc' : ''}`));
+  const setLimit = (limit: number | '') => onQueryChange && onQueryChange(setDirective(queryString, 'limit', typeof limit === 'number' && limit > 0 ? String(limit) : ''));
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+    onFilterChange({ ...filter, searchQuery: value || undefined });
+  };
+
+  const handleStatusToggle = (status: Task['status']) => {
+    const currentStatuses = filter.status || [];
+    const newStatuses = currentStatuses.includes(status)
+      ? currentStatuses.filter(s => s !== status)
+      : [...currentStatuses, status];
+    
+    onFilterChange({ 
+      ...filter, 
+      status: newStatuses.length > 0 ? newStatuses : undefined 
+    });
+  };
+
+  const handlePriorityToggle = (priority: Task['priority']) => {
+    const currentPriorities = filter.priority || [];
+    const newPriorities = currentPriorities.includes(priority)
+      ? currentPriorities.filter(p => p !== priority)
+      : [...currentPriorities, priority];
+    
+    onFilterChange({ 
+      ...filter, 
+      priority: newPriorities.length > 0 ? newPriorities : undefined 
+    });
+  };
+
+  const handleTagToggle = (tag: string) => {
+    const currentTags = filter.tags || [];
+    const newTags = currentTags.includes(tag)
+      ? currentTags.filter(t => t !== tag)
+      : [...currentTags, tag];
+    
+    onFilterChange({ 
+      ...filter, 
+      tags: newTags.length > 0 ? newTags : undefined 
+    });
+  };
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filter.status?.length) count++;
+    if (filter.priority?.length) count++;
+    if (filter.tags?.length) count++;
+    if (filter.searchQuery) count++;
+    if (filter.dateRange) count++;
+    if (filter.hasNoDueDate) count++;
+    return count;
+  };
+
+  const statusOptions = [
+    { value: 'todo', label: 'To Do', icon: Circle, color: 'text-gray-600' },
+    { value: 'in_progress', label: 'In Progress', icon: Clock, color: 'text-blue-600' },
+    { value: 'done', label: 'Done', icon: CheckCircle2, color: 'text-green-600' },
+    { value: 'cancelled', label: 'Cancelled', icon: XCircle, color: 'text-gray-500' },
+  ] as const;
+
+  const priorityOptions = [
+    { value: 'high', label: 'High', emoji: '⏫', color: 'text-red-600' },
+    { value: 'medium', label: 'Medium', emoji: '🔼', color: 'text-yellow-600' },
+    { value: 'low', label: 'Low', emoji: '', color: 'text-gray-600' },
+  ] as const;
+
+  return (
+    <div className={cn("space-y-4 p-4 bg-gray-50 border-b", className)}>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder="Search tasks..."
+          value={searchValue}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-10 bg-white"
+        />
+      </div>
+
+      {/* Advanced Query toggle */}
+      {onQueryChange && (
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            className="text-sm text-blue-600 hover:text-blue-700"
+            onClick={() => setShowAdvanced(s => !s)}
+          >
+            {showAdvanced ? 'Hide advanced query' : 'Show advanced query'}
+          </button>
+          {queryString?.trim() && (
+            <span className="text-xs text-gray-500">Advanced query active</span>
+          )}
+        </div>
+      )}
+
+      {onQueryChange && showAdvanced && (
+        <div className="mt-2">
+          <Label className="text-xs text-gray-600">Query (plugin-compatible)</Label>
+          <textarea
+            className="mt-1 w-full min-h-[100px] rounded-md border bg-white p-2 font-mono text-sm"
+            placeholder={"tasks\nstatus: todo,in_progress\npriority: high\ndue: today\n-tag: sometag\npath: journal/*\nsort: due desc\nlimit: 50"}
+            value={queryString}
+            onChange={(e) => onQueryChange?.(e.target.value)}
+          />
+
+          {/* Query Helper */}
+          <div className="mt-3 rounded-md border bg-white p-3">
+            <div className="text-xs font-medium text-gray-700 mb-2">Query Helper</div>
+
+            {/* Status */}
+            <div className="mb-2">
+              <Label className="text-xs text-gray-600">Status</Label>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {['todo','in_progress','done','cancelled'].map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => toggleListItem('status', s)}
+                    className={cn(
+                      'text-xs px-2 py-1 rounded border',
+                      getList(queryString,'status').includes(s) ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                    )}
+                  >{s}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Priority */}
+            <div className="mb-2">
+              <Label className="text-xs text-gray-600">Priority</Label>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {['high','medium','low'].map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => toggleListItem('priority', p)}
+                    className={cn(
+                      'text-xs px-2 py-1 rounded border',
+                      getList(queryString,'priority').includes(p) ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                    )}
+                  >{p}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Due */}
+            <div className="mb-2">
+              <Label className="text-xs text-gray-600">Due</Label>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('today')}>today</button>
+                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('tomorrow')}>tomorrow</button>
+                <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setDueDate(e.target.value)} />
+                <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setDueQuick('clear')}>clear</button>
+              </div>
+            </div>
+
+            {/* Starts */}
+            <div className="mb-2">
+              <Label className="text-xs text-gray-600">Starts</Label>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('today')}>today</button>
+                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('tomorrow')}>tomorrow</button>
+                <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setStartsDate(e.target.value)} />
+                <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setStartsQuick('clear')}>clear</button>
+              </div>
+            </div>
+
+            {/* Tags include */}
+            {availableTags.length > 0 && (
+              <div className="mb-2">
+                <Label className="text-xs text-gray-600">Tags</Label>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {availableTags.slice(0,12).map(tag => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleListItem('tag', tag)}
+                      className={cn(
+                        'text-xs px-2 py-1 rounded border',
+                        getList(queryString,'tag').includes(tag) ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                      )}
+                    >#{tag}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sort and Limit */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-gray-600">Sort</Label>
+                <select
+                  className="text-xs px-2 py-1 rounded border bg-white"
+                  onChange={(e) => {
+                    const val = e.target.value; // e.g., 'due:asc'
+                    const [f,d] = val.split(':');
+                    setSort(f, (d as 'asc'|'desc'));
+                  }}
+                  defaultValue=""
+                >
+                  <option value="" disabled>Select</option>
+                  <option value="due:asc">Due ↑</option>
+                  <option value="due:desc">Due ↓</option>
+                  <option value="priority:desc">Priority ↓</option>
+                  <option value="content:asc">A-Z</option>
+                  <option value="content:desc">Z-A</option>
+                  <option value="start:asc">Start ↑</option>
+                  <option value="start:desc">Start ↓</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-gray-600">Limit</Label>
+                <input
+                  type="number"
+                  min={1}
+                  className="w-20 text-xs px-2 py-1 rounded border"
+                  onChange={(e)=> setLimit(e.target.value ? parseInt(e.target.value,10) : '')}
+                  placeholder="e.g. 50"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Row */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Status Filter */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className={cn(
+                "h-8",
+                filter.status?.length && "bg-blue-50 border-blue-200"
+              )}
+            >
+              <Circle className="h-3 w-3 mr-1" />
+              Status
+              {filter.status?.length && (
+                <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
+                  {filter.status.length}
+                </Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="start">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Filter by Status</Label>
+              {statusOptions.map(({ value, label, icon: Icon, color }) => (
+                <div key={value} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={`status-${value}`}
+                    checked={filter.status?.includes(value as any) || false}
+                    onChange={() => handleStatusToggle(value as any)}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor={`status-${value}`} className="flex items-center gap-2 cursor-pointer">
+                    <Icon className={cn("h-4 w-4", color)} />
+                    {label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Priority Filter */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className={cn(
+                "h-8",
+                filter.priority?.length && "bg-red-50 border-red-200"
+              )}
+            >
+              <span className="mr-1">⏫</span>
+              Priority
+              {filter.priority?.length && (
+                <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
+                  {filter.priority.length}
+                </Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3" align="start">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Filter by Priority</Label>
+              {priorityOptions.map(({ value, label, emoji, color }) => (
+                <div key={value} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={`priority-${value}`}
+                    checked={filter.priority?.includes(value as any) || false}
+                    onChange={() => handlePriorityToggle(value as any)}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor={`priority-${value}`} className="flex items-center gap-2 cursor-pointer">
+                    <span className={color}>{emoji || '◯'}</span>
+                    {label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Tags Filter */}
+        {availableTags.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className={cn(
+                  "h-8",
+                  filter.tags?.length && "bg-green-50 border-green-200"
+                )}
+              >
+                <Tag className="h-3 w-3 mr-1" />
+                Tags
+                {filter.tags?.length && (
+                  <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
+                    {filter.tags.length}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-3 max-h-64 overflow-y-auto" align="start">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Filter by Tags</Label>
+                {availableTags.map((tag) => (
+                  <div key={tag} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`tag-${tag}`}
+                      checked={filter.tags?.includes(tag) || false}
+                      onChange={() => handleTagToggle(tag)}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor={`tag-${tag}`} className="cursor-pointer">
+                      #{tag}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {/* Sort */}
+        <Select 
+          value={`${sort.field}-${sort.direction}`} 
+          onValueChange={(value) => {
+            const [field, direction] = value.split('-') as [TaskSort['field'], TaskSort['direction']];
+            onSortChange({ field, direction });
+          }}
+        >
+          <SelectTrigger className="w-36 h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="due-asc">Due Date ↑</SelectItem>
+            <SelectItem value="due-desc">Due Date ↓</SelectItem>
+            <SelectItem value="priority-desc">Priority ↓</SelectItem>
+            <SelectItem value="created-desc">Newest</SelectItem>
+            <SelectItem value="created-asc">Oldest</SelectItem>
+            <SelectItem value="content-asc">A-Z</SelectItem>
+            <SelectItem value="content-desc">Z-A</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Clear Filters */}
+        {getActiveFilterCount() > 0 && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onClearFilters}
+            className="h-8 text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-3 w-3 mr-1" />
+            Clear ({getActiveFilterCount()})
+          </Button>
+        )}
+      </div>
+
+      {/* Active Filter Tags */}
+      {(filter.status?.length || filter.priority?.length || filter.tags?.length) && (
+        <div className="flex flex-wrap gap-1">
+          {filter.status?.map((status) => {
+            const statusOption = statusOptions.find(s => s.value === status);
+            return statusOption && (
+              <Badge 
+                key={status} 
+                variant="secondary" 
+                className="text-xs h-6 gap-1"
+              >
+                <statusOption.icon className={cn("h-3 w-3", statusOption.color)} />
+                {statusOption.label}
+                <X 
+                  className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                  onClick={() => handleStatusToggle(status)}
+                />
+              </Badge>
+            );
+          })}
+          
+          {filter.priority?.map((priority) => {
+            const priorityOption = priorityOptions.find(p => p.value === priority);
+            return priorityOption && (
+              <Badge 
+                key={priority} 
+                variant="secondary" 
+                className="text-xs h-6 gap-1"
+              >
+                <span className={priorityOption.color}>{priorityOption.emoji || '◯'}</span>
+                {priorityOption.label}
+                <X 
+                  className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                  onClick={() => handlePriorityToggle(priority)}
+                />
+              </Badge>
+            );
+          })}
+          
+          {filter.tags?.map((tag) => (
+            <Badge 
+              key={tag} 
+              variant="secondary" 
+              className="text-xs h-6 gap-1"
+            >
+              <Tag className="h-3 w-3" />
+              {tag}
+              <X 
+                className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                onClick={() => handleTagToggle(tag)}
+              />
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FilterPanel;

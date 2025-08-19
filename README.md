@@ -178,6 +178,22 @@ Saving UI state
 - Dev: `pnpm run dev`
 - Release helper: `pnpm run release` (tags and triggers GitHub Action)
 
+### Web App (Standalone)
+
+- Optional: create `web/.env.local` with:
+  - `VITE_SIYUAN_BASE_URL=http://127.0.0.1:6806`
+  - `VITE_SIYUAN_TOKEN=your_kernel_token`
+- Dev: `npm run web:dev` (serves a standalone TaskMaster UI at http://localhost:5174)
+- Build: `npm run web:build` (outputs to `web/dist`)
+- Behavior: same UI and filtering as the plugin; if no Siyuan API config is provided, the web UI loads but cannot fetch or persist tasks.
+
+Deep links
+- Optional: set `VITE_SIYUAN_DEEPLINK` to a URL pattern to open documents directly from the web UI.
+- Placeholders: `{rootId}`, `{blockId}`. Examples:
+  - Desktop scheme (example, verify with your setup): `siyuan://blocks/{rootId}`
+  - Custom route: `http://127.0.0.1:6806/#/notebooks?doc={rootId}`
+- If no deep link is configured, the app falls back to opening the base URL (if set) or copying IDs.
+
 ## License
 
 MIT
