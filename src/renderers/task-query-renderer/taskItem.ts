@@ -17,8 +17,15 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         cursor: pointer;
     `;
 
+    // Background color for task for Mouse Enter
+    let baseBgColor = 'transparent';
+    if (task.priority === 'high') {
+        baseBgColor =  'rgba(220, 76, 62, 0.3)';
+    } else if (task.priority === 'medium') {
+        baseBgColor =  baseBgColor = 'rgba(255, 136, 0, 0.3)';
+    }
     taskDiv.addEventListener('mouseenter', () => {
-        taskDiv.style.backgroundColor = '#fafbfc';
+        taskDiv.style.backgroundColor = baseBgColor;
     });
     taskDiv.addEventListener('mouseleave', () => {
         taskDiv.style.backgroundColor = 'transparent';
@@ -32,7 +39,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         width: 18px;
         height: 18px;
         cursor: pointer;
-        accent-color: #dc4c3e;
+        accent-color: #0b9e06ff;
     `;
 
     checkbox.addEventListener('change', async (e) => {
@@ -50,22 +57,21 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
     const priorityIndicator = document.createElement('div');
     if (task.priority) {
         const colors = {
-            urgent: '#dc4c3e',
-            high: '#ff8800',
+            high: '#dc4c3e',
             medium: '#f4c842',
             low: '#4c9aff'
         };
         priorityIndicator.style.cssText = `
             width: 4px;
-            height: 18px;
+            height: 20px;
             background-color: ${colors[task.priority]};
-            margin-right: 12px;
+            margin-right: 4px;
             border-radius: 2px;
         `;
     } else {
         priorityIndicator.style.cssText = `
             width: 4px;
-            height: 18px;
+            height: 20px;
             margin-right: 12px;
         `;
     }
@@ -128,7 +134,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
     }
 
     const openInNewTabIcon = document.createElement('div');
-    openInNewTabIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right-from-square"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="m21 3-9 9"/><path d="M15 3h6v6"/></svg>`;
+    openInNewTabIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></g></svg>`;
     openInNewTabIcon.style.cssText = `
         margin-left: 12px;
         color: #808080;
@@ -153,8 +159,8 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         }
     });
 
-    taskDiv.appendChild(checkbox);
     taskDiv.appendChild(priorityIndicator);
+    taskDiv.appendChild(checkbox);
     taskDiv.appendChild(content);
     taskDiv.appendChild(tagsContainer);
     taskDiv.appendChild(openInNewTabIcon);
