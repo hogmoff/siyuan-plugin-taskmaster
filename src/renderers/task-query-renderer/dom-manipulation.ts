@@ -14,6 +14,7 @@ export function renderTasks(container: HTMLElement, tasks: Task[], rendererConte
             text-align: center;
             padding: 40px 20px;
             color: #808080;
+            background: #ffffff;
             font-size: 16px;
         `;
         noTasks.textContent = 'Keine Aufgaben gefunden';
@@ -31,8 +32,6 @@ export function renderTasks(container: HTMLElement, tasks: Task[], rendererConte
             background: #ffffff;
             border-bottom: 1px solid #f0f0f0;
             position: sticky;
-            top: 0;
-            z-index: 10;
         `;
         groupHeader.textContent = `${group.label} (${group.tasks.length})`;
         container.appendChild(groupHeader);
