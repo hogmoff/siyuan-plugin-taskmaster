@@ -12,17 +12,17 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         display: flex;
         align-items: center;
         padding: 12px 20px;
-        border-bottom: 1px solid #f5f5f5;
+        border-bottom: 1px solid var(--b3-border-color-light);
         transition: background-color 0.2s ease;
         cursor: pointer;
     `;
 
     // Background color for task for Mouse Enter
     let baseBgColor = 'transparent';
-    if (task.priority === 'high') {
-        baseBgColor =  'rgba(220, 76, 62, 0.3)';
+    if (task.priority === 'urgent' || task.priority === 'high') {
+        baseBgColor = 'rgba(220, 76, 62, 0.18)';
     } else if (task.priority === 'medium') {
-        baseBgColor =  baseBgColor = 'rgba(255, 136, 0, 0.3)';
+        baseBgColor = 'rgba(255, 136, 0, 0.18)';
     }
     taskDiv.addEventListener('mouseenter', () => {
         taskDiv.style.backgroundColor = baseBgColor;
@@ -43,7 +43,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
     };
     const uncheckedBorder = task.priority && priorityColors[task.priority]
         ? priorityColors[task.priority]
-        : '#bdbdbd';
+        : 'var(--b3-border-color)';
 
     const applyCheckboxStyle = () => {
         const isChecked = task.status === 'done';
@@ -53,8 +53,8 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            border: 2px solid ${isChecked ? '#0b9e06ff' : uncheckedBorder};
-            background-color: ${isChecked ? '#0b9e06ff' : 'transparent'};
+            border: 2px solid ${isChecked ? 'var(--b3-theme-primary)' : uncheckedBorder};
+            background-color: ${isChecked ? 'var(--b3-theme-primary)' : 'transparent'};
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -63,7 +63,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         `;
         if (isChecked) {
             // White check mark SVG
-            checkbox.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            checkbox.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" fill="none" stroke="var(--b3-theme-on-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         } else {
             checkbox.innerHTML = '';
         }
@@ -80,7 +80,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         const description = taskDiv.querySelector('.task-description') as HTMLElement;
         if (description) {
             description.style.textDecoration = task.status === 'done' ? 'line-through' : 'none';
-            description.style.color = task.status === 'done' ? '#808080' : '#202020';
+            description.style.color = task.status === 'done' ? 'var(--b3-theme-text-lighter)' : 'var(--b3-theme-text)';
         }
     };
 
@@ -92,6 +92,30 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
             toggleChecked(e);
         }
     });
+
+    // Left-side priority indicator bar
+    const priorityIndicator = document.createElement('div');
+    if (task.priority) {
+        const colors: Record<string, string> = {
+            urgent: '#dc4c3e',
+            high: '#dc4c3e',
+            medium: '#f4c842',
+            low: '#4c9aff',
+        };
+        priorityIndicator.style.cssText = `
+            width: 4px;
+            height: 20px;
+            background-color: ${colors[task.priority]};
+            margin-right: 4px;
+            border-radius: 2px;
+        `;
+    } else {
+        priorityIndicator.style.cssText = `
+            width: 4px;
+            height: 20px;
+            margin-right: 12px;
+        `;
+    }
 
     const content = document.createElement('div');
     content.style.cssText = `
@@ -106,7 +130,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
     description.className = 'task-description';
     description.style.cssText = `
         font-size: 14px;
-        color: ${task.status === 'done' ? '#808080' : '#202020'};
+        color: ${task.status === 'done' ? 'var(--b3-theme-text-lighter)' : 'var(--b3-theme-text)'};
         text-decoration: ${task.status === 'done' ? 'line-through' : 'none'};
         line-height: 1.4;
         margin-bottom: 2px;
@@ -118,7 +142,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         dueDateSpan.textContent = dateInfo.text;
         dueDateSpan.style.cssText = `
             font-size: 12px;
-            color: ${dateInfo.isOverdue ? '#dc4c3e' : '#808080'};
+            color: ${dateInfo.isOverdue ? 'var(--b3-error-color)' : 'var(--b3-theme-text-lighter)'};
             margin-top: 2px;
         `;
         content.appendChild(dueDateSpan);
@@ -139,8 +163,8 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
             const tagSpan = document.createElement('span');
             tagSpan.textContent = `#${tag}`;
             tagSpan.style.cssText = `
-                background: #f0f0f0;
-                color: #666;
+                background: var(--b3-theme-surface-light);
+                color: var(--b3-theme-text-lighter);
                 padding: 2px 6px;
                 border-radius: 12px;
                 font-size: 11px;
@@ -154,7 +178,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
     openInNewTabIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></g></svg>`;
     openInNewTabIcon.style.cssText = `
         margin-left: 12px;
-        color: #808080;
+        color: var(--b3-theme-text-lighter);
         display: flex;
         align-items: center;
     `;
@@ -177,6 +201,7 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         }
     });
 
+    taskDiv.appendChild(priorityIndicator);
     taskDiv.appendChild(checkbox);
     taskDiv.appendChild(content);
     taskDiv.appendChild(tagsContainer);

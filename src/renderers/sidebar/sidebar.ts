@@ -18,12 +18,12 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         position: relative;
         width: 280px;
         height: 100%;
-        background: #fafafa;
-        border-right: 1px solid #e0e0e0;
+        background: var(--b3-theme-background);
+        border-right: 1px solid var(--b3-border-color);
         display: flex;
         flex-direction: column;
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
         overflow: hidden;
     `;
 
@@ -50,7 +50,7 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         align-items: center;
         margin-bottom: 24px;
         padding-bottom: 16px;
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px solid var(--b3-border-color);
     `;
 
     const title = document.createElement('h2');
@@ -59,7 +59,7 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         font-size: 20px;
         font-weight: 700;
         margin: 0;
-        color: #202020;
+        color: var(--b3-theme-text);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         letter-spacing: -0.02em;
     `;
@@ -83,14 +83,14 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         left: ${rendererContext.sidebarCollapsed ? '0' : '280px'};
         width: 24px;
         height: 36px;
-        background: #ffffff;
-        border: 1px solid #e0e0e0;
+        background: var(--b3-theme-background);
+        border: 1px solid var(--b3-border-color);
         border-radius: 0 50% 50% 0;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 101;
     `;
@@ -102,7 +102,7 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #666666;
+        color: var(--b3-theme-text-lighter);
         transition: transform 0.3s ease;
     `;
 
@@ -130,20 +130,58 @@ export function createSidebar(rendererContext: TaskQueryRenderer, tasks: Task[])
         if (mainContent) {
             mainContent.style.marginLeft = rendererContext.sidebarCollapsed ? '0' : '280px';
         }
+
+        // Update backdrop visibility
+        updateBackdrop();
     });
 
+    // Keep backdrop state in sync on resize
+    window.addEventListener('resize', updateBackdrop);
+
     toggleButton.addEventListener('mouseenter', () => {
-        toggleButton.style.backgroundColor = '#f5f5f5';
+        toggleButton.style.backgroundColor = 'var(--b3-theme-surface-light)';
         toggleButton.style.transform = 'scale(1.05)';
     });
 
     toggleButton.addEventListener('mouseleave', () => {
-        toggleButton.style.backgroundColor = '#ffffff';
+        toggleButton.style.backgroundColor = 'var(--b3-theme-background)';
         toggleButton.style.transform = 'scale(1)';
     });
 
     container.appendChild(sidebar);
     container.appendChild(toggleButton);
+
+    // Backdrop overlay (small screens) with fade
+    const backdrop = document.createElement('div');
+    backdrop.className = 'sidebar-backdrop';
+    backdrop.style.cssText = `
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    `;
+    container.appendChild(backdrop);
+
+    function updateBackdrop() {
+        const useBackdrop = window.innerWidth <= 768 && !rendererContext.sidebarCollapsed;
+        backdrop.style.opacity = useBackdrop ? '1' : '0';
+        backdrop.style.pointerEvents = useBackdrop ? 'auto' : 'none';
+    }
+    updateBackdrop();
+
+    backdrop.addEventListener('click', () => {
+        if (!rendererContext.sidebarCollapsed) {
+            rendererContext.sidebarCollapsed = true;
+            sidebar.style.width = '0';
+            toggleButton.style.left = '0';
+            toggleIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+            const mainContent = document.querySelector('.main-content') as HTMLElement;
+            if (mainContent) mainContent.style.marginLeft = '0';
+            updateBackdrop();
+        }
+    });
 
     return container;
 
@@ -167,11 +205,11 @@ export function createTagsSection(rendererContext: TaskQueryRenderer, tasks: Tas
             background: transparent;
         }
         .tags-container::-webkit-scrollbar-thumb {
-            background: #e0e0e0;
+            background: var(--b3-border-color);
             border-radius: 3px;
         }
         .tags-container::-webkit-scrollbar-thumb:hover {
-            background: #d0d0d0;
+            background: var(--b3-border-color);
         }
     `;
     document.head.appendChild(scrollbarStyle);

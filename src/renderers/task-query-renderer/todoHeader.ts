@@ -4,8 +4,8 @@ export function createHeader(rendererContext: TaskQueryRenderer, taskCount: numb
     const header = document.createElement('div');
     header.style.cssText = `
         padding: 16px 20px;
-        background: #fafbfc;
-        border-bottom: 1px solid #e0e6e8;
+        background: var(--b3-theme-background);
+        border-bottom: 1px solid var(--b3-border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -17,14 +17,14 @@ export function createHeader(rendererContext: TaskQueryRenderer, taskCount: numb
         margin: 0;
         font-size: 18px;
         font-weight: 600;
-        color: #202020;
+        color: var(--b3-theme-text);
     `;
 
     if (rendererContext.selectedTag !== null) {
         const filterInfo = document.createElement('div');
         filterInfo.style.cssText = `
             font-size: 12px;
-            color: #666;
+            color: var(--b3-theme-text-lighter);
             margin-top: 2px;
         `;
 
@@ -40,7 +40,7 @@ export function createHeader(rendererContext: TaskQueryRenderer, taskCount: numb
     count.textContent = `${taskCount} Aufgabe${taskCount !== 1 ? 'n' : ''}`;
     count.style.cssText = `
         font-size: 14px;
-        color: #808080;
+        color: var(--b3-theme-text-lighter);
         font-weight: normal;
     `;
 

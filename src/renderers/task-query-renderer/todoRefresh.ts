@@ -6,8 +6,8 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
     const refreshContainer = document.createElement('div');
     refreshContainer.style.cssText = `
         padding: 12px 20px;
-        border-top: 1px solid #e0e6e8;
-        background: #fafbfc;
+        border-top: 1px solid var(--b3-border-color);
+        background: var(--b3-theme-background);
         display: flex;
         gap: 8px;
     `;
@@ -15,10 +15,10 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
     const buttonBaseCss = `
         padding: 8px 12px;
         font-size: 13px;
-        border: 1px solid #e0e6e8;
+        border: 1px solid var(--b3-border-color);
         border-radius: 6px;
-        background: white;
-        color: #202020;
+        background: var(--b3-theme-background);
+        color: var(--b3-theme-text);
         cursor: pointer;
         transition: all 0.2s ease;
     `;
@@ -28,11 +28,11 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
     refreshButton.style.cssText = buttonBaseCss;
 
     refreshButton.addEventListener('mouseenter', () => {
-        refreshButton.style.backgroundColor = '#f5f5f5';
+        refreshButton.style.backgroundColor = 'var(--b3-theme-surface-light)';
     });
 
     refreshButton.addEventListener('mouseleave', () => {
-        refreshButton.style.backgroundColor = 'white';
+        refreshButton.style.backgroundColor = 'var(--b3-theme-background)';
     });
 
     refreshButton.addEventListener('click', async () => {
@@ -47,11 +47,11 @@ export function createRefreshButton(rendererContext: TaskQueryRenderer, queryStr
     saveButton.style.cssText = buttonBaseCss;
 
     saveButton.addEventListener('mouseenter', () => {
-        saveButton.style.backgroundColor = '#f5f5f5';
+        saveButton.style.backgroundColor = 'var(--b3-theme-surface-light)';
     });
 
     saveButton.addEventListener('mouseleave', () => {
-        saveButton.style.backgroundColor = 'white';
+        saveButton.style.backgroundColor = 'var(--b3-theme-background)';
     });
 
     saveButton.addEventListener('click', async () => {

@@ -78,10 +78,10 @@ export class TaskQueryRenderer {
         }
 
         container.style.cssText = `
-            background: #ffffff;
-            border: 5px solid #e0e6e8;
-            border-radius: 1px;
-            box-shadow: 0 2px 8px rgba(5, 4, 4, 0.08);
+            background: var(--b3-theme-surface);
+            border: 1px solid var(--b3-border-color);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             margin: 16px 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: auto;
@@ -126,6 +126,8 @@ export class TaskQueryRenderer {
             padding: 0;
             flex: 1;
             overflow-y: auto;
+            color: var(--b3-theme-text);
+            background: var(--b3-theme-surface);
         `;
 
         renderTasks(content, tasks, this);
@@ -185,8 +187,8 @@ export class TaskQueryRenderer {
             justify-content: space-between;
             align-items: center;
             transition: all 0.2s ease;
-            background-color: ${isSelected ? '#e8f2ff' : 'transparent'};
-            color: ${isSelected ? '#0066cc' : '#202020'};
+            background-color: ${isSelected ? 'var(--b3-theme-primary-light)' : 'transparent'};
+            color: ${isSelected ? 'var(--b3-theme-primary)' : 'var(--b3-theme-text)'};
             border-radius: 8px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 14px;
@@ -208,8 +210,8 @@ export class TaskQueryRenderer {
         countSpan.style.cssText = `
             font-size: 12px;
             font-weight: 600;
-            color: ${isSelected ? '#0066cc' : '#666666'};
-            background: ${isSelected ? '#cce5ff' : '#f5f5f5'};
+            color: ${isSelected ? 'var(--b3-theme-primary)' : 'var(--b3-theme-text-lighter)'};
+            background: ${isSelected ? 'var(--b3-theme-primary-variant, var(--b3-theme-primary-light))' : 'var(--b3-theme-surface-light)'};
             padding: 2px 8px;
             border-radius: 12px;
             min-width: 20px;
@@ -224,7 +226,7 @@ export class TaskQueryRenderer {
 
         item.addEventListener('mouseenter', () => {
             if (!isSelected) {
-                item.style.backgroundColor = '#f8f9fa';
+                item.style.backgroundColor = 'var(--b3-theme-surface-light)';
             }
         });
 
@@ -243,12 +245,12 @@ export class TaskQueryRenderer {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'task-query-error';
         errorDiv.style.cssText = `
-            border: 1px solid #dc4c3e;
-            border-radius: 10px;
+            border: 1px solid var(--b3-error-color);
+            border-radius: 4px;
             padding: 16px;
             margin: 8px 0;
-            background: #fff5f5;
-            color: #dc4c3e;
+            background: rgba(var(--b3-error-color-rgb), 0.1);
+            color: var(--b3-error-color);
             font-family: monospace;
         `;
         errorDiv.innerHTML = `<strong>Task Query Fehler:</strong><br>${this.escapeHtml(message)}`;
@@ -276,9 +278,9 @@ export class TaskQueryRenderer {
             .task-sidebar {
                 position: absolute !important;
                 z-index: 100 !important;
-                background: #fafafa !important;
-                border-right: 1px solid #e0e6e8 !important;
-                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08) !important;
+                background: var(--b3-theme-background) !important;
+                border-right: 1px solid var(--b3-border-color) !important;
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15) !important;
             }
 
             .task-sidebar.collapsed {
@@ -339,12 +341,12 @@ export class TaskQueryRenderer {
             }
 
             .task-sidebar::-webkit-scrollbar-thumb {
-                background: #e0e6e8;
+                background: var(--b3-border-color);
                 border-radius: 3px;
             }
 
             .task-sidebar::-webkit-scrollbar-thumb:hover {
-                background: #d0d0d0;
+                background: var(--b3-border-color);
             }
 
             .tag-item {
@@ -369,16 +371,16 @@ export class TaskQueryRenderer {
             }
 
             .task-sidebar::-webkit-scrollbar-track {
-                background: #f1f1f1;
+                background: transparent;
             }
 
             .task-sidebar::-webkit-scrollbar-thumb {
-                background: #c1c1c1;
+                background: var(--b3-border-color);
                 border-radius: 2px;
             }
 
             .task-sidebar::-webkit-scrollbar-thumb:hover {
-                background: #a8a8a8;
+                background: var(--b3-border-color);
             }
 
             .task-sidebar, .main-content, .collapsed-toggle {

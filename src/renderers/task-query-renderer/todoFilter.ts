@@ -4,8 +4,8 @@ export function createFilterBar(rendererContext: TaskQueryRenderer): HTMLElement
     const filterBar = document.createElement('div');
     filterBar.style.cssText = `
         padding: 12px 20px;
-        background: #fafbfc;
-        border-bottom: 1px solid #e0e6e8;
+        background: var(--b3-theme-background);
+        border-bottom: 1px solid var(--b3-border-color);
         display: flex;
         gap: 8px;
         align-items: center;
@@ -20,10 +20,11 @@ export function createFilterBar(rendererContext: TaskQueryRenderer): HTMLElement
     datePicker.type = 'date';
     datePicker.style.cssText = `
         padding: 6px 12px;
-        border: 1px solid #e0e6e8;
+        border: 1px solid var(--b3-border-color);
         border-radius: 6px;
         font-size: 13px;
-        background: white;
+        background: var(--b3-theme-background);
+        color: var(--b3-theme-text);
         cursor: pointer;
     `;
 
@@ -61,10 +62,10 @@ export function createFilterButton(rendererContext: TaskQueryRenderer, text: str
     const isActive = rendererContext.currentFilter === filter;
     button.style.cssText = `
         padding: 6px 12px;
-        border: 1px solid ${isActive ? '#dc4c3e' : '#e0e6e8'};
+        border: 1px solid ${isActive ? 'var(--b3-theme-primary)' : 'var(--b3-border-color)'};
         border-radius: 6px;
-        background: ${isActive ? '#dc4c3e' : 'white'};
-        color: ${isActive ? 'white' : '#202020'};
+        background: ${isActive ? 'var(--b3-theme-primary)' : 'var(--b3-theme-background)'};
+        color: ${isActive ? 'var(--b3-theme-on-primary)' : 'var(--b3-theme-text)'};
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -80,15 +81,15 @@ export function createFilterButton(rendererContext: TaskQueryRenderer, text: str
 
     button.addEventListener('mouseenter', () => {
         if (rendererContext.currentFilter !== filter) {
-            button.style.backgroundColor = '#f5f5f5';
-            button.style.borderColor = '#d0d0d0';
+            button.style.backgroundColor = 'var(--b3-theme-surface-light)';
+            button.style.borderColor = 'var(--b3-border-color)';
         }
     });
 
     button.addEventListener('mouseleave', () => {
         if (rendererContext.currentFilter !== filter) {
-            button.style.backgroundColor = 'white';
-            button.style.borderColor = '#e0e6e8';
+            button.style.backgroundColor = 'var(--b3-theme-background)';
+            button.style.borderColor = 'var(--b3-border-color)';
         }
     });
 
@@ -103,9 +104,9 @@ export function updateFilterButtons(rendererContext: TaskQueryRenderer) {
     buttons.forEach(btn => {
         if (!rendererContext) return;
         const isActive = btn.dataset.filter === rendererContext.currentFilter;
-        btn.style.background = isActive ? '#dc4c3e' : 'white';
-        btn.style.color = isActive ? 'white' : '#202020';
-        btn.style.borderColor = isActive ? '#dc4c3e' : '#e0e6e8';
+        btn.style.background = isActive ? 'var(--b3-theme-primary)' : 'var(--b3-theme-background)';
+        btn.style.color = isActive ? 'var(--b3-theme-on-primary)' : 'var(--b3-theme-text)';
+        btn.style.borderColor = isActive ? 'var(--b3-theme-primary)' : 'var(--b3-border-color)';
     });
 
     // Datepicker
