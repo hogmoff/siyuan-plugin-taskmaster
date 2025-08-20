@@ -1,8 +1,11 @@
 import { createSidebar, createTagsSection } from './sidebar/sidebar';
 import { Task } from '../types/task';
-import { createHeader, createFilterBar, updateFilterButtons, createRefreshButton } from './task-query-renderer/ui-components';
+import { createRefreshButton } from './task-query-renderer/todoRefresh';
+import { createHeader } from './task-query-renderer/todoHeader';
+import { createFilterBar, updateFilterButtons } from './task-query-renderer/todoFilter';
 import { processTaskQuery } from './task-query-renderer/query-handler';
-import { renderTasks } from './task-query-renderer/dom-manipulation';
+import { renderTasks } from './task-query-renderer/renderTasks';
+
 export class TaskQueryRenderer {
     public app: any;
     public blockId: string;

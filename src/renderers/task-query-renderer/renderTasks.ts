@@ -1,6 +1,6 @@
 import { Task } from '../../types/task';
 import { applyCurrentFilter, sortTasks, groupTasksByDate } from './task-operations';
-import { createTaskItem } from './ui-components';
+import { createTaskItem } from './taskItem';
 
 export function renderTasks(container: HTMLElement, tasks: Task[], rendererContext: any) {
     container.innerHTML = '';
