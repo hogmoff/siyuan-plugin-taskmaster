@@ -31,20 +31,50 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
         taskDiv.style.backgroundColor = 'transparent';
     });
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = task.status === 'done';
-    checkbox.style.cssText = `
-        margin-right: 12px;
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        accent-color: #0b9e06ff;
-    `;
+    // Custom circular checkbox using priority color when unchecked
+    const checkbox = document.createElement('div');
+    checkbox.setAttribute('role', 'checkbox');
+    checkbox.tabIndex = 0;
+    const priorityColors: Record<string, string> = {
+        urgent: '#dc4c3e',
+        high: '#dc4c3e',
+        medium: '#f4c842',
+        low: '#4c9aff',
+    };
+    const uncheckedBorder = task.priority && priorityColors[task.priority]
+        ? priorityColors[task.priority]
+        : '#bdbdbd';
 
-    checkbox.addEventListener('change', async (e) => {
+    const applyCheckboxStyle = () => {
+        const isChecked = task.status === 'done';
+        checkbox.setAttribute('aria-checked', String(isChecked));
+        checkbox.style.cssText = `
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid ${isChecked ? '#0b9e06ff' : uncheckedBorder};
+            background-color: ${isChecked ? '#0b9e06ff' : 'transparent'};
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-sizing: border-box;
+        `;
+        if (isChecked) {
+            // White check mark SVG
+            checkbox.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        } else {
+            checkbox.innerHTML = '';
+        }
+    };
+
+    applyCheckboxStyle();
+
+    const toggleChecked = async (e: Event) => {
         e.stopPropagation();
-        task.status = checkbox.checked ? 'done' : 'todo';
+        task.status = task.status === 'done' ? 'todo' : 'done';
+        applyCheckboxStyle();
         await rendererContext.taskService.updateTask(task);
 
         const description = taskDiv.querySelector('.task-description') as HTMLElement;
@@ -52,29 +82,16 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
             description.style.textDecoration = task.status === 'done' ? 'line-through' : 'none';
             description.style.color = task.status === 'done' ? '#808080' : '#202020';
         }
-    });
+    };
 
-    const priorityIndicator = document.createElement('div');
-    if (task.priority) {
-        const colors = {
-            high: '#dc4c3e',
-            medium: '#f4c842',
-            low: '#4c9aff'
-        };
-        priorityIndicator.style.cssText = `
-            width: 4px;
-            height: 20px;
-            background-color: ${colors[task.priority]};
-            margin-right: 4px;
-            border-radius: 2px;
-        `;
-    } else {
-        priorityIndicator.style.cssText = `
-            width: 4px;
-            height: 20px;
-            margin-right: 12px;
-        `;
-    }
+    checkbox.addEventListener('click', toggleChecked);
+    checkbox.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            toggleChecked(e);
+        }
+    });
 
     const content = document.createElement('div');
     content.style.cssText = `
@@ -154,12 +171,12 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
     });
 
     taskDiv.addEventListener('click', (e) => {
-        if (e.target !== checkbox && !openInNewTabIcon.contains(e.target as Node)) {
+        const target = e.target as Node;
+        if (!checkbox.contains(target) && !openInNewTabIcon.contains(target)) {
             openTaskEditModal(task, rendererContext);
         }
     });
 
-    taskDiv.appendChild(priorityIndicator);
     taskDiv.appendChild(checkbox);
     taskDiv.appendChild(content);
     taskDiv.appendChild(tagsContainer);

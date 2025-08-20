@@ -79,8 +79,8 @@ export class TaskQueryRenderer {
 
         container.style.cssText = `
             background: #ffffff;
-            border: 1px solid #e0e6e8;
-            border-radius: 4px;
+            border: 5px solid #e0e6e8;
+            border-radius: 1px;
             box-shadow: 0 2px 8px rgba(5, 4, 4, 0.08);
             margin: 16px 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
