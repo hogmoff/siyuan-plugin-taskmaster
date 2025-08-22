@@ -4,6 +4,7 @@ import { TaskQueryResults } from './components/tasks/taskQueryResults';
 import { TaskService } from './components/tasks/taskService';
 import { showTaskEditor } from './components/tasks/taskEditor';
 import { TaskRenderer } from './renderers/TaskRenderer';
+import { searchTask } from './components/tasks/taskhelpers';
 import { TaskQueryRenderer } from './renderers/TaskQueryRenderer';
 import { TaskQueryDock } from './components/TaskQueryDock';
 import { reloadUI } from './api';
@@ -85,15 +86,31 @@ export default class PluginSample extends Plugin {
             }, 100)
 
             // Show Task Editor at any Tasks
-            const listItems = tempDiv.querySelectorAll('[data-type="NodeParagraph"]')
+            const listItems = tempDiv.querySelectorAll('[data-subtype="t"][data-type="NodeListItem"]')
             listItems.forEach((item) => {
-              const content = item.textContent;
-              // Last character is zero-width space ignore it, look to space at second last char
-              if (content && content.trim().length > 1 && content.charCodeAt(content.length - 2) === 32) {
+              const content = item.querySelector('[contenteditable="true"]')
+              if (content && content.textContent.length > 1 && content.textContent[-1] === ' ') {
                 const blockId = item.getAttribute('data-node-id')
                 if (blockId) {
                   const element = document.querySelector(`[data-node-id="${blockId}"]`)
-                  showTaskEditor(element as HTMLElement, blockId, content);
+                  if (element && !element.classList.contains('taskmaster-processing')) {
+                    const txt = content.textContent;
+                    showTaskEditor(element as HTMLElement, blockId, txt);
+                    return;
+                  }
+                }
+              }
+            })
+            const listItems2 = tempDiv.querySelectorAll('[data-type="NodeParagraph"]')
+            listItems2.forEach((item) => {
+              const content2 = item.textContent;
+              // Last character is zero-width space ignore it, look to space at second last char
+              if (content2 && content2.trim().length > 1 && content2.charCodeAt(content2.length - 2) === 32) {
+                const blockId = item.getAttribute('data-node-id')
+                if (blockId) {
+                  const rootId = searchTask(blockId);
+                  const element = document.querySelector(`[data-node-id="${rootId}"]`)
+                  showTaskEditor(element as HTMLElement, blockId, content2);
                 }
               }
             })
