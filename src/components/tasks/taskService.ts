@@ -106,14 +106,18 @@ export class TaskService {
     }
 
     async getTasksByQueryString(queryString: string): Promise<Task[]> {
+        // Always refresh tasks to avoid duplicates accumulating in the cache
+        await this.refreshTasks();
+
         let query = null;
         if (queryString.trim().length > 0) {
             query = TaskQueryEngine.parseQueryString(queryString);
             return await this.getTasks(query);
         }
         else {
-            return await this.loadAllTasks();
-        }       
+            // After refresh, return current full task list
+            return await this.getAllTasks();
+        }
     }
 
     async getTasksByTag(tag: string): Promise<Task[]> {

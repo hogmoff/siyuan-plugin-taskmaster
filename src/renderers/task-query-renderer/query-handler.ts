@@ -121,7 +121,8 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
 
         // Use the stripped (filter-only) query for refresh calls, but persist full query on the element
         const resultContainer = renderer.createTodoContainer(filteredTasks, stripped);
-        resultContainer.dataset.taskQuery = "```tasks\n" + cleanQueryString;
+        // Store a canonical query string (without backticks) so refresh routines can detect it reliably
+        resultContainer.dataset.taskQuery = "tasks\n" + cleanQueryString;
         resultContainer.dataset.taskQueryBlockId = renderer.blockId || '';
         block.parentNode?.replaceChild(resultContainer, block);
     } catch (error) {
