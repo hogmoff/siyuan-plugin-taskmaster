@@ -3,7 +3,7 @@ import { Task } from '../types/task';
 import { createRefreshButton } from './task-query-renderer/todoRefresh';
 import { createHeader } from './task-query-renderer/todoHeader';
 import { createFilterBar, updateFilterButtons } from './task-query-renderer/todoFilter';
-import { processTaskQuery } from './task-query-renderer/query-handler';
+import { processTaskQuery, refreshQuery } from './task-query-renderer/query-handler';
 import { renderTasks } from './task-query-renderer/renderTasks';
 
 export class TaskQueryRenderer {
@@ -147,7 +147,9 @@ export class TaskQueryRenderer {
 
     public async refreshCurrentView(tasks: Task[]) {
         this.currentTasks = tasks;
-        const container = document.querySelector('.todo-task-container');
+        // Prefer refreshing the container that matches the current task list context
+        const containers = Array.from(document.querySelectorAll<HTMLElement>('.todo-task-container'));
+        const container = containers.find(c => (c.querySelector('.task-content') as HTMLElement | null) !== null) || null;
         if (!container) return;
 
         const content = container.querySelector('.task-content') as HTMLElement;
@@ -172,7 +174,7 @@ export class TaskQueryRenderer {
             sidebar.classList.toggle('collapsed', this.sidebarCollapsed);
             const mainContent = container.querySelector('.main-content');
             if (mainContent) {
-                mainContent.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
+                (mainContent as HTMLElement).classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
             }
         }
     }
@@ -416,11 +418,29 @@ export class TaskQueryRenderer {
     // NEW: Refresh the nearest todo container for a given element (e.g., a button inside)
     public refreshContainerFromElement(el: HTMLElement) {
       const container = el.closest<HTMLElement>('.todo-task-container');
-      if (!container) return;
+      if (!container) {
+        // Fallback: global refresh in case we can't find the container
+        this.refreshAll(document.body);
+        return;
+      }
+
+      // If we have a stripped filter-only query, use the lightweight refresh
+      const filterOnly = (container.dataset.taskFilter || '').trim();
+      if (filterOnly) {
+        this.blockId = container.dataset.taskQueryBlockId || this.blockId || '';
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        refreshQuery(this, container, filterOnly);
+        return;
+      }
+
+      // Otherwise, fall back to the full re-processing path
       const query = (container.dataset.taskQuery || '').trim();
       if (query && query.startsWith('tasks')) {
         this.blockId = container.dataset.taskQueryBlockId || this.blockId || '';
         processTaskQuery(this, container, query);
+      } else {
+        // Older containers without dataset fallback
+        this.refreshAll(document.body);
       }
     }
 }

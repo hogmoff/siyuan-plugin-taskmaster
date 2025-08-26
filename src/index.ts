@@ -94,7 +94,8 @@ export default class PluginSample extends Plugin {
 
             // Handle task updates and re-render queries
             setTimeout(() => {
-              this.taskQueryRenderer.processQueries(document.body)
+              // Refresh both already-rendered containers and any new code blocks
+              this.taskQueryRenderer.refreshAll(document.body)
             }, 100)
 
             // Show Task Editor at any Tasks

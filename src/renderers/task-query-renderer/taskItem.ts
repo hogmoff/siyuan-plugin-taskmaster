@@ -73,15 +73,33 @@ export function createTaskItem(task: Task, rendererContext: TaskQueryRenderer): 
 
     const toggleChecked = async (e: Event) => {
         e.stopPropagation();
+        // 1) Toggle in-memory object used by this element
         task.status = task.status === 'done' ? 'todo' : 'done';
         applyCheckboxStyle();
-        await rendererContext.taskService.updateTask(task);
 
+        // 2) Persist change to backend
+        await rendererContext.taskService.updateTask(task as any);
+
+        // 3) Update inline description styles for immediate feedback
         const description = taskDiv.querySelector('.task-description') as HTMLElement;
         if (description) {
             description.style.textDecoration = task.status === 'done' ? 'line-through' : 'none';
             description.style.color = task.status === 'done' ? 'var(--b3-theme-text-lighter)' : 'var(--b3-theme-text)';
         }
+
+        // 4) Update renderer's currentTasks snapshot and re-render the list immediately
+        if (Array.isArray((rendererContext as any).currentTasks)) {
+            const updated = (rendererContext as any).currentTasks.map((t: Task) =>
+                t.id === task.id ? { ...t, status: task.status } : t
+            );
+            (rendererContext as any).currentTasks = updated;
+            await rendererContext.refreshCurrentView(updated as any);
+        }
+
+        // 5) Schedule a container-level refresh to sync with DB state and query filters
+        setTimeout(() => {
+            rendererContext.refreshContainerFromElement(taskDiv);
+        }, 150);
     };
 
     checkbox.addEventListener('click', toggleChecked);

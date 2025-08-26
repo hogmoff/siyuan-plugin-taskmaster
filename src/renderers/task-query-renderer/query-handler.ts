@@ -123,11 +123,13 @@ export async function processTaskQuery(renderer: TaskQueryRenderer, block: HTMLE
         const resultContainer = renderer.createTodoContainer(filteredTasks, stripped);
         // Store a canonical query string (without backticks) so refresh routines can detect it reliably
         resultContainer.dataset.taskQuery = "tasks\n" + cleanQueryString;
+        // Also store the stripped filter-only query for fast refreshes without DB reload
+        resultContainer.dataset.taskFilter = stripped;
         resultContainer.dataset.taskQueryBlockId = renderer.blockId || '';
         block.parentNode?.replaceChild(resultContainer, block);
     } catch (error) {
         console.error('Error processing task query:', error);
-        renderer.showError(block, error.message);
+        renderer.showError(block, (error as any).message);
     }
 }
 
@@ -151,7 +153,7 @@ export async function refreshQuery(rendererContext: TaskQueryRenderer, container
             content.innerHTML = `
                 <div style="padding: 20px; text-align: center; color: #e74c3c;">
                     <strong>Fehler beim Laden der Tasks:</strong><br>
-                    ${error.message || 'Unbekannter Fehler'}
+                    ${(error as any).message || 'Unbekannter Fehler'}
                 </div>
             `;
         }
