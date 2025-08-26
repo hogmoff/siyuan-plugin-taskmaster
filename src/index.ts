@@ -16,6 +16,9 @@ export default class PluginSample extends Plugin {
   private taskQueryRenderer: TaskQueryRenderer
   private taskQueryResults: TaskQueryResults
   private taskQueryDock: TaskQueryDock;
+  // Keep stable references to bound event handlers so we can unregister them correctly
+  private boundHandleWsMain: (event: CustomEvent) => void;
+  private boundOnLayoutReady: () => void;
 
   async onload() {
     this.taskService = new TaskService()
@@ -50,9 +53,13 @@ export default class PluginSample extends Plugin {
         }
     });
 
-    this.eventBus.on('ws-main', this.handleWsMain.bind(this))
-    this.eventBus.on('loaded-protyle-static', this.onLayoutReady.bind(this))
-    this.eventBus.on('loaded-protyle-dynamic', this.handleWsMain.bind(this))
+    // Bind handlers once and register them, so off() can remove the same references
+    this.boundHandleWsMain = this.handleWsMain.bind(this)
+    this.boundOnLayoutReady = this.onLayoutReady.bind(this)
+
+    this.eventBus.on('ws-main', this.boundHandleWsMain)
+    this.eventBus.on('loaded-protyle-static', this.boundOnLayoutReady)
+    this.eventBus.on('loaded-protyle-dynamic', this.boundHandleWsMain)
   }
 
   async onLayoutReady() {
@@ -61,14 +68,19 @@ export default class PluginSample extends Plugin {
     this.taskQueryRenderer.processQueries(document.body)
     this.taskService.loadAllTasks();
     await this.taskQueryDock.updateBlockId(this.taskQueryRenderer.blockId);
-    
+
   }
 
   onunload() {
     console.log("TaskMaster plugin unloaded")
-    this.eventBus.off('ws-main', this.handleWsMain.bind(this))
-    this.eventBus.off('loaded-protyle-static', this.onLayoutReady.bind(this))
-    this.eventBus.off('loaded-protyle-dynamic', this.handleWsMain.bind(this))
+    // Unregister using the same bound function references
+    if (this.boundHandleWsMain) {
+      this.eventBus.off('ws-main', this.boundHandleWsMain)
+      this.eventBus.off('loaded-protyle-dynamic', this.boundHandleWsMain)
+    }
+    if (this.boundOnLayoutReady) {
+      this.eventBus.off('loaded-protyle-static', this.boundOnLayoutReady)
+    }
   }
 
   private handleWsMain(event: CustomEvent) {

@@ -7,20 +7,22 @@ export class TaskService {
     private tasks: Map<string, Task> = new Map();
 
     async loadAllTasks(): Promise<Task[]> {
+        // Ensure we start from a clean state to avoid accumulating duplicates
+        this.tasks.clear();
         const tasks: Task[] = [];
-        
+
         try {
             const taskBlocks = await sql(`
-                SELECT * FROM blocks 
+                SELECT * FROM blocks
                 WHERE type = 'i'
-                AND subtype = 't' 
+                AND subtype = 't'
                 AND markdown LIKE '%- [%] %'
-                ORDER BY updated DESC 
+                ORDER BY updated DESC
                 LIMIT 10000
             `);
 
             for (const block of taskBlocks) {
-                try {                    
+                try {
                     const lines = block.markdown.split('\n');
                     for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
@@ -30,11 +32,11 @@ export class TaskService {
                             block.path,
                             block.line || i + 1
                         );
-                        
+
                         if (task) {
                             this.tasks.set(task.id, task);
                             tasks.push(task);
-                        }                        
+                        }
                     }
                 } catch (error) {
                     console.error('Error parsing task:', error);

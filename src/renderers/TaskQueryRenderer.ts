@@ -39,13 +39,16 @@ export class TaskQueryRenderer {
         if (!this.taskQueryEngine) return;
 
         const codeBlocks = element.querySelectorAll('div[data-type="NodeCodeBlock"]');
-        
+
         codeBlocks.forEach((block: HTMLElement) => {
             const textContent = block.textContent || '';
             const trimmedContent = textContent.trim();
 
             if (trimmedContent.startsWith('tasks')) {
-                this.blockId = block.getAttribute('data-node-id'); 
+                // Prevent double-processing: if this block has already been transformed, skip
+                if ((block as any)._taskmasterProcessed) return;
+                (block as any)._taskmasterProcessed = true;
+                this.blockId = block.getAttribute('data-node-id');
                 processTaskQuery(this, block, trimmedContent);
             }
         });
