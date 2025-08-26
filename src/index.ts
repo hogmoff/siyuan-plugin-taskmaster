@@ -19,6 +19,8 @@ export default class PluginSample extends Plugin {
   // Keep stable references to bound event handlers so we can unregister them correctly
   private boundHandleWsMain: (event: CustomEvent) => void;
   private boundOnLayoutReady: () => void;
+  // Debounce set to prevent infinite loops when normalizing editor toggles
+  private normalizingBlocks: Set<string> = new Set();
 
   async onload() {
     this.taskService = new TaskService()
@@ -88,15 +90,29 @@ export default class PluginSample extends Plugin {
     if (event.detail.cmd === 'transactions') {
       for (const data of event.detail.data) {
         for (const op of data.doOperations) {
-          if (op.action === 'update') {
+          if (typeof op.data === 'string' && op.data.length > 0) {
             const tempDiv = document.createElement('div')
             tempDiv.innerHTML = op.data
 
+            if (op.action === 'update') {
             // Handle task updates and re-render queries
             setTimeout(() => {
               // Refresh both already-rendered containers and any new code blocks
               this.taskQueryRenderer.refreshAll(document.body)
             }, 100)
+
+            // Normalize done-date in Siyuan Editor toggles (idempotent)
+            const toggledItems = tempDiv.querySelectorAll('[data-subtype="t"][data-type="NodeListItem"]')
+            toggledItems.forEach((item) => {
+              const blockId = item.getAttribute('data-node-id')
+              if (!blockId) return
+              if (this.normalizingBlocks.has(blockId)) return
+              this.normalizingBlocks.add(blockId)
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              this.taskService.normalizeDoneDateForBlock(blockId).finally(() => {
+                setTimeout(() => this.normalizingBlocks.delete(blockId), 500)
+              })
+            })
 
             // Show Task Editor at any Tasks
             const listItems = tempDiv.querySelectorAll('[data-subtype="t"][data-type="NodeListItem"]')
@@ -127,6 +143,7 @@ export default class PluginSample extends Plugin {
                 }
               }
             })
+            }
           }
         }
       }

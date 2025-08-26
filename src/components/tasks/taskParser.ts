@@ -13,12 +13,28 @@ export class TaskParser {
     private static readonly TAG_REGEX = /#([\w-/äöüß]+)#/g;
     private static readonly DEPENDS_ON_REGEX = /\u26d4\s*([\w-]+)/g;
 
+    private static resetRegexIndices() {
+        // Reset lastIndex for all global regexes to avoid cross-call leakage
+        this.TASK_REGEX.lastIndex = 0 as any;
+        this.PRIORITY_REGEX.lastIndex = 0 as any;
+        this.DATE_REGEX.lastIndex = 0 as any;
+        this.START_DATE_REGEX.lastIndex = 0 as any;
+        this.SCHEDULED_DATE_REGEX.lastIndex = 0 as any;
+        this.DONE_DATE_REGEX.lastIndex = 0 as any;
+        this.CANCELLED_DATE_REGEX.lastIndex = 0 as any;
+        this.RECURRENCE_REGEX.lastIndex = 0 as any;
+        this.TAG_REGEX.lastIndex = 0 as any;
+        this.DEPENDS_ON_REGEX.lastIndex = 0 as any;
+    }
+
     static parseTaskFromMarkdown(
         line: string,
         blockId: string,
         path: string,
         lineNumber: number
     ): Task | null {
+        // Ensure regex state does not leak between lines
+        this.resetRegexIndices();
         const match = line.match(this.TASK_REGEX);
         if (!match) return null;
 
@@ -75,6 +91,8 @@ export class TaskParser {
     }
 
     private static parseDate(description: string, regex: RegExp): Date | undefined {
+        // Reset regex index to ensure matching starts from beginning for each new description
+        regex.lastIndex = 0 as any;
         const match = regex.exec(description);
         if (match) {
             const date = new Date(match[1]);
@@ -113,6 +131,8 @@ export class TaskParser {
     }
 
     private static cleanDescription(description: string): string {
+        // Ensure regex indices are reset before applying global replacements
+        this.resetRegexIndices();
         return description
             .replace(this.PRIORITY_REGEX, '')
             .replace(this.DATE_REGEX, '')
@@ -184,7 +204,8 @@ export class TaskParser {
             case TaskStatus.IN_PROGRESS:
                 return '/';
             case TaskStatus.DONE:
-                return 'X';
+                // Use lowercase 'x' to align with Siyuan's checkbox rendering
+                return 'x';
             case TaskStatus.CANCELLED:
                 return '-';
             default:

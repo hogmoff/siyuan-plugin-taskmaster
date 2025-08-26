@@ -1,7 +1,7 @@
 import { Task, TaskQuery, TaskStatus } from './taskModels';
 import { TaskParser } from './taskParser';
 import { TaskQueryEngine } from './taskQuery';
-import { sql, updateBlock } from '../../api';
+import { sql, updateBlock, getBlockByID } from '../../api';
 
 export class TaskService {
     private tasks: Map<string, Task> = new Map();
@@ -85,6 +85,52 @@ export class TaskService {
             } catch (error) {
                 console.error('Error updating task in Siyuan:', error);
             }
+        }
+    }
+
+    /**
+     * Normalize done-date token (✅ yyyy-mm-dd) for a given Siyuan list-item block.
+     * - If status is done and missing date, add today's date
+     * - If status is not done but date exists, remove it
+     */
+    async normalizeDoneDateForBlock(blockId: string, waitMs: number = 150): Promise<void> {
+        try {
+            // Small delay to let Siyuan persist the toggle before we read
+            if (waitMs > 0) {
+                await new Promise<void>(resolve => setTimeout(resolve, waitMs));
+            }
+            const block: any = await getBlockByID(blockId);
+            if (!block || typeof block.markdown !== 'string') return;
+
+            const lines = block.markdown.split('\n');
+            let changed = false;
+
+            const newLines = lines.map((line: string, i: number) => {
+                const task = TaskParser.parseTaskFromMarkdown(
+                    line,
+                    block.id,
+                    block.path || '',
+                    (block.line || i + 1)
+                );
+                if (!task) return line;
+
+                if (task.status === TaskStatus.DONE && !task.doneDate) {
+                    task.doneDate = new Date();
+                    changed = true;
+                } else if (task.status !== TaskStatus.DONE && task.doneDate) {
+                    task.doneDate = undefined;
+                    changed = true;
+                }
+
+                return TaskParser.taskToMarkdown(task);
+            });
+
+            if (changed) {
+                const newContent = newLines.join('\n');
+                await updateBlock('markdown', newContent, blockId);
+            }
+        } catch (error) {
+            console.error('Error normalizing done date for block:', error);
         }
     }
 
