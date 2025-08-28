@@ -1,0 +1,30 @@
+{
+  "name": "Taskmaster",
+  "short_name": "Taskmaster",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "description": "Tasks companion with offline support for SiYuan",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2322c55e'/><path d='M140 260l80 80 160-160' stroke='%23052e16' stroke-width='60' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230f172a'/><path d='M140 260l80 80 160-160' stroke='%23ffffff' stroke-width='60' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230f172a'/><g><rect width='432' height='432' x='40' y='40' rx='86' fill='%2322c55e'/><path d='M160 260l70 70 140-140' stroke='%23052e16' stroke-width='60' fill='none' stroke-linecap='round' stroke-linejoin='round'/></g></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

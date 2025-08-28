@@ -6,6 +6,7 @@ import { Task, TaskFilter, TaskSort, SiyuanBlock } from '../types';
 import { siyuanClient } from '../api/siyuan-client';
 import { TaskParser } from '../parsers/task-parser';
 import { LocalStorageManager } from '../storage/local-storage';
+import { OfflineQueue } from '../storage/offline-queue';
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -81,7 +82,21 @@ export function useTasks() {
         // Use a timeout to call the functions after they're available
         setTimeout(() => {
           syncTasks();
-          setTimeout(() => retrySyncForLocalTasks(), 1000);
+          // First flush queued mutations, then retry local tasks
+          setTimeout(async () => {
+            try {
+              await OfflineQueue.flush(siyuanClient, ({ type, tempId, blockId }) => {
+                if (type === 'insert' && tempId && blockId) {
+                  setTasks(prev => prev.map(t => t.id === tempId ? { ...t, id: blockId, blockId } : t));
+                }
+              });
+              // persist tasks after potential id swaps
+              LocalStorageManager.saveTasks(tasksRef.current);
+            } catch (e) {
+              console.warn('Failed to flush offline queue', e);
+            }
+            retrySyncForLocalTasks();
+          }, 300);
         }, 100);
       }
     };
@@ -96,6 +111,25 @@ export function useTasks() {
       window.removeEventListener('offline', handleOffline);
     };
   }, [tasks.length]); // Remove function dependencies
+
+  // On first mount, if we're online, try flushing any queued operations
+  useEffect(() => {
+    const tryInitialFlush = async () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine) {
+        try {
+          await OfflineQueue.flush(siyuanClient, ({ type, tempId, blockId }) => {
+            if (type === 'insert' && tempId && blockId) {
+              setTasks(prev => prev.map(t => t.id === tempId ? { ...t, id: blockId, blockId } : t));
+            }
+          });
+          LocalStorageManager.saveTasks(tasksRef.current);
+        } catch (e) {
+          // noop
+        }
+      }
+    }
+    tryInitialFlush();
+  }, []);
 
   const syncTasks = useCallback(async () => {
     if (syncInProgress) return;
@@ -206,6 +240,11 @@ export function useTasks() {
         }
       } else {
         console.log('Offline mode: Task created locally only');
+        // queue insert for later sync
+        OfflineQueue.enqueue({
+          type: 'insert',
+          payload: { markdown: newTask.markdown, parentId: newTask.parentId || '', tempId },
+        });
       }
 
       return newTask;
@@ -276,6 +315,13 @@ export function useTasks() {
         }
       } else if (isOffline) {
         console.log('Offline mode: Task changes saved locally only');
+        // Queue update if the task exists in Siyuan
+        if (task?.blockId) {
+          OfflineQueue.enqueue({
+            type: 'update',
+            payload: { blockId: task.blockId, markdown: task.markdown },
+          });
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update task';
@@ -307,6 +353,12 @@ export function useTasks() {
         }
       } else if (isOffline) {
         console.log('Offline mode: Task deleted locally only');
+        if (task?.blockId) {
+          OfflineQueue.enqueue({
+            type: 'delete',
+            payload: { blockId: task.blockId },
+          });
+        }
       } else if (task && !task.blockId) {
         console.log('Local-only task deleted (no blockId)');
       }
