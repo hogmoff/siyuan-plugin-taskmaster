@@ -223,3 +223,6 @@ export default function Home() {
     </div>
   );
 }
+
+// Avoid static pre-render which can evaluate client-only hooks in SSR
+export const dynamic = 'force-dynamic'
