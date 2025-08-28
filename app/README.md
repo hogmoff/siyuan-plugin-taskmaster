@@ -39,6 +39,15 @@ Deployment tips:
 - Serve over HTTPS for installability and to avoid mixed-content issues when calling SiYuan.
 - Ensure `public/icons/` contains required app icons (see “Icons” below).
 
+## Docker
+- Build image: `docker build -t taskmaster-app .`
+- Run container: `docker run -p 3000:3000 taskmaster-app`
+- Access app: open `http://localhost:3000`
+
+Notes:
+- The container runs the production Next.js server (`next start`) on port `3000`.
+- Configure SiYuan connection inside the app UI (LocalStorage). If you prefer env vars, pass them with `-e KEY=VALUE` or `--env-file .env` when running.
+
 ## Android Installation
 You can install the app using Chrome (or any PWA-capable browser) on Android.
 
