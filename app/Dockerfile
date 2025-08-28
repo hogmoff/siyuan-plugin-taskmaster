@@ -8,8 +8,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-# Install all deps (incl. dev) so we can build
-RUN npm ci
+# Install all deps (incl. dev) while tolerating peer conflicts from dev tools
+RUN npm ci --legacy-peer-deps
 
 FROM base AS builder
 ENV NODE_ENV=development
