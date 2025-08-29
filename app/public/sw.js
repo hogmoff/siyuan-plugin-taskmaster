@@ -5,7 +5,8 @@
   - Provides a manual message channel for skipWaiting/claim
 */
 
-const VERSION = 'v1';
+// Bump version to invalidate old caches after deployment
+const VERSION = 'v3';
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 const STATIC_CACHE = `static-${VERSION}`;
 
@@ -13,7 +14,6 @@ const OFFLINE_URL = '/offline.html';
 
 const STATIC_ASSETS = [
   OFFLINE_URL,
-  '/',
   '/manifest.webmanifest'
 ];
 
@@ -74,9 +74,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Handle Next.js static assets
-  if (url.pathname.startsWith('/_next/static/')) {
-    event.respondWith(cacheFirst(request));
+  // Never cache Next.js internal assets; let the browser handle them
+  if (url.pathname.startsWith('/_next/')) {
     return;
   }
 
@@ -92,7 +91,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Default: try runtime cache for same-origin GET requests
+  // Default: runtime cache for same-origin GET requests (exclude Next internals above)
   if (url.origin === self.location.origin) {
     event.respondWith(
       (async () => {
@@ -116,4 +115,3 @@ self.addEventListener('message', (event) => {
   if (!event.data) return;
   if (event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
-

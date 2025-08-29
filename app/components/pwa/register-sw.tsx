@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 
 export function RegisterSW() {
   useEffect(() => {
+    // Avoid SW in development to prevent HMR/runtime mismatches
+    if (process.env.NODE_ENV !== 'production') return
     if (typeof window === 'undefined') return
     if (!('serviceWorker' in navigator)) return
     const controller = new AbortController()
@@ -35,4 +37,3 @@ export function RegisterSW() {
 }
 
 export default RegisterSW
-
