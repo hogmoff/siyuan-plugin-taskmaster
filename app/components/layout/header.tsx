@@ -94,7 +94,7 @@ const Header = ({
             <CheckCircle2 className="h-5 w-5 text-white" />
           </button>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">SiYuan Tasks</h1>
+            <h1 className="text-lg font-semibold text-gray-900">Taskmaster</h1>
             {taskStats && (
               <p className="text-xs text-gray-500">
                 {taskStats.completed} of {taskStats.total} completed ({taskStats.completionRate}%)

@@ -176,10 +176,10 @@ export class TaskParser {
     markdown += task.content;
 
     // Other dates
-    if (task.dates.due) markdown += ` 📅${task.dates.due}`;
-    if (task.dates.start) markdown += ` 🛫${task.dates.start}`;
-    if (task.dates.scheduled) markdown += ` ⏳${task.dates.scheduled}`;
-    if (task.dates.cancelled) markdown += ` ❌${task.dates.cancelled}`;
+    if (task.dates.due) markdown += ` 📅 ${task.dates.due}`;
+    if (task.dates.start) markdown += ` 🛫 ${task.dates.start}`;
+    if (task.dates.scheduled) markdown += ` ⏳ ${task.dates.scheduled}`;
+    if (task.dates.cancelled) markdown += ` ❌ ${task.dates.cancelled}`;
 
     // Recurrence
     if (task.recurrence?.rule) {
@@ -187,12 +187,6 @@ export class TaskParser {
       if (task.recurrence.baseOnDoneDate) {
         markdown += ' when done';
       }
-    }
-
-    // Completion mark should come after recurrence and before tags/dependencies
-    if (task.status === 'done') {
-      const completionDate = task.dates.done || new Date().toISOString().split('T')[0];
-      markdown += ` ✅ ${completionDate}`;
     }
 
     // Tags
@@ -204,6 +198,12 @@ export class TaskParser {
     task.dependencies?.forEach(dep => {
       markdown += ` ⛔${dep}`;
     });
+
+    // Completion mark should come last
+    if (task.status === 'done') {
+      const completionDate = task.dates.done || new Date().toISOString().split('T')[0];
+      markdown += ` ✅ ${completionDate}`;
+    }
 
     return markdown;
   }
