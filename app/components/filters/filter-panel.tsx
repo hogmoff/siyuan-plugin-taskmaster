@@ -1,5 +1,6 @@
 
 'use client';
+import { useState } from 'react';
 import { TaskFilter, TaskSort, Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -54,7 +55,8 @@ const FilterPanel = ({
   queryString = '',
   onQueryChange,
 }: FilterPanelProps) => {
-  // Search moved to sidebar; advanced query shown when searching
+  // Search moved to sidebar; advanced query toggle appears when searching
+  const [showAdvanced, setShowAdvanced] = useState(!!queryString);
 
   // --- Query helper utils ---
   const splitLines = (q: string) => (q || '').replace(/\u200B|\uFEFF/g, '').split('\n');
@@ -164,136 +166,151 @@ const FilterPanel = ({
 
   return (
     <div className={cn("space-y-4 p-4 bg-gray-50 border-b", className)}>
-      {/* Advanced Query: show only when a task is searched */}
-      {onQueryChange && (filter.searchQuery?.trim()) && (
+      {/* Advanced Query: default hidden when searching; toggle to show */}
+      {onQueryChange && (filter.searchQuery?.trim()) ? (
         <div className="mt-2">
-          <Label className="text-xs text-gray-600">Query (plugin-compatible)</Label>
-          <textarea
-            className="mt-1 w-full min-h-[100px] rounded-md border bg-white p-2 font-mono text-sm"
-            placeholder={"tasks\nstatus: todo,in_progress\npriority: high\ndue: today\n-tag: sometag\npath: journal/*\nsort: due desc\nlimit: 50"}
-            value={queryString}
-            onChange={(e) => onQueryChange?.(e.target.value)}
-          />
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-600">Advanced query</span>
+            <button
+              type="button"
+              className="text-sm text-blue-600 hover:text-blue-700"
+              aria-expanded={showAdvanced}
+              onClick={() => setShowAdvanced((s) => !s)}
+            >
+              {showAdvanced ? 'Hide advanced query' : 'Show advanced query'}
+            </button>
+          </div>
+          {showAdvanced ? (
+            <div className="mt-2 rounded-md border bg-white p-3 max-h-64 sm:max-h-80 overflow-y-auto">
+              <Label className="text-xs text-gray-600">Query (plugin-compatible)</Label>
+              <textarea
+                className="mt-1 w-full min-h-[100px] rounded-md border bg-white p-2 font-mono text-sm"
+                placeholder={"tasks\nstatus: todo,in_progress\npriority: high\ndue: today\n-tag: sometag\npath: journal/*\nsort: due desc\nlimit: 50"}
+                value={queryString}
+                onChange={(e) => onQueryChange?.(e.target.value)}
+              />
 
-          {/* Query Helper */}
-          <div className="mt-3 rounded-md border bg-white p-3">
-            <div className="text-xs font-medium text-gray-700 mb-2">Query Helper</div>
+              {/* Query Helper */}
+              <div className="mt-3">
+                <div className="text-xs font-medium text-gray-700 mb-2">Query Helper</div>
 
-            {/* Status */}
-            <div className="mb-2">
-              <Label className="text-xs text-gray-600">Status</Label>
-              <div className="mt-1 flex flex-wrap gap-2">
-                {['todo','in_progress','done','cancelled'].map(s => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => toggleListItem('status', s)}
-                    className={cn(
-                      'text-xs px-2 py-1 rounded border',
-                      getList(queryString,'status').includes(s) ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-700'
-                    )}
-                  >{s}</button>
-                ))}
-              </div>
-            </div>
+                {/* Status */}
+                <div className="mb-2">
+                  <Label className="text-xs text-gray-600">Status</Label>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {['todo','in_progress','done','cancelled'].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => toggleListItem('status', s)}
+                        className={cn(
+                          'text-xs px-2 py-1 rounded border',
+                          getList(queryString,'status').includes(s) ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                        )}
+                      >{s}</button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Priority */}
-            <div className="mb-2">
-              <Label className="text-xs text-gray-600">Priority</Label>
-              <div className="mt-1 flex flex-wrap gap-2">
-                {['high','medium','low'].map(p => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => toggleListItem('priority', p)}
-                    className={cn(
-                      'text-xs px-2 py-1 rounded border',
-                      getList(queryString,'priority').includes(p) ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-50 border-gray-200 text-gray-700'
-                    )}
-                  >{p}</button>
-                ))}
-              </div>
-            </div>
+                {/* Priority */}
+                <div className="mb-2">
+                  <Label className="text-xs text-gray-600">Priority</Label>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {['high','medium','low'].map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => toggleListItem('priority', p)}
+                        className={cn(
+                          'text-xs px-2 py-1 rounded border',
+                          getList(queryString,'priority').includes(p) ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                        )}
+                      >{p}</button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Due */}
-            <div className="mb-2">
-              <Label className="text-xs text-gray-600">Due</Label>
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('today')}>today</button>
-                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('tomorrow')}>tomorrow</button>
-                <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setDueDate(e.target.value)} />
-                <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setDueQuick('clear')}>clear</button>
-              </div>
-            </div>
+                {/* Due */}
+                <div className="mb-2">
+                  <Label className="text-xs text-gray-600">Due</Label>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('today')}>today</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('tomorrow')}>tomorrow</button>
+                    <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setDueDate(e.target.value)} />
+                    <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setDueQuick('clear')}>clear</button>
+                  </div>
+                </div>
 
-            {/* Starts */}
-            <div className="mb-2">
-              <Label className="text-xs text-gray-600">Starts</Label>
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('today')}>today</button>
-                <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('tomorrow')}>tomorrow</button>
-                <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setStartsDate(e.target.value)} />
-                <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setStartsQuick('clear')}>clear</button>
-              </div>
-            </div>
+                {/* Starts */}
+                <div className="mb-2">
+                  <Label className="text-xs text-gray-600">Starts</Label>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('today')}>today</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('tomorrow')}>tomorrow</button>
+                    <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setStartsDate(e.target.value)} />
+                    <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setStartsQuick('clear')}>clear</button>
+                  </div>
+                </div>
 
-            {/* Tags include */}
-            {availableTags.length > 0 && (
-              <div className="mb-2">
-                <Label className="text-xs text-gray-600">Tags</Label>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {availableTags.slice(0,12).map(tag => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => toggleListItem('tag', tag)}
-                      className={cn(
-                        'text-xs px-2 py-1 rounded border',
-                        getList(queryString,'tag').includes(tag) ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-700'
-                      )}
-                    >#{tag}</button>
-                  ))}
+                {/* Tags include */}
+                {availableTags.length > 0 && (
+                  <div className="mb-2">
+                    <Label className="text-xs text-gray-600">Tags</Label>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {availableTags.slice(0,12).map(tag => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleListItem('tag', tag)}
+                          className={cn(
+                            'text-xs px-2 py-1 rounded border',
+                            getList(queryString,'tag').includes(tag) ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                          )}
+                        >#{tag}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sort and Limit */}
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-xs text-gray-600">Sort</Label>
+                    <select
+                      className="text-xs px-2 py-1 rounded border bg-white"
+                      onChange={(e) => {
+                        const val = e.target.value; // e.g., 'due:asc'
+                        const [f,d] = val.split(':');
+                        setSort(f, (d as 'asc'|'desc'));
+                      }}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Select</option>
+                      <option value="due:asc">Due ↑</option>
+                      <option value="due:desc">Due ↓</option>
+                      <option value="priority:desc">Priority ↓</option>
+                      <option value="content:asc">A-Z</option>
+                      <option value="content:desc">Z-A</option>
+                      <option value="start:asc">Start ↑</option>
+                      <option value="start:desc">Start ↓</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Label className="text-xs text-gray-600">Limit</Label>
+                    <input
+                      type="number"
+                      min={1}
+                      className="w-20 text-xs px-2 py-1 rounded border"
+                      onChange={(e)=> setLimit(e.target.value ? parseInt(e.target.value,10) : '')}
+                      placeholder="e.g. 50"
+                    />
+                  </div>
                 </div>
               </div>
-            )}
-
-            {/* Sort and Limit */}
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-gray-600">Sort</Label>
-                <select
-                  className="text-xs px-2 py-1 rounded border bg-white"
-                  onChange={(e) => {
-                    const val = e.target.value; // e.g., 'due:asc'
-                    const [f,d] = val.split(':');
-                    setSort(f, (d as 'asc'|'desc'));
-                  }}
-                  defaultValue=""
-                >
-                  <option value="" disabled>Select</option>
-                  <option value="due:asc">Due ↑</option>
-                  <option value="due:desc">Due ↓</option>
-                  <option value="priority:desc">Priority ↓</option>
-                  <option value="content:asc">A-Z</option>
-                  <option value="content:desc">Z-A</option>
-                  <option value="start:asc">Start ↑</option>
-                  <option value="start:desc">Start ↓</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-1">
-                <Label className="text-xs text-gray-600">Limit</Label>
-                <input
-                  type="number"
-                  min={1}
-                  className="w-20 text-xs px-2 py-1 rounded border"
-                  onChange={(e)=> setLimit(e.target.value ? parseInt(e.target.value,10) : '')}
-                  placeholder="e.g. 50"
-                />
-              </div>
             </div>
-          </div>
+          ) : null}
         </div>
-      )}
+      ) : null}
 
       {/* Filter Row */}
       <div className="flex flex-wrap items-center gap-2">

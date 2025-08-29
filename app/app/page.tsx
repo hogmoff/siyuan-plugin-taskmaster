@@ -15,6 +15,7 @@ import TaskForm from '@/components/forms/task-form';
 import ProjectSidebar from '@/components/dashboard/project-sidebar';
 import ConnectionSettings from '@/components/settings/connection-settings';
 import { parseQueryString, applyParsedQuery } from '@/lib/utils/query-parser';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 
 export default function Home() {
   const {
@@ -41,6 +42,7 @@ export default function Home() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [queryString, setQueryString] = useState<string>('');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Load saved preferences
   useEffect(() => {
@@ -158,6 +160,7 @@ export default function Home() {
           onSync={syncTasks}
           onSettings={() => setShowSettings(true)}
           onRetrySync={retrySyncForLocalTasks}
+          onOpenSidebar={() => setMobileSidebarOpen(true)}
           taskStats={taskStats}
         />
 
@@ -226,6 +229,25 @@ export default function Home() {
         onClose={() => setShowSettings(false)}
         onSettingsUpdated={handleSettingsUpdated}
       />
+
+      {/* Mobile Sidebar Sheet */}
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-[85%] sm:w-[360px]">
+          <SheetTitle className="sr-only">Sidebar</SheetTitle>
+          <ProjectSidebar
+            tasks={tasks}
+            selectedProject={selectedProject}
+            onProjectSelect={(id) => { setSelectedProject(id); setMobileSidebarOpen(false); }}
+            searchQuery={filter.searchQuery || ''}
+            onSearchChange={(q) => {
+              const trimmed = q.trim();
+              if (!trimmed) setQueryString('');
+              setFilter(prev => ({ ...prev, searchQuery: q || undefined }));
+            }}
+            className="flex md:hidden w-full h-full"
+          />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

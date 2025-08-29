@@ -27,6 +27,8 @@ interface HeaderProps {
   onSync: () => void;
   onSettings: () => void;
   onRetrySync?: () => void;
+  // Mobile: open sidebar from header icon
+  onOpenSidebar?: () => void;
   taskStats?: {
     total: number;
     completed: number;
@@ -41,6 +43,7 @@ const Header = ({
   onSync, 
   onSettings,
   onRetrySync,
+  onOpenSidebar,
   taskStats 
 }: HeaderProps) => {
   const formatLastSync = (timestamp: string | null): string => {
@@ -81,9 +84,15 @@ const Header = ({
       <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo and Title */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700">
+          <button
+            type="button"
+            onClick={onOpenSidebar}
+            aria-label="Open sidebar"
+            title="Open sidebar"
+            className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 md:cursor-default md:pointer-events-none"
+          >
             <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
+          </button>
           <div>
             <h1 className="text-lg font-semibold text-gray-900">SiYuan Tasks</h1>
             {taskStats && (

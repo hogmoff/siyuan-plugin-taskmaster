@@ -128,9 +128,9 @@ const ProjectSidebar = ({
   };
 
   return (
-    <div className={cn("w-64 border-r bg-gray-50 flex flex-col", className)}>
+    <div className={cn("w-64 border-r bg-gray-50 flex flex-col overflow-y-auto", className)}>
       {/* Stats Overview */}
-      <div className="p-4 border-b bg-white">
+      <div className="p-4 border-b bg-white flex-none">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-blue-600" />
@@ -152,7 +152,7 @@ const ProjectSidebar = ({
       </div>
 
       {/* Quick Views */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 flex-none">
         <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
           Quick Views
         </h3>
@@ -211,7 +211,7 @@ const ProjectSidebar = ({
 
       {/* Projects (Tags Hierarchy) */}
       {allTags.length > 0 && (
-        <div className="p-4 space-y-1 flex-1 overflow-y-auto">
+        <div className="p-4 space-y-1 flex-1">
           <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
             Projects
           </h3>
