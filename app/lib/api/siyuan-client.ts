@@ -15,6 +15,110 @@ class SiyuanClient {
     this.initializeCredentials();
   }
 
+  // Render Sprig template to compute today's hPath
+  async renderSprig(text: string): Promise<string> {
+    if (!text) return '';
+    // Escape double quotes to keep API functional per requirement
+    // Replace any " with \" as required
+    const safeText = text;
+    try {
+      // API expects { template } and may return string or object in data
+      const res = await this.request<string | { text?: string; content?: string; result?: string }>(
+        '/api/template/renderSprig',
+        { template: safeText }
+      );
+      const d: any = (res as any).data;
+      const out = typeof d === 'string' ? d : (d?.text || d?.content || d?.result || '').toString();
+      return out;
+    } catch (err) {
+      console.error('Failed to render sprig template:', err);
+      return '';
+    }
+  }
+
+  // Get document/root ID by notebook and hPath
+  async getDocumentIdByHPath(notebook: string, hPath: string): Promise<string | null> {
+    if (!notebook || !hPath) return null;
+    try {
+      const res = await this.request<string[] | { ids?: string[] }>(
+        '/api/filetree/getIDsByHPath',
+        { path: hPath, notebook }
+      );
+      const ids = Array.isArray(res.data)
+        ? res.data
+        : ((res.data as any)?.ids || (res as any)?.ids || []);
+      if (Array.isArray(ids) && ids.length) return ids[0];
+    } catch (_) {}
+    // Fallback shapes
+    try {
+      const res2 = await this.request<string[] | { ids?: string[] }>(
+        '/api/filetree/getIDsByHPath',
+        { hPaths: [{ box: notebook, hPath }] }
+      );
+      const ids2 = Array.isArray(res2.data)
+        ? res2.data
+        : ((res2.data as any)?.ids || (res2 as any)?.ids || []);
+      if (Array.isArray(ids2) && ids2.length) return ids2[0];
+    } catch (_) {}
+    try {
+      const res3 = await this.request<string[] | { ids?: string[] }>(
+        '/api/filetree/getIDsByHPath',
+        { paths: [{ box: notebook, path: hPath }] }
+      );
+      const ids3 = Array.isArray(res3.data)
+        ? res3.data
+        : ((res3.data as any)?.ids || (res3 as any)?.ids || []);
+      if (Array.isArray(ids3) && ids3.length) return ids3[0];
+    } catch (_) {}
+    return null;
+  }
+
+  async findBlockInDocumentByText(rootId: string, text: string): Promise<SiyuanBlock | null> {
+    if (!rootId || !text) return null;
+    const like = text.replace(/%/g, '\\%').replace(/_/g, '\\_').replace(/'/g, "''");
+    const sql = {
+      stmt: `SELECT * FROM blocks WHERE root_id = '${rootId}' AND markdown LIKE '%${like}%' ORDER BY sort ASC LIMIT 1`,
+    };
+    const res = await this.request('/api/query/sql', sql);
+    const rows = res.data || [];
+    return rows.length ? rows[0] : null;
+  }
+
+  async insertBlockAfter(afterBlockId: string, markdown: string): Promise<string> {
+    let data = {
+      dataType: 'markdown', 
+      data: markdown, 
+      previousID: afterBlockId
+    };
+    let url = "/api/block/insertBlock";
+    try {
+      const r = await this.request(url, data);
+      console.log('Insert after result:', r);
+      return (r.data as any)?.id || (r as any)?.id || '';
+    } catch (_) {}
+    throw new Error('Failed to insert block after anchor');
+  }
+
+  // Orchestrate: render hPath → resolve doc → find anchor → insert after
+  async insertTaskAfterDailyAnchor(opts: { box: string; hPathTemplate: string; anchorText: string; markdown: string; }): Promise<string> {
+    const { box, hPathTemplate, anchorText, markdown } = opts;
+    if (!box || !hPathTemplate || !anchorText) {
+      // Fallback to default insertion if settings missing
+      return await this.insertTaskBlock('', markdown);
+    }
+
+    const hPath = await this.renderSprig(hPathTemplate);
+    if (!hPath) throw new Error('Failed to render daily hPath via renderSprig');
+
+    const docId = await this.getDocumentIdByHPath(box, hPath);
+    if (!docId) throw new Error('Daily note not found via getIDsByHPath');
+
+    const anchor = await this.findBlockInDocumentByText(docId, anchorText);
+    if (!anchor?.id) throw new Error('Anchor text not found in document');
+
+    const newId = await this.insertBlockAfter(anchor.id, markdown);
+    return newId;
+  }
   private initializeCredentials(): void {
     // Check if we're in browser environment
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -32,12 +136,12 @@ class SiyuanClient {
   }
 
   private async request<T = any>(
-    endpoint: string, 
-    data?: any, 
+    endpoint: string,
+    data?: any,
     options: RequestInit = {}
   ): Promise<SiyuanResponse<T>> {
+    const url = `${this.baseUrl}${endpoint}`;
     try {
-      const url = `${this.baseUrl}${endpoint}`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -48,31 +152,17 @@ class SiyuanClient {
         body: data ? JSON.stringify(data) : undefined,
         ...options,
       });
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-
       const result = await response.json();
-      
       if (result.code !== 0) {
         throw new Error(result.msg || 'Siyuan API error');
       }
-
       this.isOnline = true;
       return result;
     } catch (error) {
-      console.error('Siyuan API request failed:', error);
       this.isOnline = false;
-      
-      // Provide more helpful error messages
-      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-        if (typeof window !== 'undefined' && window.location.protocol === 'https:' && this.baseUrl.startsWith('http:')) {
-          throw new Error('Mixed content error: HTTPS pages cannot connect to HTTP endpoints. Please use HTTPS for your SiYuan Notes URL.');
-        }
-        throw new Error('Unable to connect to SiYuan Notes. Please check your URL and network connection.');
-      }
-      
       throw error;
     }
   }
@@ -83,7 +173,7 @@ class SiyuanClient {
     };
 
     try {
-      const response = await this.request<SiyuanBlock[]>('/api/query/sql', sqlQuery);
+      const response = await this.request('/api/query/sql', sqlQuery);
       return response.data || [];
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
@@ -116,7 +206,7 @@ class SiyuanClient {
     };
 
     try {
-      const response = await this.request<{id: string}>('/api/block/insertBlock', insertData);
+      const response = await this.request('/api/block/insertBlock', insertData);
       return response.data?.id || '';
     } catch (error) {
       console.error('Failed to insert task block:', error);

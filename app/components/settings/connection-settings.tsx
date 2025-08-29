@@ -31,6 +31,10 @@ export default function ConnectionSettings({
 }: ConnectionSettingsProps) {
   const [baseUrl, setBaseUrl] = useState('http://127.0.0.1:6806');
   const [token, setToken] = useState('123');
+  // Daily insertion settings
+  const [notebookId, setNotebookId] = useState('');
+  const [dailyHPathTemplate, setDailyHPathTemplate] = useState('');
+  const [anchorText, setAnchorText] = useState('');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{
     success: boolean;
@@ -44,6 +48,9 @@ export default function ConnectionSettings({
       const settings = LocalStorageManager.loadSettings();
       setBaseUrl(settings.baseUrl || 'http://127.0.0.1:6806');
       setToken(settings.token || '123');
+      setNotebookId(settings.notebookId || '');
+      setDailyHPathTemplate(settings.dailyHPathTemplate || '');
+      setAnchorText(settings.anchorText || '');
       setTestResult(null);
       setHasChanges(false);
     }
@@ -54,9 +61,18 @@ export default function ConnectionSettings({
     const settings = LocalStorageManager.loadSettings();
     const currentBaseUrl = settings.baseUrl || 'http://127.0.0.1:6806';
     const currentToken = settings.token || '123';
+    const currentNotebookId = settings.notebookId || '';
+    const currentTemplate = settings.dailyHPathTemplate || '';
+    const currentAnchorText = settings.anchorText || '';
     
-    setHasChanges(baseUrl !== currentBaseUrl || token !== currentToken);
-  }, [baseUrl, token]);
+    setHasChanges(
+      baseUrl !== currentBaseUrl ||
+      token !== currentToken ||
+      notebookId !== currentNotebookId ||
+      dailyHPathTemplate !== currentTemplate ||
+      anchorText !== currentAnchorText
+    );
+  }, [baseUrl, token, notebookId, dailyHPathTemplate, anchorText]);
 
   const handleTestConnection = async () => {
     if (!baseUrl.trim()) {
@@ -119,6 +135,9 @@ export default function ConnectionSettings({
     LocalStorageManager.saveSettings({
       baseUrl: trimmedBaseUrl,
       token: trimmedToken,
+      notebookId: notebookId.trim(),
+      dailyHPathTemplate: dailyHPathTemplate.trim(),
+      anchorText: anchorText.trim(),
     });
 
     // Update the client with new credentials
@@ -165,6 +184,9 @@ export default function ConnectionSettings({
     setToken(value.trim());
     setTestResult(null); // Clear test result when token changes
   };
+  const handleNotebookChange = (value: string) => setNotebookId(value);
+  const handleTemplateChange = (value: string) => setDailyHPathTemplate(value);
+  const handleAnchorChange = (value: string) => setAnchorText(value);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -206,6 +228,55 @@ export default function ConnectionSettings({
             <p className="text-xs text-gray-500">
               Your SiYuan Notes API token. You can find this in Settings → About → API Token
             </p>
+          </div>
+
+          {/* Daily Note Insertion */}
+          <div className="space-y-3 border-t pt-4 mt-4">
+            <div>
+              <div className="text-sm font-medium">Daily Note Insertion</div>
+              <p className="text-xs text-gray-500 mt-1">
+                Configure where new tasks are inserted in your daily note.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notebookId">Notebook (box) ID</Label>
+              <Input
+                id="notebookId"
+                placeholder="e.g. 20240101123456-abcdef"
+                value={notebookId}
+                onChange={(e) => handleNotebookChange(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500">
+                The SiYuan notebook (box) ID that contains your daily notes.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dailyHPathTemplate">Daily hPath (Sprig template)</Label>
+              <Input
+                id="dailyHPathTemplate"
+                placeholder='e.g. /Journal/{{ now | date "2006-01-02" }}'
+                value={dailyHPathTemplate}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500">
+                Rendered via /api/template/renderSprig to locate today’s document. Quotes are escaped automatically.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="anchorText">Anchor text</Label>
+              <Input
+                id="anchorText"
+                placeholder="e.g. ## Tasks"
+                value={anchorText}
+                onChange={(e) => handleAnchorChange(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500">
+                The exact text to search for in the document. New tasks insert after this block.
+              </p>
+            </div>
           </div>
 
           {/* Test Connection */}

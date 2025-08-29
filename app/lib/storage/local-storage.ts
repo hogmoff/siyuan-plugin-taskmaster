@@ -88,7 +88,14 @@ export class LocalStorageManager {
     }
   }
 
-  static saveSettings(settings: { baseUrl?: string; token?: string }): void {
+  static saveSettings(settings: {
+    baseUrl?: string;
+    token?: string;
+    // Daily note insertion settings
+    notebookId?: string;
+    dailyHPathTemplate?: string;
+    anchorText?: string;
+  }): void {
     try {
       const current = this.loadSettings();
       const updated = { ...current, ...settings };
@@ -98,7 +105,13 @@ export class LocalStorageManager {
     }
   }
 
-  static loadSettings(): { baseUrl?: string; token?: string } {
+  static loadSettings(): {
+    baseUrl?: string;
+    token?: string;
+    notebookId?: string;
+    dailyHPathTemplate?: string;
+    anchorText?: string;
+  } {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (!stored) return {};

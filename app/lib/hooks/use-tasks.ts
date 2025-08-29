@@ -217,7 +217,13 @@ export function useTasks() {
       // Try to sync with Siyuan if online
       if (!isOffline) {
         try {
-          const blockId = await siyuanClient.insertTaskBlock('', newTask.markdown);
+          const settings = LocalStorageManager.loadSettings();
+          const blockId = await siyuanClient.insertTaskAfterDailyAnchor({
+            box: settings.notebookId || '',
+            hPathTemplate: settings.dailyHPathTemplate || '',
+            anchorText: settings.anchorText || '',
+            markdown: newTask.markdown,
+          });
           if (blockId) {
             newTask.id = blockId;
             newTask.blockId = blockId;
@@ -292,7 +298,13 @@ export function useTasks() {
           if (!task.blockId) {
             console.log('Task has no blockId, attempting to create in Siyuan:', task.content);
             // Try to create the task in Siyuan
-            const blockId = await siyuanClient.insertTaskBlock('', task.markdown);
+            const settings = LocalStorageManager.loadSettings();
+            const blockId = await siyuanClient.insertTaskAfterDailyAnchor({
+              box: settings.notebookId || '',
+              hPathTemplate: settings.dailyHPathTemplate || '',
+              anchorText: settings.anchorText || '',
+              markdown: task.markdown,
+            });
             if (blockId) {
               // Update the task with the new blockId
               const finalTasks = updatedTasks.map(t => 
@@ -409,7 +421,13 @@ export function useTasks() {
     
     for (const task of localTasks) {
       try {
-        const blockId = await siyuanClient.insertTaskBlock('', task.markdown);
+        const settings = LocalStorageManager.loadSettings();
+        const blockId = await siyuanClient.insertTaskAfterDailyAnchor({
+          box: settings.notebookId || '',
+          hPathTemplate: settings.dailyHPathTemplate || '',
+          anchorText: settings.anchorText || '',
+          markdown: task.markdown,
+        });
         if (blockId) {
           // Update the task with the new blockId
           setTasks(prevTasks => 
