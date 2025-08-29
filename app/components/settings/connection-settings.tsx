@@ -209,7 +209,7 @@ export default function ConnectionSettings({
               onChange={(e) => handleUrlChange(e.target.value)}
               className="w-full"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               The URL where your SiYuan Notes instance is running (e.g., http://localhost:6806)
             </p>
           </div>
@@ -225,7 +225,7 @@ export default function ConnectionSettings({
               onChange={(e) => handleTokenChange(e.target.value)}
               className="w-full"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Your SiYuan Notes API token. You can find this in Settings → About → API Token
             </p>
           </div>
@@ -234,7 +234,7 @@ export default function ConnectionSettings({
           <div className="space-y-3 border-t pt-4 mt-4">
             <div>
               <div className="text-sm font-medium">Daily Note Insertion</div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Configure where new tasks are inserted in your daily note.
               </p>
             </div>
@@ -247,7 +247,7 @@ export default function ConnectionSettings({
                 onChange={(e) => handleNotebookChange(e.target.value)}
                 className="w-full"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 The SiYuan notebook (box) ID that contains your daily notes.
               </p>
             </div>
@@ -260,7 +260,7 @@ export default function ConnectionSettings({
                 onChange={(e) => handleTemplateChange(e.target.value)}
                 className="w-full"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Rendered via /api/template/renderSprig to locate today’s document. Quotes are escaped automatically.
               </p>
             </div>
@@ -273,7 +273,7 @@ export default function ConnectionSettings({
                 onChange={(e) => handleAnchorChange(e.target.value)}
                 className="w-full"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 The exact text to search for in the document. New tasks insert after this block.
               </p>
             </div>
@@ -302,8 +302,8 @@ export default function ConnectionSettings({
               <div
                 className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
                   testResult.success
-                    ? 'bg-green-50 text-green-800 border border-green-200'
-                    : 'bg-red-50 text-red-800 border border-red-200'
+                    ? 'bg-green-500/10 text-green-700 border border-green-500/20'
+                    : 'bg-destructive/10 text-destructive border border-destructive/20'
                 }`}
               >
                 {testResult.success ? (
@@ -317,7 +317,7 @@ export default function ConnectionSettings({
           </div>
 
           {/* Connection Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="rounded-lg p-3 border bg-muted">
             <p className="text-sm text-blue-800">
               <strong>Note:</strong> Make sure your SiYuan Notes instance is running and accessible. 
               The API token can be found in your SiYuan Notes settings under About → API Token.

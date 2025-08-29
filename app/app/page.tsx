@@ -137,7 +137,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <ProjectSidebar
         tasks={tasks}
@@ -182,12 +182,12 @@ export default function Home() {
         <main className="flex-1 overflow-y-auto">
           <div className="container max-w-4xl mx-auto p-4">
             {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <p className="text-red-800">{error}</p>
+                  <p className="text-destructive">{error}</p>
                   <button 
                     onClick={clearError}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-destructive hover:opacity-80"
                   >
                     ✕
                   </button>

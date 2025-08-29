@@ -234,7 +234,7 @@ const TaskForm = ({
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dueDate" className="text-xs text-gray-600">
+                <Label htmlFor="dueDate" className="text-xs text-muted-foreground">
                   📅 Due Date
                 </Label>
                 <Input
@@ -246,7 +246,7 @@ const TaskForm = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="startDate" className="text-xs text-gray-600">
+                <Label htmlFor="startDate" className="text-xs text-muted-foreground">
                   🛫 Start Date
                 </Label>
                 <Input
@@ -258,7 +258,7 @@ const TaskForm = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="scheduledDate" className="text-xs text-gray-600">
+                <Label htmlFor="scheduledDate" className="text-xs text-muted-foreground">
                   ⏳ Scheduled
                 </Label>
                 <Input
@@ -285,7 +285,7 @@ const TaskForm = ({
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
                     <X 
-                      className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                      className="h-3 w-3 cursor-pointer hover:bg-muted rounded" 
                       onClick={() => handleRemoveTag(tag)}
                     />
                   </Badge>
@@ -317,7 +317,7 @@ const TaskForm = ({
             {/* Quick Tag Selection */}
             {availableTags.length > 0 && (
               <div className="space-y-2">
-                <Label className="text-xs text-gray-500">Quick select:</Label>
+                <Label className="text-xs text-muted-foreground">Quick select:</Label>
                 <div className="flex flex-wrap gap-1">
                   {availableTags.slice(0, 10).map((tag) => (
                     <Button
@@ -359,7 +359,7 @@ const TaskForm = ({
                   checked={formData.recurrenceWhenDone}
                   onChange={(e) => setFormData(prev => ({ ...prev, recurrenceWhenDone: e.target.checked }))}
                 />
-                <Label htmlFor="whenDone" className="text-xs text-gray-600">base on completion (when done)</Label>
+                <Label htmlFor="whenDone" className="text-xs text-muted-foreground">base on completion (when done)</Label>
               </div>
             </div>
           </div>
@@ -376,7 +376,7 @@ const TaskForm = ({
                   <Badge key={dep} variant="outline" className="gap-1">
                     ⛔{dep}
                     <X 
-                      className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                      className="h-3 w-3 cursor-pointer hover:bg-muted rounded" 
                       onClick={() => handleRemoveDependency(dep)}
                     />
                   </Badge>

@@ -46,20 +46,20 @@ const TaskItem = ({
     switch (priority) {
       case 'high': return 'text-red-500';
       case 'medium': return 'text-yellow-500';
-      case 'low': return 'text-gray-400';
-      default: return 'text-gray-400';
+      case 'low': return 'text-muted-foreground';
+      default: return 'text-muted-foreground';
     }
   };
 
   const getPriorityBgClass = (priority: TaskPriority): string => {
     switch (priority) {
       case 'high':
-        return 'bg-red-50 border-red-200';
+        return 'bg-red-500/10 border-red-500/20';
       case 'medium':
-        return 'bg-orange-50 border-orange-200';
+        return 'bg-amber-500/10 border-amber-500/20';
       case 'low':
       default:
-        return 'bg-white border-gray-200';
+        return 'bg-card border';
     }
   };
 
@@ -71,7 +71,7 @@ const TaskItem = ({
         return 'bg-orange-400';
       case 'low':
       default:
-        return 'bg-gray-200';
+        return 'bg-muted';
     }
   };
 
@@ -143,8 +143,8 @@ const TaskItem = ({
             <div className="flex items-center justify-between w-full">
               <p className={cn(
                 "text-sm font-medium leading-relaxed",
-                task.status === 'done' && "line-through text-gray-500",
-                task.status === 'cancelled' && "line-through text-gray-400"
+                task.status === 'done' && "line-through text-muted-foreground",
+                task.status === 'cancelled' && "line-through text-muted-foreground"
               )}>
                 {task.content}
               </p>
@@ -159,7 +159,7 @@ const TaskItem = ({
           </div>
 
           {/* Metadata Row */}
-          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {/* Due Date */}
             {task.dates.due && (
               <div className={cn(
@@ -203,13 +203,13 @@ const TaskItem = ({
                 <Tag className="h-3 w-3" />
                 <div className="flex gap-1">
                   {task.tags.slice(0, 2).map((tag, index) => (
-                    <Badge 
-                      key={index}
-                      variant="secondary" 
-                      className="text-xs px-1.5 py-0.5 h-auto"
-                    >
-                      {tag}
-                    </Badge>
+                <Badge 
+                  key={index}
+                  variant="secondary" 
+                  className="text-xs px-1.5 py-0.5 h-auto"
+                >
+                  {tag}
+                </Badge>
                   ))}
                   {task.tags.length > 2 && (
                     <Badge 
@@ -245,15 +245,15 @@ const TaskItem = ({
           )}
           
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-gray-100"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-muted"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => onEdit(task)}>
                 <Edit className="h-4 w-4 mr-2" />

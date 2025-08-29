@@ -72,7 +72,7 @@ const ProjectSidebar = ({
       label: 'Inbox',
       icon: Inbox,
       count: stats.total,
-      color: 'text-gray-600',
+      color: 'text-muted-foreground',
       description: 'All tasks'
     },
     {
@@ -133,23 +133,23 @@ const ProjectSidebar = ({
   };
 
   return (
-    <div className={cn("w-64 border-r bg-gray-50 flex flex-col overflow-y-auto", className)}>
+    <div className={cn("w-64 border-r bg-secondary flex flex-col overflow-y-auto", className)}>
       {/* Stats Overview (Today) */}
-      <div className="p-4 border-b bg-white flex-none">
+      <div className="p-4 border-b bg-card flex-none">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-blue-600" />
-            <h2 className="font-semibold text-gray-900">Overview</h2>
+            <h2 className="font-semibold text-foreground">Overview</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="p-2 rounded-lg bg-gray-50">
-              <div className="font-semibold text-lg text-gray-900">{todaysTasks.length}</div>
-              <div className="text-gray-600 text-xs">Today Tasks</div>
+            <div className="p-2 rounded-lg bg-muted">
+              <div className="font-semibold text-lg text-foreground">{todaysTasks.length}</div>
+              <div className="text-muted-foreground text-xs">Today Tasks</div>
             </div>
             
-            <div className="p-2 rounded-lg bg-green-50">
-              <div className="font-semibold text-lg text-green-700">{todaysCompletionRate}%</div>
+            <div className="p-2 rounded-lg border bg-green-500/10 border-green-500/20">
+              <div className="font-semibold text-lg text-green-600">{todaysCompletionRate}%</div>
               <div className="text-green-600 text-xs">Today Complete</div>
             </div>
           </div>
@@ -158,23 +158,23 @@ const ProjectSidebar = ({
 
       {/* Quick Views */}
       <div className="p-4 space-y-2 flex-none">
-        <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
           Quick Views
         </h3>
         {/* Inline Quick Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Search tasks..."
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            className="h-8 pl-10 pr-7 bg-white focus:ring-2 focus:ring-blue-100"
+            className="h-8 pl-10 pr-7 bg-background focus:ring-2 focus:ring-blue-100"
           />
           {localSearch && (
             <button
               type="button"
               aria-label="Clear task search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={() => setLocalSearch('')}
             >
               <XCircle className="h-4 w-4" />
@@ -193,7 +193,7 @@ const ProjectSidebar = ({
               onClick={() => onProjectSelect(view.id === 'inbox' ? null : view.id)}
               className={cn(
                 "w-full justify-start gap-3 h-9 px-3",
-                isSelected && "bg-blue-50 text-blue-700 border-l-2 border-blue-500"
+                isSelected && "bg-primary/10 text-primary border-l-2 border-primary"
               )}
             >
               <Icon className={cn("h-4 w-4", view.color)} />
@@ -203,7 +203,7 @@ const ProjectSidebar = ({
                   variant="secondary" 
                   className={cn(
                     "h-5 px-2 text-xs",
-                    isSelected && "bg-blue-100 text-blue-800"
+                    isSelected && "bg-primary/10 text-primary"
                   )}
                 >
                   {view.count}
@@ -217,11 +217,11 @@ const ProjectSidebar = ({
       {/* Projects (Tags Hierarchy) */}
       {allTags.length > 0 && (
         <div className="p-4 space-y-1 flex-1">
-          <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
             Projects
           </h3>
           <div className="mb-2 relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               value={tagQuery}
               onChange={(e) => setTagQuery(e.target.value)}
@@ -232,7 +232,7 @@ const ProjectSidebar = ({
               <button
                 type="button"
                 aria-label="Clear tag search"
-                className="absolute right-2 top-2 h-4 w-4 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-2 h-4 w-4 text-muted-foreground hover:text-foreground"
                 onClick={() => setTagQuery('')}
               >
                 <XCircle className="h-4 w-4" />

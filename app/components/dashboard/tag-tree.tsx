@@ -128,16 +128,16 @@ const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect, quer
       <div className={cn('w-full flex items-center justify-between')}>
         <div className="flex items-center gap-2 min-w-0">
           {hasChildren ? (
-            open ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />
+            open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />
           ) : (
-            <TagIcon className="h-4 w-4 text-gray-400" />
+            <TagIcon className="h-4 w-4 text-muted-foreground" />
           )}
           <span className="truncate">{highlight(node.name, qSeg)}</span>
         </div>
         {count > 0 && (
           <Badge 
             variant="secondary" 
-            className={cn('h-5 px-2 text-xs', isSelected && 'bg-blue-100 text-blue-800')}
+            className={cn('h-5 px-2 text-xs', isSelected && 'bg-primary/10 text-primary')}
           >
             {count}
           </Badge>
@@ -153,7 +153,7 @@ const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect, quer
           onClick={() => onSelect(node.fullPath)}
           className={cn(
             'w-full justify-start gap-3 h-8 px-3',
-            isSelected && 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
+            isSelected && 'bg-primary/10 text-primary border-l-2 border-primary'
           )}
         >
           {content}
@@ -173,7 +173,7 @@ const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect, quer
             onClick={() => onSelect(node.fullPath)}
             className={cn(
               'w-full justify-start gap-3 h-8 px-3',
-              isSelected && 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
+              isSelected && 'bg-primary/10 text-primary border-l-2 border-primary'
             )}
           >
             {content}

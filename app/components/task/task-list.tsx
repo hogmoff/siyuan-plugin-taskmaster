@@ -49,12 +49,12 @@ const TaskList = ({
         {/* Loading skeleton */}
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="animate-pulse">
-            <div className="p-4 rounded-lg border bg-gray-50">
+            <div className="p-4 rounded-lg border bg-muted">
               <div className="flex items-start gap-3">
-                <div className="w-5 h-5 bg-gray-200 rounded"></div>
+                <div className="w-5 h-5 bg-muted rounded"></div>
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
                 </div>
               </div>
             </div>
@@ -68,14 +68,14 @@ const TaskList = ({
     return (
       <div className={cn("text-center py-12", className)}>
         <div className="flex flex-col items-center gap-4">
-          <div className="p-4 rounded-full bg-gray-100">
-            <ListTodo className="h-8 w-8 text-gray-400" />
+          <div className="p-4 rounded-full bg-muted">
+            <ListTodo className="h-8 w-8 text-muted-foreground" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-foreground">
               {tasks.length === 0 ? 'No tasks yet' : 'No tasks match your filters'}
             </h3>
-            <p className="text-sm text-gray-500 max-w-sm">
+            <p className="text-sm text-muted-foreground max-w-sm">
               {tasks.length === 0 
                 ? 'Create your first task to get started with your productivity journey.'
                 : 'Try adjusting your filters to see more tasks, or create a new one.'
@@ -97,10 +97,10 @@ const TaskList = ({
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
+          <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
             {title}
             {showCount && (
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
                 {tasks.length}
               </span>
             )}

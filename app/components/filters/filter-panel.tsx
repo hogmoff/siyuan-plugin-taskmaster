@@ -152,25 +152,25 @@ const FilterPanel = ({
   };
 
   const statusOptions = [
-    { value: 'todo', label: 'To Do', icon: Circle, color: 'text-gray-600' },
+    { value: 'todo', label: 'To Do', icon: Circle, color: 'text-muted-foreground' },
     { value: 'in_progress', label: 'In Progress', icon: Clock, color: 'text-blue-600' },
     { value: 'done', label: 'Done', icon: CheckCircle2, color: 'text-green-600' },
-    { value: 'cancelled', label: 'Cancelled', icon: XCircle, color: 'text-gray-500' },
+    { value: 'cancelled', label: 'Cancelled', icon: XCircle, color: 'text-muted-foreground' },
   ] as const;
 
   const priorityOptions = [
     { value: 'high', label: 'High', emoji: '⏫', color: 'text-red-600' },
     { value: 'medium', label: 'Medium', emoji: '🔼', color: 'text-yellow-600' },
-    { value: 'low', label: 'Low', emoji: '', color: 'text-gray-600' },
+    { value: 'low', label: 'Low', emoji: '', color: 'text-muted-foreground' },
   ] as const;
 
   return (
-    <div className={cn("space-y-4 p-4 bg-gray-50 border-b", className)}>
+    <div className={cn("space-y-4 p-4 bg-muted border-b", className)}>
       {/* Advanced Query: default hidden when searching; toggle to show */}
       {onQueryChange && (filter.searchQuery?.trim()) ? (
         <div className="mt-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-600">Advanced query</span>
+            <span className="text-xs text-muted-foreground">Advanced query</span>
             <button
               type="button"
               className="text-sm text-blue-600 hover:text-blue-700"
@@ -181,10 +181,10 @@ const FilterPanel = ({
             </button>
           </div>
           {showAdvanced ? (
-            <div className="mt-2 rounded-md border bg-white p-3 max-h-64 sm:max-h-80 overflow-y-auto">
-              <Label className="text-xs text-gray-600">Query (plugin-compatible)</Label>
+            <div className="mt-2 rounded-md border bg-card p-3 max-h-64 sm:max-h-80 overflow-y-auto">
+              <Label className="text-xs text-muted-foreground">Query (plugin-compatible)</Label>
               <textarea
-                className="mt-1 w-full min-h-[100px] rounded-md border bg-white p-2 font-mono text-sm"
+                className="mt-1 w-full min-h-[100px] rounded-md border bg-background p-2 font-mono text-sm"
                 placeholder={"tasks\nstatus: todo,in_progress\npriority: high\ndue: today\n-tag: sometag\npath: journal/*\nsort: due desc\nlimit: 50"}
                 value={queryString}
                 onChange={(e) => onQueryChange?.(e.target.value)}
@@ -192,11 +192,11 @@ const FilterPanel = ({
 
               {/* Query Helper */}
               <div className="mt-3">
-                <div className="text-xs font-medium text-gray-700 mb-2">Query Helper</div>
+                <div className="text-xs font-medium text-foreground mb-2">Query Helper</div>
 
                 {/* Status */}
                 <div className="mb-2">
-                  <Label className="text-xs text-gray-600">Status</Label>
+                  <Label className="text-xs text-muted-foreground">Status</Label>
                   <div className="mt-1 flex flex-wrap gap-2">
                     {['todo','in_progress','done','cancelled'].map(s => (
                       <button
@@ -205,7 +205,7 @@ const FilterPanel = ({
                         onClick={() => toggleListItem('status', s)}
                         className={cn(
                           'text-xs px-2 py-1 rounded border',
-                          getList(queryString,'status').includes(s) ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                          getList(queryString,'status').includes(s) ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-muted border text-foreground'
                         )}
                       >{s}</button>
                     ))}
@@ -214,7 +214,7 @@ const FilterPanel = ({
 
                 {/* Priority */}
                 <div className="mb-2">
-                  <Label className="text-xs text-gray-600">Priority</Label>
+                  <Label className="text-xs text-muted-foreground">Priority</Label>
                   <div className="mt-1 flex flex-wrap gap-2">
                     {['high','medium','low'].map(p => (
                       <button
@@ -223,7 +223,7 @@ const FilterPanel = ({
                         onClick={() => toggleListItem('priority', p)}
                         className={cn(
                           'text-xs px-2 py-1 rounded border',
-                          getList(queryString,'priority').includes(p) ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                          getList(queryString,'priority').includes(p) ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-muted border text-foreground'
                         )}
                       >{p}</button>
                     ))}
@@ -232,10 +232,10 @@ const FilterPanel = ({
 
                 {/* Due */}
                 <div className="mb-2">
-                  <Label className="text-xs text-gray-600">Due</Label>
+                  <Label className="text-xs text-muted-foreground">Due</Label>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('today')}>today</button>
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setDueQuick('tomorrow')}>tomorrow</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setDueQuick('today')}>today</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setDueQuick('tomorrow')}>tomorrow</button>
                     <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setDueDate(e.target.value)} />
                     <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setDueQuick('clear')}>clear</button>
                   </div>
@@ -243,10 +243,10 @@ const FilterPanel = ({
 
                 {/* Starts */}
                 <div className="mb-2">
-                  <Label className="text-xs text-gray-600">Starts</Label>
+                  <Label className="text-xs text-muted-foreground">Starts</Label>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('today')}>today</button>
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-gray-50" onClick={() => setStartsQuick('tomorrow')}>tomorrow</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setStartsQuick('today')}>today</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setStartsQuick('tomorrow')}>tomorrow</button>
                     <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setStartsDate(e.target.value)} />
                     <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setStartsQuick('clear')}>clear</button>
                   </div>
@@ -255,7 +255,7 @@ const FilterPanel = ({
                 {/* Tags include */}
                 {availableTags.length > 0 && (
                   <div className="mb-2">
-                    <Label className="text-xs text-gray-600">Tags</Label>
+                    <Label className="text-xs text-muted-foreground">Tags</Label>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {availableTags.slice(0,12).map(tag => (
                         <button
@@ -264,7 +264,7 @@ const FilterPanel = ({
                           onClick={() => toggleListItem('tag', tag)}
                           className={cn(
                             'text-xs px-2 py-1 rounded border',
-                            getList(queryString,'tag').includes(tag) ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-700'
+                            getList(queryString,'tag').includes(tag) ? 'bg-green-500/10 border-green-500/20 text-green-600' : 'bg-muted border text-foreground'
                           )}
                         >#{tag}</button>
                       ))}
@@ -275,9 +275,9 @@ const FilterPanel = ({
                 {/* Sort and Limit */}
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-1">
-                    <Label className="text-xs text-gray-600">Sort</Label>
+                    <Label className="text-xs text-muted-foreground">Sort</Label>
                     <select
-                      className="text-xs px-2 py-1 rounded border bg-white"
+                      className="text-xs px-2 py-1 rounded border bg-background"
                       onChange={(e) => {
                         const val = e.target.value; // e.g., 'due:asc'
                         const [f,d] = val.split(':');
@@ -296,7 +296,7 @@ const FilterPanel = ({
                     </select>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Label className="text-xs text-gray-600">Limit</Label>
+                    <Label className="text-xs text-muted-foreground">Limit</Label>
                     <input
                       type="number"
                       min={1}
@@ -344,7 +344,7 @@ const FilterPanel = ({
                     id={`status-${value}`}
                     checked={filter.status?.includes(value as any) || false}
                     onChange={() => handleStatusToggle(value as any)}
-                    className="rounded border-gray-300"
+                    className="rounded border-input"
                   />
                   <Label htmlFor={`status-${value}`} className="flex items-center gap-2 cursor-pointer">
                     <Icon className={cn("h-4 w-4", color)} />
@@ -364,7 +364,7 @@ const FilterPanel = ({
               size="sm"
               className={cn(
                 "h-8",
-                filter.priority?.length && "bg-red-50 border-red-200"
+                filter.priority?.length && "bg-destructive/10 border-destructive/20"
               )}
             >
               <span className="mr-1">⏫</span>
@@ -386,7 +386,7 @@ const FilterPanel = ({
                     id={`priority-${value}`}
                     checked={filter.priority?.includes(value as any) || false}
                     onChange={() => handlePriorityToggle(value as any)}
-                    className="rounded border-gray-300"
+                    className="rounded border-input"
                   />
                   <Label htmlFor={`priority-${value}`} className="flex items-center gap-2 cursor-pointer">
                     <span className={color}>{emoji || '◯'}</span>
@@ -405,10 +405,10 @@ const FilterPanel = ({
               <Button 
                 variant="outline" 
                 size="sm"
-                className={cn(
-                  "h-8",
-                  filter.tags?.length && "bg-green-50 border-green-200"
-                )}
+              className={cn(
+                "h-8",
+                filter.tags?.length && "bg-green-500/10 border-green-500/20"
+              )}
               >
                 <Tag className="h-3 w-3 mr-1" />
                 Tags
@@ -429,7 +429,7 @@ const FilterPanel = ({
                       id={`tag-${tag}`}
                       checked={filter.tags?.includes(tag) || false}
                       onChange={() => handleTagToggle(tag)}
-                      className="rounded border-gray-300"
+                      className="rounded border-input"
                     />
                     <Label htmlFor={`tag-${tag}`} className="cursor-pointer">
                       #{tag}
@@ -469,7 +469,7 @@ const FilterPanel = ({
             variant="ghost" 
             size="sm" 
             onClick={onClearFilters}
-            className="h-8 text-gray-500 hover:text-gray-700"
+            className="h-8 text-muted-foreground hover:text-foreground"
           >
             <X className="h-3 w-3 mr-1" />
             Clear ({getActiveFilterCount()})
@@ -491,7 +491,7 @@ const FilterPanel = ({
                 <statusOption.icon className={cn("h-3 w-3", statusOption.color)} />
                 {statusOption.label}
                 <X 
-                  className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                  className="h-3 w-3 cursor-pointer hover:bg-muted rounded" 
                   onClick={() => handleStatusToggle(status)}
                 />
               </Badge>
@@ -509,7 +509,7 @@ const FilterPanel = ({
                 <span className={priorityOption.color}>{priorityOption.emoji || '◯'}</span>
                 {priorityOption.label}
                 <X 
-                  className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                  className="h-3 w-3 cursor-pointer hover:bg-muted rounded" 
                   onClick={() => handlePriorityToggle(priority)}
                 />
               </Badge>
@@ -525,7 +525,7 @@ const FilterPanel = ({
               <Tag className="h-3 w-3" />
               {tag}
               <X 
-                className="h-3 w-3 cursor-pointer hover:bg-gray-300 rounded" 
+                className="h-3 w-3 cursor-pointer hover:bg-muted rounded" 
                 onClick={() => handleTagToggle(tag)}
               />
             </Badge>

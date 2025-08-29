@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { 
   RefreshCw, 
@@ -79,8 +80,10 @@ const Header = ({
     return 'Online';
   };
 
+  const { theme, setTheme } = useTheme();
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo and Title */}
         <div className="flex items-center gap-3">
@@ -94,9 +97,9 @@ const Header = ({
             <CheckCircle2 className="h-5 w-5 text-white" />
           </button>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Taskmaster</h1>
+            <h1 className="text-lg font-semibold text-foreground">Taskmaster</h1>
             {taskStats && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {taskStats.completed} of {taskStats.total} completed ({taskStats.completionRate}%)
               </p>
             )}
@@ -106,7 +109,7 @@ const Header = ({
         {/* Actions */}
         <div className="flex items-center gap-2">
           {/* Sync Status */}
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {getSyncStatusIcon()}
             <span className="hidden sm:inline">{getSyncStatusText()}</span>
           </div>
@@ -141,10 +144,41 @@ const Header = ({
                 <div className="font-medium">Sync Status</div>
                 <div className="flex items-center gap-2 mt-1">
                   {getSyncStatusIcon()}
-                  <span className="text-gray-600">{getSyncStatusText()}</span>
+                  <span className="text-muted-foreground">{getSyncStatusText()}</span>
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   Last sync: {formatLastSync(lastSync)}
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              {/* Theme selection */}
+              <div className="px-3 py-2">
+                <div className="text-sm font-medium mb-2">Appearance</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    variant={theme === 'light' ? 'default' : 'outline'}
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setTheme('light')}
+                  >
+                    Light
+                  </Button>
+                  <Button
+                    variant={theme === 'dark' ? 'default' : 'outline'}
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setTheme('dark')}
+                  >
+                    Dark
+                  </Button>
+                  <Button
+                    variant={theme === 'system' ? 'default' : 'outline'}
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setTheme('system')}
+                  >
+                    System
+                  </Button>
                 </div>
               </div>
               <DropdownMenuSeparator />
