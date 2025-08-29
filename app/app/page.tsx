@@ -139,6 +139,12 @@ export default function Home() {
         tasks={tasks}
         selectedProject={selectedProject}
         onProjectSelect={setSelectedProject}
+        searchQuery={filter.searchQuery || ''}
+        onSearchChange={(q) => {
+          const trimmed = q.trim();
+          if (!trimmed) setQueryString('');
+          setFilter(prev => ({ ...prev, searchQuery: q || undefined }));
+        }}
         className="hidden md:flex"
       />
 

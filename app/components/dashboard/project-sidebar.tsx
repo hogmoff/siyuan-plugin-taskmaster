@@ -24,6 +24,9 @@ interface ProjectSidebarProps {
   tasks: Task[];
   selectedProject: string | null;
   onProjectSelect: (project: string | null) => void;
+  // Search moved here from filter panel
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
   className?: string;
 }
 
@@ -31,11 +34,24 @@ const ProjectSidebar = ({
   tasks, 
   selectedProject, 
   onProjectSelect,
+  searchQuery = '',
+  onSearchChange,
   className 
 }: ProjectSidebarProps) => {
   const stats = TaskFilterUtils.getTaskStats(tasks);
   const allTags = TaskFilterUtils.getAllTags(tasks);
   const [tagQuery, setTagQuery] = React.useState('');
+  // Debounced search input
+  const [localSearch, setLocalSearch] = React.useState(searchQuery || '');
+  React.useEffect(() => {
+    setLocalSearch(searchQuery || '');
+  }, [searchQuery]);
+  React.useEffect(() => {
+    const handle = setTimeout(() => {
+      onSearchChange?.(localSearch);
+    }, 200);
+    return () => clearTimeout(handle);
+  }, [localSearch]);
 
   const quickViews = [
     {
@@ -120,7 +136,7 @@ const ProjectSidebar = ({
             <TrendingUp className="h-5 w-5 text-blue-600" />
             <h2 className="font-semibold text-gray-900">Overview</h2>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="p-2 rounded-lg bg-gray-50">
               <div className="font-semibold text-lg text-gray-900">{stats.total}</div>
@@ -136,11 +152,31 @@ const ProjectSidebar = ({
       </div>
 
       {/* Quick Views */}
-      <div className="p-4 space-y-1">
+      <div className="p-4 space-y-2">
         <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
           Quick Views
         </h3>
-        
+        {/* Inline Quick Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search tasks..."
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            className="h-8 pl-10 pr-7 bg-white focus:ring-2 focus:ring-blue-100"
+          />
+          {localSearch && (
+            <button
+              type="button"
+              aria-label="Clear task search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              onClick={() => setLocalSearch('')}
+            >
+              <XCircle className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         {quickViews.map((view) => {
           const Icon = view.icon;
           const isSelected = selectedProject === view.id;

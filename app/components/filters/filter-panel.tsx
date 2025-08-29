@@ -1,10 +1,7 @@
 
 'use client';
-
-import { useState } from 'react';
 import { TaskFilter, TaskSort, Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,7 +17,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { 
-  Search, 
   Filter, 
   SortAsc, 
   SortDesc, 
@@ -58,8 +54,7 @@ const FilterPanel = ({
   queryString = '',
   onQueryChange,
 }: FilterPanelProps) => {
-  const [searchValue, setSearchValue] = useState(filter.searchQuery || '');
-  const [showAdvanced, setShowAdvanced] = useState(!!queryString);
+  // Search moved to sidebar; advanced query shown when searching
 
   // --- Query helper utils ---
   const splitLines = (q: string) => (q || '').replace(/\u200B|\uFEFF/g, '').split('\n');
@@ -105,10 +100,7 @@ const FilterPanel = ({
   const setSort = (field: string, direction: 'asc' | 'desc' = 'asc') => onQueryChange && onQueryChange(setDirective(queryString, 'sort', `${field}${direction === 'desc' ? ' desc' : ''}`));
   const setLimit = (limit: number | '') => onQueryChange && onQueryChange(setDirective(queryString, 'limit', typeof limit === 'number' && limit > 0 ? String(limit) : ''));
 
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    onFilterChange({ ...filter, searchQuery: value || undefined });
-  };
+  // Search handled in sidebar
 
   const handleStatusToggle = (status: Task['status']) => {
     const currentStatuses = filter.status || [];
@@ -172,34 +164,8 @@ const FilterPanel = ({
 
   return (
     <div className={cn("space-y-4 p-4 bg-gray-50 border-b", className)}>
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          placeholder="Search tasks..."
-          value={searchValue}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10 bg-white"
-        />
-      </div>
-
-      {/* Advanced Query toggle */}
-      {onQueryChange && (
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            className="text-sm text-blue-600 hover:text-blue-700"
-            onClick={() => setShowAdvanced(s => !s)}
-          >
-            {showAdvanced ? 'Hide advanced query' : 'Show advanced query'}
-          </button>
-          {queryString?.trim() && (
-            <span className="text-xs text-gray-500">Advanced query active</span>
-          )}
-        </div>
-      )}
-
-      {onQueryChange && showAdvanced && (
+      {/* Advanced Query: show only when a task is searched */}
+      {onQueryChange && (filter.searchQuery?.trim()) && (
         <div className="mt-2">
           <Label className="text-xs text-gray-600">Query (plugin-compatible)</Label>
           <textarea
