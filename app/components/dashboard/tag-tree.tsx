@@ -43,6 +43,42 @@ function buildTagTree(tags: string[]): Map<string, TagNode> {
   return root;
 }
 
+function clonePrunedNode(node: TagNode): TagNode {
+  return { name: node.name, fullPath: node.fullPath, children: new Map() };
+}
+
+function filterTree(root: Map<string, TagNode>, query?: string): Map<string, TagNode> {
+  if (!query) return root;
+  const q = query.toLowerCase();
+  const result = new Map<string, TagNode>();
+
+  const visit = (node: TagNode): TagNode | null => {
+    const selfMatch = node.fullPath.toLowerCase().includes(q) || node.name.toLowerCase().includes(q);
+    let pruned: TagNode | null = null;
+
+    node.children.forEach(child => {
+      const childRes = visit(child);
+      if (childRes) {
+        if (!pruned) pruned = clonePrunedNode(node);
+        pruned.children.set(childRes.name, childRes);
+      }
+    });
+
+    if (selfMatch) {
+      if (!pruned) pruned = clonePrunedNode(node);
+    }
+
+    return pruned;
+  };
+
+  root.forEach((node, key) => {
+    const r = visit(node);
+    if (r) result.set(key, r);
+  });
+
+  return result;
+}
+
 function countTasksForPath(tasks: Task[], path: string): number {
   if (!path) return 0;
   return tasks.filter(t =>
@@ -55,17 +91,39 @@ interface TagTreeProps {
   tags: string[];
   selected?: string | null;
   onSelect: (tag: string) => void;
+  query?: string;
 }
 
-const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect }) => {
+const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect, query }) => {
   const tree = React.useMemo(() => buildTagTree(tags), [tags]);
+  const filtered = React.useMemo(() => filterTree(tree, query), [tree, query]);
+  const [openMap, setOpenMap] = React.useState<Record<string, boolean>>({});
 
   const renderNode = (node: TagNode) => {
     const hasChildren = node.children.size > 0;
     const count = countTasksForPath(tasks, node.fullPath);
     const isSelected = selected === node.fullPath;
-    const [open, setOpen] = React.useState<boolean>(false);
+    const isForcedOpen = Boolean(query);
+    const open = isForcedOpen ? true : !!openMap[node.fullPath];
 
+    const highlight = (text: string, q?: string) => {
+      if (!q) return text;
+      const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(`(${escaped})`, 'ig');
+      const parts = text.split(re);
+      return parts.map((part, idx) => {
+        if (part.toLowerCase() === q.toLowerCase()) {
+          return (
+            <span key={idx} className="bg-yellow-200/70 dark:bg-yellow-300/40 rounded px-0.5">
+              {part}
+            </span>
+          );
+        }
+        return <span key={idx}>{part}</span>;
+      });
+    };
+
+    const qSeg = query && query.includes('/') ? query.split('/').filter(Boolean).pop() : query;
     const content = (
       <div className={cn('w-full flex items-center justify-between')}>
         <div className="flex items-center gap-2 min-w-0">
@@ -74,7 +132,7 @@ const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect }) =>
           ) : (
             <TagIcon className="h-4 w-4 text-gray-400" />
           )}
-          <span className="truncate">{node.name}</span>
+          <span className="truncate">{highlight(node.name, qSeg)}</span>
         </div>
         {count > 0 && (
           <Badge 
@@ -104,7 +162,11 @@ const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect }) =>
     }
 
     return (
-      <Collapsible key={node.fullPath} open={open} onOpenChange={setOpen}>
+      <Collapsible
+        key={node.fullPath}
+        open={open}
+        onOpenChange={isForcedOpen ? undefined : (next) => setOpenMap(prev => ({ ...prev, [node.fullPath]: next }))}
+      >
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"
@@ -130,7 +192,7 @@ const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect }) =>
 
   return (
     <div className="space-y-1">
-      {Array.from(tree.values())
+      {Array.from(filtered.values())
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(node => renderNode(node))}
     </div>
@@ -138,4 +200,3 @@ const TagTree: React.FC<TagTreeProps> = ({ tasks, tags, selected, onSelect }) =>
 };
 
 export default TagTree;
-

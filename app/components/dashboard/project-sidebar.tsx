@@ -1,6 +1,7 @@
 
 'use client';
 
+import React from 'react';
 import { Task } from '@/lib/types';
 import { TaskFilterUtils } from '@/lib/utils/task-filters';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TagTree from '@/components/dashboard/tag-tree';
+import { Input } from '@/components/ui/input';
+import { Search, XCircle } from 'lucide-react';
 
 interface ProjectSidebarProps {
   tasks: Task[];
@@ -32,6 +35,7 @@ const ProjectSidebar = ({
 }: ProjectSidebarProps) => {
   const stats = TaskFilterUtils.getTaskStats(tasks);
   const allTags = TaskFilterUtils.getAllTags(tasks);
+  const [tagQuery, setTagQuery] = React.useState('');
 
   const quickViews = [
     {
@@ -175,11 +179,31 @@ const ProjectSidebar = ({
           <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
             Projects
           </h3>
+          <div className="mb-2 relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              value={tagQuery}
+              onChange={(e) => setTagQuery(e.target.value)}
+              placeholder="Search tags..."
+              className="pl-8 h-8"
+            />
+            {tagQuery && (
+              <button
+                type="button"
+                aria-label="Clear tag search"
+                className="absolute right-2 top-2 h-4 w-4 text-gray-400 hover:text-gray-600"
+                onClick={() => setTagQuery('')}
+              >
+                <XCircle className="h-4 w-4" />
+              </button>
+            )}
+          </div>
           <TagTree
             tasks={tasks}
             tags={allTags}
             selected={selectedProject}
             onSelect={(tag) => onProjectSelect(tag)}
+            query={tagQuery.trim() || undefined}
           />
         </div>
       )}
