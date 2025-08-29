@@ -189,7 +189,7 @@ export function applyParsedQuery(tasks: Task[], parsed: ParsedQuery): Task[] {
         cmp = aDue.localeCompare(bDue);
       } else if (field === 'priority') {
         const order = { high: 3, medium: 2, low: 1 } as const;
-        cmp = order[b.priority] - order[a.priority];
+        cmp = order[a.priority] - order[b.priority];
       } else if (field === 'created') {
         cmp = new Date(a.created).getTime() - new Date(b.created).getTime();
       } else if (field === 'updated') {

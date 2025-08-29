@@ -92,9 +92,9 @@ const Header = ({
             onClick={onOpenSidebar}
             aria-label="Open sidebar"
             title="Open sidebar"
-            className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 md:cursor-default md:pointer-events-none"
+            className="flex items-center justify-center h-8 w-8 rounded-lg md:cursor-default md:pointer-events-none"
           >
-            <CheckCircle2 className="h-5 w-5 text-white" />
+            <img src="/icon.svg" alt="Taskmaster" className="h-6 w-6 rounded" />
           </button>
           <div>
             <h1 className="text-lg font-semibold text-foreground">Taskmaster</h1>

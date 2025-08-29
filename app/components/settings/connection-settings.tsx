@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { LocalStorageManager } from '@/lib/storage/local-storage';
 import { siyuanClient } from '@/lib/api/siyuan-client';
-import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Loader2, ArrowUp } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ConnectionSettingsProps {
@@ -41,6 +42,9 @@ export default function ConnectionSettings({
     message: string;
   } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const baseUrlRef = useRef<HTMLInputElement | null>(null);
 
   // Load saved settings on mount
   useEffect(() => {
@@ -53,6 +57,15 @@ export default function ConnectionSettings({
       setAnchorText(settings.anchorText || '');
       setTestResult(null);
       setHasChanges(false);
+      // Ensure the scrollable area starts at the top when opening
+      const el = scrollRef.current;
+      if (el) {
+        // Delay until after content renders to avoid autofocus pushing scroll
+        requestAnimationFrame(() => {
+          el.scrollTo({ top: 0 });
+          baseUrlRef.current?.focus?.({ preventScroll: true } as any);
+        });
+      }
     }
   }, [isOpen]);
 
@@ -73,6 +86,19 @@ export default function ConnectionSettings({
       anchorText !== currentAnchorText
     );
   }, [baseUrl, token, notebookId, dailyHPathTemplate, anchorText]);
+
+  // Scroll handling for scroll-to-top button
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      setShowScrollTop(el.scrollTop > 160);
+    };
+    el.addEventListener('scroll', onScroll);
+    // Initialize state in case already scrolled
+    onScroll();
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [isOpen]);
 
   const handleTestConnection = async () => {
     if (!baseUrl.trim()) {
@@ -190,7 +216,11 @@ export default function ConnectionSettings({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="sm:max-w-[500px] max-h-[80vh] flex flex-col"
+        style={{ top: '3rem', transform: 'translateX(-50%)' }}
+      >
         <DialogHeader>
           <DialogTitle>Connection Settings</DialogTitle>
           <DialogDescription>
@@ -198,7 +228,8 @@ export default function ConnectionSettings({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        {/* Scrollable content area */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto pr-2 space-y-4 py-4">
           {/* SiYuan Notes URL */}
           <div className="space-y-2">
             <Label htmlFor="baseUrl">SiYuan Notes URL</Label>
@@ -208,6 +239,7 @@ export default function ConnectionSettings({
               value={baseUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
               className="w-full"
+              ref={baseUrlRef}
             />
             <p className="text-xs text-muted-foreground">
               The URL where your SiYuan Notes instance is running (e.g., http://localhost:6806)
@@ -330,6 +362,20 @@ export default function ConnectionSettings({
             )}
           </div>
         </div>
+        {/* Scroll-to-top button */}
+        {showScrollTop && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="absolute bottom-20 right-4 h-10 w-10 rounded-full shadow-md"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            <ArrowUp className="h-5 w-5" />
+          </Button>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>

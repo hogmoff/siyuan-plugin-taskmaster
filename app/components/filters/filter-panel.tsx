@@ -288,6 +288,7 @@ const FilterPanel = ({
                       <option value="" disabled>Select</option>
                       <option value="due:asc">Due ↑</option>
                       <option value="due:desc">Due ↓</option>
+                      <option value="priority:asc">Priority ↑</option>
                       <option value="priority:desc">Priority ↓</option>
                       <option value="content:asc">A-Z</option>
                       <option value="content:desc">Z-A</option>
@@ -322,7 +323,7 @@ const FilterPanel = ({
               size="sm"
               className={cn(
                 "h-8",
-                filter.status?.length && "bg-blue-50 border-blue-200"
+                filter.status?.length && "bg-primary/10 border-primary/20"
               )}
             >
               <Circle className="h-3 w-3 mr-1" />
@@ -455,6 +456,7 @@ const FilterPanel = ({
           <SelectContent>
             <SelectItem value="due-asc">Due Date ↑</SelectItem>
             <SelectItem value="due-desc">Due Date ↓</SelectItem>
+            <SelectItem value="priority-asc">Priority ↑</SelectItem>
             <SelectItem value="priority-desc">Priority ↓</SelectItem>
             <SelectItem value="created-desc">Newest</SelectItem>
             <SelectItem value="created-asc">Oldest</SelectItem>

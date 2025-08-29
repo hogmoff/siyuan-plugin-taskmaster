@@ -14,6 +14,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml" />
       </head>
       <body className={inter.className}>
         <AppProviders>

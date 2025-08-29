@@ -79,8 +79,8 @@ export class TaskFilterUtils {
           break;
 
         case 'priority':
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          compareValue = priorityOrder[b.priority] - priorityOrder[a.priority];
+          const priorityOrder = { high: 3, medium: 2, low: 1 } as const;
+          compareValue = priorityOrder[a.priority] - priorityOrder[b.priority];
           break;
 
         case 'created':
