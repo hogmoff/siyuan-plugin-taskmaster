@@ -39,6 +39,19 @@ const ProjectSidebar = ({
   className 
 }: ProjectSidebarProps) => {
   const stats = TaskFilterUtils.getTaskStats(tasks);
+  const todayStr = React.useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todaysTasks = React.useMemo(
+    () => tasks.filter(t => t.dates.due === todayStr || t.dates.scheduled === todayStr),
+    [tasks, todayStr]
+  );
+  const todaysCompleted = React.useMemo(
+    () => todaysTasks.filter(t => t.status === 'done').length,
+    [todaysTasks]
+  );
+  const todaysCompletionRate = React.useMemo(
+    () => (todaysTasks.length > 0 ? Math.round((todaysCompleted / todaysTasks.length) * 100) : 0),
+    [todaysTasks, todaysCompleted]
+  );
   const allTags = TaskFilterUtils.getAllTags(tasks);
   const [tagQuery, setTagQuery] = React.useState('');
   // Debounced search input
@@ -82,14 +95,6 @@ const ProjectSidebar = ({
       description: 'Past due date'
     },
     {
-      id: 'in_progress',
-      label: 'In Progress',
-      icon: Clock,
-      count: stats.inProgress,
-      color: 'text-blue-600',
-      description: 'Currently working on'
-    },
-    {
       id: 'completed',
       label: 'Completed',
       icon: CheckCircle2,
@@ -129,7 +134,7 @@ const ProjectSidebar = ({
 
   return (
     <div className={cn("w-64 border-r bg-gray-50 flex flex-col overflow-y-auto", className)}>
-      {/* Stats Overview */}
+      {/* Stats Overview (Today) */}
       <div className="p-4 border-b bg-white flex-none">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -139,13 +144,13 @@ const ProjectSidebar = ({
 
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="p-2 rounded-lg bg-gray-50">
-              <div className="font-semibold text-lg text-gray-900">{stats.total}</div>
-              <div className="text-gray-600 text-xs">Total Tasks</div>
+              <div className="font-semibold text-lg text-gray-900">{todaysTasks.length}</div>
+              <div className="text-gray-600 text-xs">Today Tasks</div>
             </div>
             
             <div className="p-2 rounded-lg bg-green-50">
-              <div className="font-semibold text-lg text-green-700">{stats.completionRate}%</div>
-              <div className="text-green-600 text-xs">Complete</div>
+              <div className="font-semibold text-lg text-green-700">{todaysCompletionRate}%</div>
+              <div className="text-green-600 text-xs">Today Complete</div>
             </div>
           </div>
         </div>
@@ -179,13 +184,13 @@ const ProjectSidebar = ({
 
         {quickViews.map((view) => {
           const Icon = view.icon;
-          const isSelected = selectedProject === view.id;
+          const isSelected = view.id === 'inbox' ? selectedProject === null : selectedProject === view.id;
           
           return (
             <Button
               key={view.id}
               variant="ghost"
-              onClick={() => onProjectSelect(view.id)}
+              onClick={() => onProjectSelect(view.id === 'inbox' ? null : view.id)}
               className={cn(
                 "w-full justify-start gap-3 h-9 px-3",
                 isSelected && "bg-blue-50 text-blue-700 border-l-2 border-blue-500"

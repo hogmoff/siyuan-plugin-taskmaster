@@ -75,9 +75,20 @@ const TaskItem = ({
     }
   };
 
-  const isOverdue = task.dates.due && 
-    new Date(task.dates.due) < new Date() && 
-    task.status !== 'done';
+  const isOverdue = (() => {
+    if (!task.dates.due || task.status === 'done') return false;
+    const due = new Date(task.dates.due);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return due < startOfToday;
+  })();
+
+  const isDueToday = (() => {
+    if (!task.dates.due) return false;
+    const due = new Date(task.dates.due);
+    const today = new Date();
+    return due.toDateString() === today.toDateString();
+  })();
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -153,7 +164,8 @@ const TaskItem = ({
             {task.dates.due && (
               <div className={cn(
                 "flex items-center gap-1",
-                isOverdue && "text-red-500 font-medium"
+                isOverdue && "text-red-500 font-medium",
+                !isOverdue && isDueToday && "text-green-600 font-medium"
               )}>
                 <Calendar className="h-3 w-3" />
                 <span>{formatDate(task.dates.due)}</span>

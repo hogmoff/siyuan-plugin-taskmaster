@@ -132,11 +132,13 @@ export class TaskFilterUtils {
     const inProgress = tasks.filter(t => t.status === 'in_progress').length;
     const todo = tasks.filter(t => t.status === 'todo').length;
     const cancelled = tasks.filter(t => t.status === 'cancelled').length;
-    const overdue = tasks.filter(t => 
-      t.dates.due && 
-      new Date(t.dates.due) < new Date() && 
-      t.status !== 'done'
-    ).length;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const overdue = tasks.filter(t => {
+      if (!t.dates.due) return false;
+      const dueDate = new Date(t.dates.due);
+      return dueDate < todayStart && t.status !== 'done';
+    }).length;
 
     return {
       total,

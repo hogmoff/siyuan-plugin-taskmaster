@@ -66,8 +66,9 @@ export default function Home() {
   useEffect(() => {
     // If advanced query is active, don't override with project quick-filters
     if (queryString.trim()) return;
-    if (selectedProject === 'inbox') {
-      setFilter(prev => ({ ...prev, tags: undefined, status: undefined }));
+    if (selectedProject === 'inbox' || selectedProject === null) {
+      // Reset all quick-view related filters to show all tasks
+      setFilter({});
     } else if (selectedProject === 'today') {
       const today = new Date().toISOString().split('T')[0];
       setFilter(prev => ({ 
@@ -79,7 +80,8 @@ export default function Home() {
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       setFilter(prev => ({ 
         ...prev, 
-        dateRange: { end: yesterday, type: 'due' },
+        // Exclude today by ending at yesterday and include everything from the past
+        dateRange: { start: '1970-01-01', end: yesterday, type: 'due' },
         status: ['todo', 'in_progress']
       }));
     } else if (selectedProject === 'in_progress') {
