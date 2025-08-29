@@ -93,8 +93,17 @@ class SiyuanClient {
     let url = "/api/block/insertBlock";
     try {
       const r = await this.request(url, data);
-      console.log('Insert after result:', r);
-      return (r.data as any)?.id || (r as any)?.id || '';
+      // Extract id from various response shapes
+      let id = (r as any)?.data?.id || (r as any)?.id || '';
+      if (!id) {
+        const d = (r as any)?.data;
+        if (Array.isArray(d) && d.length) {
+          const ops = d[0]?.doOperations || [];
+          const ins = ops.find((o: any) => o?.action === 'insert');
+          id = ins?.blockID || ins?.id || '';
+        }
+      }
+      return id || '';
     } catch (_) {}
     throw new Error('Failed to insert block after anchor');
   }
@@ -207,7 +216,17 @@ class SiyuanClient {
 
     try {
       const response = await this.request('/api/block/insertBlock', insertData);
-      return response.data?.id || '';
+      // Extract id from possible shapes
+      let id = (response as any)?.data?.id || (response as any)?.id || '';
+      if (!id) {
+        const d = (response as any)?.data;
+        if (Array.isArray(d) && d.length) {
+          const ops = d[0]?.doOperations || [];
+          const ins = ops.find((o: any) => o?.action === 'insert');
+          id = ins?.blockID || ins?.id || '';
+        }
+      }
+      return id || '';
     } catch (error) {
       console.error('Failed to insert task block:', error);
       throw error;
