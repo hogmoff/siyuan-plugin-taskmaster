@@ -11,11 +11,11 @@ import {
   CheckCircle2, 
   Clock, 
   AlertTriangle,
-  Tag,
   BarChart3,
   TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import TagTree from '@/components/dashboard/tag-tree';
 
 interface ProjectSidebarProps {
   tasks: Task[];
@@ -31,7 +31,7 @@ const ProjectSidebar = ({
   className 
 }: ProjectSidebarProps) => {
   const stats = TaskFilterUtils.getTaskStats(tasks);
-  const projects = TaskFilterUtils.getProjectStats(tasks);
+  const allTags = TaskFilterUtils.getAllTags(tasks);
 
   const quickViews = [
     {
@@ -169,68 +169,18 @@ const ProjectSidebar = ({
         })}
       </div>
 
-      {/* Projects */}
-      {projects.length > 0 && (
+      {/* Projects (Tags Hierarchy) */}
+      {allTags.length > 0 && (
         <div className="p-4 space-y-1 flex-1 overflow-y-auto">
           <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
             Projects
           </h3>
-          
-          {projects.map((project) => {
-            const isSelected = selectedProject === project.tag;
-            const completionRate = project.taskCount > 0 
-              ? Math.round((project.completedCount / project.taskCount) * 100)
-              : 0;
-            
-            return (
-              <Button
-                key={project.name}
-                variant="ghost"
-                onClick={() => onProjectSelect(project.tag || null)}
-                className={cn(
-                  "w-full justify-start gap-3 h-auto py-2 px-3 flex-col items-start",
-                  isSelected && "bg-blue-50 text-blue-700 border-l-2 border-blue-500"
-                )}
-              >
-                <div className="w-full flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="h-3 w-3 rounded-full" 
-                      style={{ backgroundColor: project.color }}
-                    />
-                    <span className="font-medium truncate">
-                      {project.name}
-                    </span>
-                  </div>
-                  
-                  <Badge 
-                    variant="secondary" 
-                    className={cn(
-                      "h-5 px-2 text-xs",
-                      isSelected && "bg-blue-100 text-blue-800"
-                    )}
-                  >
-                    {project.taskCount}
-                  </Badge>
-                </div>
-                
-                {project.taskCount > 0 && (
-                  <div className="w-full">
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                      <span>{project.completedCount}/{project.taskCount} done</span>
-                      <span>{completionRate}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1">
-                      <div 
-                        className="bg-green-500 h-1 rounded-full transition-all duration-300" 
-                        style={{ width: `${completionRate}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </Button>
-            );
-          })}
+          <TagTree
+            tasks={tasks}
+            tags={allTags}
+            selected={selectedProject}
+            onSelect={(tag) => onProjectSelect(tag)}
+          />
         </div>
       )}
     </div>
