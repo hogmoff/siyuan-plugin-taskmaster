@@ -139,6 +139,7 @@ export const en = {
     todayTasks: 'Today Tasks',
     todayComplete: 'Today Complete',
     allTasks: 'All tasks',
+    untaggedTasks: 'Tasks without tags',
     dueOrScheduledToday: 'Due or scheduled today',
     overdue: 'Overdue',
     pastDueDate: 'Past due date',

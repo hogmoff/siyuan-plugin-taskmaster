@@ -74,6 +74,7 @@ export interface TaskFilter {
     type: 'due' | 'start' | 'scheduled';
   };
   hasNoDueDate?: boolean;
+  hasNoTags?: boolean;
 }
 
 export interface TaskSort {

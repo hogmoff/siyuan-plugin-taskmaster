@@ -73,9 +73,10 @@ const ProjectSidebar = ({
       id: 'inbox',
       label: t('sidebar.inbox'),
       icon: Inbox,
-      count: tasks.filter(t => t.status === 'todo').length,
+      // Inbox: only tasks without any tags (count todos for badge)
+      count: tasks.filter(t => (t.tags?.length ?? 0) === 0 && t.status === 'todo').length,
       color: 'text-muted-foreground',
-      description: t('sidebar.allTasks')
+      description: t('sidebar.untaggedTasks')
     },
     {
       id: 'today',
@@ -118,7 +119,8 @@ const ProjectSidebar = ({
   const getViewFilter = (viewId: string) => {
     switch (viewId) {
       case 'inbox':
-        return null; // Show all tasks
+        // Show only tasks without any tags and with status todo
+        return { hasNoTags: true, status: ['todo' as const] };
       case 'today':
         return {
           dateRange: {

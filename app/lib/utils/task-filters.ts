@@ -30,6 +30,11 @@ export class TaskFilterUtils {
       );
     }
 
+    // Filter tasks with no tags
+    if (filter.hasNoTags) {
+      filteredTasks = filteredTasks.filter(task => !task.tags || task.tags.length === 0);
+    }
+
     // Filter by search query
     if (filter.searchQuery && filter.searchQuery.trim()) {
       const query = filter.searchQuery.toLowerCase().trim();

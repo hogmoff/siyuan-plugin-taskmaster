@@ -1,9 +1,6 @@
-import { Inter } from 'next/font/google'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { AppProviders } from '@/components/app-providers'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export default function RootLayout({
   children,
@@ -16,7 +13,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml" />
       </head>
-      <body className={inter.className}>
+      <body>
         <AppProviders>
           {children}
         </AppProviders>

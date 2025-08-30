@@ -67,14 +67,15 @@ export default function Home() {
     // If advanced query is active, don't override with project quick-filters
     if (queryString.trim()) return;
     if (selectedProject === 'inbox' || selectedProject === null) {
-      // Reset all quick-view related filters to show all tasks
-      setFilter({});
+      // Inbox should only show untagged tasks with status todo
+      setFilter({ hasNoTags: true, status: ['todo'] });
     } else if (selectedProject === 'today') {
       const today = new Date().toISOString().split('T')[0];
       setFilter(prev => ({ 
         ...prev,
         tags: undefined,
         hasNoDueDate: undefined,
+        hasNoTags: undefined,
         dateRange: { start: today, end: today, type: 'due' },
         status: ['todo', 'in_progress']
       }));
@@ -84,14 +85,15 @@ export default function Home() {
         ...prev,
         tags: undefined,
         hasNoDueDate: undefined,
+        hasNoTags: undefined,
         // Exclude today by ending at yesterday and include everything from the past
         dateRange: { start: '1970-01-01', end: yesterday, type: 'due' },
         status: ['todo', 'in_progress']
       }));
     } else if (selectedProject === 'in_progress') {
-      setFilter(prev => ({ ...prev, status: ['in_progress'], tags: undefined, dateRange: undefined, hasNoDueDate: undefined }));
+      setFilter(prev => ({ ...prev, status: ['in_progress'], tags: undefined, dateRange: undefined, hasNoDueDate: undefined, hasNoTags: undefined }));
     } else if (selectedProject === 'completed') {
-      setFilter(prev => ({ ...prev, status: ['done'], tags: undefined, dateRange: undefined, hasNoDueDate: undefined }));
+      setFilter(prev => ({ ...prev, status: ['done'], tags: undefined, dateRange: undefined, hasNoDueDate: undefined, hasNoTags: undefined }));
     } else if (selectedProject) {
       // When switching to a tag project, clear quick-view-specific filters
       // like dateRange/status so tag selection doesn't inherit them.
@@ -101,6 +103,7 @@ export default function Home() {
         status: undefined,
         dateRange: undefined,
         hasNoDueDate: undefined,
+        hasNoTags: undefined,
       }));
     }
   }, [selectedProject, queryString]);
