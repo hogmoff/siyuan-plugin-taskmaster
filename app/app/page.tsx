@@ -72,24 +72,36 @@ export default function Home() {
     } else if (selectedProject === 'today') {
       const today = new Date().toISOString().split('T')[0];
       setFilter(prev => ({ 
-        ...prev, 
+        ...prev,
+        tags: undefined,
+        hasNoDueDate: undefined,
         dateRange: { start: today, end: today, type: 'due' },
         status: ['todo', 'in_progress']
       }));
     } else if (selectedProject === 'overdue') {
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       setFilter(prev => ({ 
-        ...prev, 
+        ...prev,
+        tags: undefined,
+        hasNoDueDate: undefined,
         // Exclude today by ending at yesterday and include everything from the past
         dateRange: { start: '1970-01-01', end: yesterday, type: 'due' },
         status: ['todo', 'in_progress']
       }));
     } else if (selectedProject === 'in_progress') {
-      setFilter(prev => ({ ...prev, status: ['in_progress'], tags: undefined }));
+      setFilter(prev => ({ ...prev, status: ['in_progress'], tags: undefined, dateRange: undefined, hasNoDueDate: undefined }));
     } else if (selectedProject === 'completed') {
-      setFilter(prev => ({ ...prev, status: ['done'], tags: undefined }));
+      setFilter(prev => ({ ...prev, status: ['done'], tags: undefined, dateRange: undefined, hasNoDueDate: undefined }));
     } else if (selectedProject) {
-      setFilter(prev => ({ ...prev, tags: [selectedProject], status: undefined }));
+      // When switching to a tag project, clear quick-view-specific filters
+      // like dateRange/status so tag selection doesn't inherit them.
+      setFilter(prev => ({ 
+        ...prev, 
+        tags: [selectedProject], 
+        status: undefined,
+        dateRange: undefined,
+        hasNoDueDate: undefined,
+      }));
     }
   }, [selectedProject, queryString]);
 
