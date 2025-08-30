@@ -82,6 +82,7 @@ function filterTree(root: Map<string, TagNode>, query?: string): Map<string, Tag
 function countTasksForPath(tasks: Task[], path: string): number {
   if (!path) return 0;
   return tasks.filter(t =>
+    t.status === 'todo' &&
     t.tags?.some(tag => tag === path || tag.startsWith(path + '/'))
   ).length;
 }

@@ -71,7 +71,7 @@ const ProjectSidebar = ({
       id: 'inbox',
       label: 'Inbox',
       icon: Inbox,
-      count: stats.total,
+      count: tasks.filter(t => t.status === 'todo').length,
       color: 'text-muted-foreground',
       description: 'All tasks'
     },
@@ -80,8 +80,10 @@ const ProjectSidebar = ({
       label: 'Today',
       icon: Calendar,
       count: tasks.filter(t => 
-        t.dates.due === new Date().toISOString().split('T')[0] ||
-        t.dates.scheduled === new Date().toISOString().split('T')[0]
+        t.status === 'todo' && (
+          t.dates.due === new Date().toISOString().split('T')[0] ||
+          t.dates.scheduled === new Date().toISOString().split('T')[0]
+        )
       ).length,
       color: 'text-green-600',
       description: 'Due or scheduled today'
@@ -90,7 +92,14 @@ const ProjectSidebar = ({
       id: 'overdue',
       label: 'Overdue',
       icon: AlertTriangle,
-      count: stats.overdue,
+      count: tasks.filter(t => {
+        if (t.status !== 'todo') return false;
+        if (!t.dates.due) return false;
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const dueDate = new Date(t.dates.due);
+        return dueDate < todayStart;
+      }).length,
       color: 'text-red-600',
       description: 'Past due date'
     },
