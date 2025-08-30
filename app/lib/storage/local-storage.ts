@@ -95,6 +95,7 @@ export class LocalStorageManager {
     notebookId?: string;
     dailyHPathTemplate?: string;
     anchorText?: string;
+    language?: 'en' | 'de';
   }): void {
     try {
       const current = this.loadSettings();
@@ -111,6 +112,7 @@ export class LocalStorageManager {
     notebookId?: string;
     dailyHPathTemplate?: string;
     anchorText?: string;
+    language?: 'en' | 'de';
   } {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);

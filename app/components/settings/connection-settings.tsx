@@ -18,6 +18,8 @@ import { LocalStorageManager } from '@/lib/storage/local-storage';
 import { siyuanClient } from '@/lib/api/siyuan-client';
 import { CheckCircle2, AlertCircle, Loader2, ArrowUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/i18n';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ConnectionSettingsProps {
   isOpen: boolean;
@@ -30,6 +32,7 @@ export default function ConnectionSettings({
   onClose,
   onSettingsUpdated,
 }: ConnectionSettingsProps) {
+  const { t, lang, setLang, available } = useI18n();
   const [baseUrl, setBaseUrl] = useState('http://127.0.0.1:6806');
   const [token, setToken] = useState('123');
   // Daily insertion settings
@@ -104,7 +107,7 @@ export default function ConnectionSettings({
     if (!baseUrl.trim()) {
       setTestResult({
         success: false,
-        message: 'Please enter a valid SiYuan Notes URL',
+        message: t('settings.testInvalidUrl'),
       });
       return;
     }
@@ -112,7 +115,7 @@ export default function ConnectionSettings({
     if (!token.trim()) {
       setTestResult({
         success: false,
-        message: 'Please enter an API token',
+        message: t('settings.testInvalidToken'),
       });
       return;
     }
@@ -128,20 +131,14 @@ export default function ConnectionSettings({
       const success = await siyuanClient.testConnection();
       
       if (success) {
-        setTestResult({
-          success: true,
-          message: 'Connection successful! SiYuan Notes is accessible.',
-        });
+        setTestResult({ success: true, message: t('settings.testSuccess') });
       } else {
-        setTestResult({
-          success: false,
-          message: 'Connection failed. Please check your URL and token.',
-        });
+        setTestResult({ success: false, message: t('settings.testFail') });
       }
     } catch (error) {
       setTestResult({
         success: false,
-        message: error instanceof Error ? error.message : 'Connection test failed',
+        message: error instanceof Error ? error.message : t('settings.testFail'),
       });
     } finally {
       setTesting(false);
@@ -153,7 +150,7 @@ export default function ConnectionSettings({
     const trimmedToken = token.trim();
 
     if (!trimmedBaseUrl || !trimmedToken) {
-      toast.error('Please fill in both URL and token fields');
+      toast.error(t('settings.saveError'));
       return;
     }
 
@@ -164,12 +161,13 @@ export default function ConnectionSettings({
       notebookId: notebookId.trim(),
       dailyHPathTemplate: dailyHPathTemplate.trim(),
       anchorText: anchorText.trim(),
+      language: lang,
     });
 
     // Update the client with new credentials
     siyuanClient.setCredentials(trimmedBaseUrl, trimmedToken);
 
-    toast.success('Connection settings saved successfully');
+    toast.success(t('settings.saveSuccess'));
     
     // Notify parent component
     onSettingsUpdated?.();
@@ -222,17 +220,31 @@ export default function ConnectionSettings({
         style={{ top: '3rem', transform: 'translateX(-50%)' }}
       >
         <DialogHeader>
-          <DialogTitle>Connection Settings</DialogTitle>
+          <DialogTitle>{t('settings.title')}</DialogTitle>
           <DialogDescription>
-            Configure your SiYuan Notes connection. The app will sync tasks with your SiYuan Notes instance.
+            {t('settings.description')}
           </DialogDescription>
         </DialogHeader>
 
         {/* Scrollable content area */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto pr-2 space-y-4 py-4">
+          {/* Language */}
+          <div className="space-y-2">
+            <Label htmlFor="language">{t('settings.language')}</Label>
+            <Select value={lang} onValueChange={(v: 'en' | 'de') => setLang(v)}>
+              <SelectTrigger id="language" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {available.map(l => (
+                  <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {/* SiYuan Notes URL */}
           <div className="space-y-2">
-            <Label htmlFor="baseUrl">SiYuan Notes URL</Label>
+            <Label htmlFor="baseUrl">{t('settings.baseUrl')}</Label>
             <Input
               id="baseUrl"
               placeholder="http://localhost:6806"
@@ -242,72 +254,62 @@ export default function ConnectionSettings({
               ref={baseUrlRef}
             />
             <p className="text-xs text-muted-foreground">
-              The URL where your SiYuan Notes instance is running (e.g., http://localhost:6806)
+              {t('settings.baseUrlHelp')}
             </p>
           </div>
 
           {/* API Token */}
           <div className="space-y-2">
-            <Label htmlFor="token">API Token</Label>
+            <Label htmlFor="token">{t('settings.token')}</Label>
             <Input
               id="token"
               type="password"
-              placeholder="Enter your API token"
+              placeholder={t('settings.tokenPlaceholder')}
               value={token}
               onChange={(e) => handleTokenChange(e.target.value)}
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground">
-              Your SiYuan Notes API token. You can find this in Settings → About → API Token
-            </p>
+            <p className="text-xs text-muted-foreground">{t('settings.tokenHelp')}</p>
           </div>
 
           {/* Daily Note Insertion */}
           <div className="space-y-3 border-t pt-4 mt-4">
             <div>
-              <div className="text-sm font-medium">Daily Note Insertion</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Configure where new tasks are inserted in your daily note.
-              </p>
+              <div className="text-sm font-medium">{t('settings.dailySection')}</div>
+              <p className="text-xs text-muted-foreground mt-1">{t('settings.dailySectionHelp')}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notebookId">Notebook (box) ID</Label>
+              <Label htmlFor="notebookId">{t('settings.notebookId')}</Label>
               <Input
                 id="notebookId"
-                placeholder="e.g. 20240101123456-abcdef"
+                placeholder={t('settings.notebookIdPlaceholder')}
                 value={notebookId}
                 onChange={(e) => handleNotebookChange(e.target.value)}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">
-                The SiYuan notebook (box) ID that contains your daily notes.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('settings.notebookIdHelp')}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dailyHPathTemplate">Daily hPath (Sprig template)</Label>
+              <Label htmlFor="dailyHPathTemplate">{t('settings.dailyHPath')}</Label>
               <Input
                 id="dailyHPathTemplate"
-                placeholder='e.g. /Journal/{{ now | date "2006-01-02" }}'
+                placeholder={t('settings.dailyHPathPlaceholder')}
                 value={dailyHPathTemplate}
                 onChange={(e) => handleTemplateChange(e.target.value)}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">
-                Rendered via /api/template/renderSprig to locate today’s document. Quotes are escaped automatically.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('settings.dailyHPathHelp')}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="anchorText">Anchor text</Label>
+              <Label htmlFor="anchorText">{t('settings.anchorText')}</Label>
               <Input
                 id="anchorText"
-                placeholder="e.g. ## Tasks"
+                placeholder={t('settings.anchorTextPlaceholder')}
                 value={anchorText}
                 onChange={(e) => handleAnchorChange(e.target.value)}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground">
-                The exact text to search for in the document. New tasks insert after this block.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('settings.anchorTextHelp')}</p>
             </div>
           </div>
 
@@ -323,10 +325,10 @@ export default function ConnectionSettings({
               {testing ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Testing Connection...
+                  {t('settings.testingConnection')}
                 </>
               ) : (
-                'Test Connection'
+                t('settings.testConnection')
               )}
             </Button>
 
@@ -351,13 +353,11 @@ export default function ConnectionSettings({
           {/* Connection Info */}
           <div className="rounded-lg p-3 border bg-muted">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Make sure your SiYuan Notes instance is running and accessible. 
-              The API token can be found in your SiYuan Notes settings under About → API Token.
+              <strong>{t('settings.noteTitle')}</strong> {t('settings.noteText')}
             </p>
             {typeof window !== 'undefined' && window.location.protocol === 'https:' && (
               <p className="text-xs text-amber-600 mt-2">
-                <strong>HTTPS Notice:</strong> If accessing from HTTPS, your SiYuan Notes URL must also use HTTPS 
-                to avoid mixed content security restrictions.
+                <strong>{t('settings.httpsNoticeTitle')}</strong> {t('settings.httpsNoticeText')}
               </p>
             )}
           </div>
@@ -370,23 +370,21 @@ export default function ConnectionSettings({
             size="icon"
             onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
             className="absolute bottom-20 right-4 h-10 w-10 rounded-full shadow-md"
-            aria-label="Scroll to top"
-            title="Scroll to top"
+            aria-label={t('settings.scrollTop')}
+            title={t('settings.scrollTop')}
           >
             <ArrowUp className="h-5 w-5" />
           </Button>
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
           <Button
             onClick={handleSave}
             disabled={!hasChanges || !baseUrl.trim() || !token.trim()}
             className="min-w-[80px]"
           >
-            Save Settings
+            {t('settings.saveSettings')}
           </Button>
         </DialogFooter>
       </DialogContent>

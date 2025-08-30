@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import TagTree from '@/components/dashboard/tag-tree';
 import { Input } from '@/components/ui/input';
 import { Search, XCircle } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 interface ProjectSidebarProps {
   tasks: Task[];
@@ -38,6 +39,7 @@ const ProjectSidebar = ({
   onSearchChange,
   className 
 }: ProjectSidebarProps) => {
+  const { t } = useI18n();
   const stats = TaskFilterUtils.getTaskStats(tasks);
   const todayStr = React.useMemo(() => new Date().toISOString().split('T')[0], []);
   const todaysTasks = React.useMemo(
@@ -69,15 +71,15 @@ const ProjectSidebar = ({
   const quickViews = [
     {
       id: 'inbox',
-      label: 'Inbox',
+      label: t('sidebar.inbox'),
       icon: Inbox,
       count: tasks.filter(t => t.status === 'todo').length,
       color: 'text-muted-foreground',
-      description: 'All tasks'
+      description: t('sidebar.allTasks')
     },
     {
       id: 'today',
-      label: 'Today',
+      label: t('tasks.today'),
       icon: Calendar,
       count: tasks.filter(t => 
         t.status === 'todo' && (
@@ -86,11 +88,11 @@ const ProjectSidebar = ({
         )
       ).length,
       color: 'text-green-600',
-      description: 'Due or scheduled today'
+      description: t('sidebar.dueOrScheduledToday')
     },
     {
       id: 'overdue',
-      label: 'Overdue',
+      label: t('sidebar.overdue'),
       icon: AlertTriangle,
       count: tasks.filter(t => {
         if (t.status !== 'todo') return false;
@@ -101,15 +103,15 @@ const ProjectSidebar = ({
         return dueDate < todayStart;
       }).length,
       color: 'text-red-600',
-      description: 'Past due date'
+      description: t('sidebar.pastDueDate')
     },
     {
       id: 'completed',
-      label: 'Completed',
+      label: t('tasks.completed'),
       icon: CheckCircle2,
       count: stats.completed,
       color: 'text-green-600',
-      description: 'Finished tasks'
+      description: t('sidebar.finishedTasks')
     },
   ];
 
@@ -148,18 +150,18 @@ const ProjectSidebar = ({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-blue-600" />
-            <h2 className="font-semibold text-foreground">Overview</h2>
+            <h2 className="font-semibold text-foreground">{t('sidebar.overview')}</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="p-2 rounded-lg bg-muted">
               <div className="font-semibold text-lg text-foreground">{todaysTasks.length}</div>
-              <div className="text-muted-foreground text-xs">Today Tasks</div>
+              <div className="text-muted-foreground text-xs">{t('sidebar.todayTasks')}</div>
             </div>
             
             <div className="p-2 rounded-lg border bg-green-500/10 border-green-500/20">
               <div className="font-semibold text-lg text-green-600">{todaysCompletionRate}%</div>
-              <div className="text-green-600 text-xs">Today Complete</div>
+              <div className="text-green-600 text-xs">{t('sidebar.todayComplete')}</div>
             </div>
           </div>
         </div>
@@ -167,14 +169,12 @@ const ProjectSidebar = ({
 
       {/* Quick Views */}
       <div className="p-4 space-y-2 flex-none">
-        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-          Quick Views
-        </h3>
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('sidebar.quickViews')}</h3>
         {/* Inline Quick Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search tasks..."
+            placeholder={t('sidebar.searchTasks')}
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             className="h-8 pl-10 pr-7 bg-background focus:ring-2 focus:ring-blue-100"
@@ -182,7 +182,7 @@ const ProjectSidebar = ({
           {localSearch && (
             <button
               type="button"
-              aria-label="Clear task search"
+              aria-label={t('sidebar.clearTaskSearch')}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={() => setLocalSearch('')}
             >
@@ -226,21 +226,19 @@ const ProjectSidebar = ({
       {/* Projects (Tags Hierarchy) */}
       {allTags.length > 0 && (
         <div className="p-4 space-y-1 flex-1">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-            Projects
-          </h3>
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('sidebar.projects')}</h3>
           <div className="mb-2 relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               value={tagQuery}
               onChange={(e) => setTagQuery(e.target.value)}
-              placeholder="Search tags..."
+              placeholder={t('sidebar.searchTags')}
               className="pl-8 h-8"
             />
             {tagQuery && (
               <button
                 type="button"
-                aria-label="Clear tag search"
+                aria-label={t('sidebar.clearTagSearch')}
                 className="absolute right-2 top-2 h-4 w-4 text-muted-foreground hover:text-foreground"
                 onClick={() => setTagQuery('')}
               >

@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Tag, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ const TaskForm = ({
   availableTags,
   loading = false 
 }: TaskFormProps) => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({
     content: '',
     status: 'todo' as TaskStatus,
@@ -165,17 +167,17 @@ const TaskForm = ({
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {task ? 'Edit Task' : 'Create New Task'}
+            {task ? t('tasks.editTask') : t('tasks.createNewTask')}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Task Content */}
           <div className="space-y-2">
-            <Label htmlFor="content">Task Description</Label>
+            <Label htmlFor="content">{t('tasks.taskDescription')}</Label>
             <Textarea
               id="content"
-              placeholder="What needs to be done?"
+              placeholder={t('tasks.contentPlaceholder')}
               value={formData.content}
               onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
               className="min-h-[80px] resize-none"
@@ -186,7 +188,7 @@ const TaskForm = ({
           {/* Status and Priority Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t('filters.status')}</Label>
               <Select 
                 value={formData.status} 
                 onValueChange={(value: TaskStatus) => 
@@ -197,16 +199,16 @@ const TaskForm = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="todo">{t('tasks.toDo')}</SelectItem>
+                  <SelectItem value="in_progress">{t('tasks.inProgress')}</SelectItem>
+                  <SelectItem value="done">{t('filters.done')}</SelectItem>
+                  <SelectItem value="cancelled">{t('tasks.cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority">{t('tasks.priority')}</Label>
               <Select 
                 value={formData.priority} 
                 onValueChange={(value: TaskPriority) => 
@@ -217,9 +219,9 @@ const TaskForm = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="high">⏫ High</SelectItem>
-                  <SelectItem value="medium">🔼 Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="high">⏫ {t('tasks.high')}</SelectItem>
+                  <SelectItem value="medium">🔼 {t('tasks.medium')}</SelectItem>
+                  <SelectItem value="low">{t('tasks.low')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -229,13 +231,13 @@ const TaskForm = ({
           <div className="space-y-4">
             <Label className="text-sm font-medium flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              Dates
+              {t('forms.dates')}
             </Label>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dueDate" className="text-xs text-muted-foreground">
-                  📅 Due Date
+                  📅 {t('tasks.dueDate')}
                 </Label>
                 <Input
                   id="dueDate"
@@ -247,7 +249,7 @@ const TaskForm = ({
 
               <div className="space-y-2">
                 <Label htmlFor="startDate" className="text-xs text-muted-foreground">
-                  🛫 Start Date
+                  🛫 {t('forms.startDate')}
                 </Label>
                 <Input
                   id="startDate"
@@ -259,7 +261,7 @@ const TaskForm = ({
 
               <div className="space-y-2">
                 <Label htmlFor="scheduledDate" className="text-xs text-muted-foreground">
-                  ⏳ Scheduled
+                  ⏳ {t('forms.scheduled')}
                 </Label>
                 <Input
                   id="scheduledDate"
@@ -275,7 +277,7 @@ const TaskForm = ({
           <div className="space-y-3">
             <Label className="text-sm font-medium flex items-center gap-2">
               <Tag className="h-4 w-4" />
-              Tags
+              {t('filters.tags')}
             </Label>
             
             {/* Existing Tags */}
@@ -297,7 +299,7 @@ const TaskForm = ({
             <div className="flex gap-2">
               <div className="flex-1">
                 <Input
-                  placeholder="Add a tag..."
+                  placeholder={t('tasks.addTagPlaceholder')}
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
@@ -317,7 +319,7 @@ const TaskForm = ({
             {/* Quick Tag Selection */}
             {availableTags.length > 0 && (
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Quick select:</Label>
+                <Label className="text-xs text-muted-foreground">{t('forms.quickSelect')}</Label>
                 <div className="flex flex-wrap gap-1">
                   {availableTags.slice(0, 10).map((tag) => (
                     <Button
@@ -342,11 +344,11 @@ const TaskForm = ({
 
           {/* Recurrence Section */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">🔁 Recurrence</Label>
+            <Label className="text-sm font-medium">🔁 {t('forms.recurrence')}</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
               <div className="sm:col-span-2">
                 <Input
-                  placeholder="e.g., every week, every 2 days"
+                  placeholder={t('forms.recurrencePlaceholder')}
                   value={formData.recurrenceRule}
                   onChange={(e) => setFormData(prev => ({ ...prev, recurrenceRule: e.target.value }))}
                 />
@@ -359,7 +361,7 @@ const TaskForm = ({
                   checked={formData.recurrenceWhenDone}
                   onChange={(e) => setFormData(prev => ({ ...prev, recurrenceWhenDone: e.target.checked }))}
                 />
-                <Label htmlFor="whenDone" className="text-xs text-muted-foreground">base on completion (when done)</Label>
+                <Label htmlFor="whenDone" className="text-xs text-muted-foreground">{t('forms.baseOnDone')}</Label>
               </div>
             </div>
           </div>
@@ -368,7 +370,7 @@ const TaskForm = ({
           {formData.dependencies.length > 0 && (
             <div className="space-y-3">
               <Label className="text-sm font-medium flex items-center gap-2">
-                ⛔ Dependencies
+                ⛔ {t('forms.dependencies')}
               </Label>
               
               <div className="flex flex-wrap gap-1">
@@ -393,13 +395,13 @@ const TaskForm = ({
               onClick={onClose}
               disabled={loading}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               type="submit" 
               disabled={loading || !formData.content.trim()}
             >
-              {loading ? 'Saving...' : (task ? 'Update Task' : 'Create Task')}
+              {loading ? t('tasks.saving') : (task ? t('tasks.updateTask') : t('tasks.createTask'))}
             </Button>
           </div>
         </form>

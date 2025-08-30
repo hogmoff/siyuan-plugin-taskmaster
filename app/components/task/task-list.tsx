@@ -7,6 +7,7 @@ import { TaskFilterUtils } from '@/lib/utils/task-filters';
 import { Button } from '@/components/ui/button';
 import { Plus, ListTodo } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 
 interface TaskListProps {
   tasks: Task[];
@@ -31,6 +32,7 @@ const TaskList = ({
   className,
   loading = false
 }: TaskListProps) => {
+  const { t } = useI18n();
   // Apply filters and sorting
   const filteredTasks = TaskFilterUtils.applyFilters(tasks, filter);
   const sortedTasks = TaskFilterUtils.applySorting(filteredTasks, sort);
@@ -73,18 +75,15 @@ const TaskList = ({
           </div>
           <div className="space-y-2">
             <h3 className="text-lg font-medium text-foreground">
-              {tasks.length === 0 ? 'No tasks yet' : 'No tasks match your filters'}
+              {tasks.length === 0 ? t('tasks.noTasksYet') : t('tasks.noTasksMatch')}
             </h3>
             <p className="text-sm text-muted-foreground max-w-sm">
-              {tasks.length === 0 
-                ? 'Create your first task to get started with your productivity journey.'
-                : 'Try adjusting your filters to see more tasks, or create a new one.'
-              }
+              {tasks.length === 0 ? t('tasks.emptyCreateFirst') : t('tasks.emptyAdjustFilters')}
             </p>
           </div>
           <Button onClick={onCreateTask} className="mt-2">
             <Plus className="h-4 w-4 mr-2" />
-            Create Task
+            {t('tasks.createTask')}
           </Button>
         </div>
       </div>
@@ -128,10 +127,10 @@ const TaskList = ({
     <div className={cn("space-y-6", className)}>
       {showGrouped ? (
         <>
-          {renderTaskGroup("In Progress", groupedTasks.in_progress)}
-          {renderTaskGroup("To Do", groupedTasks.todo)}
-          {renderTaskGroup("Completed", groupedTasks.done)}
-          {renderTaskGroup("Cancelled", groupedTasks.cancelled)}
+          {renderTaskGroup(t('tasks.inProgress'), groupedTasks.in_progress)}
+          {renderTaskGroup(t('tasks.toDo'), groupedTasks.todo)}
+          {renderTaskGroup(t('tasks.completed'), groupedTasks.done)}
+          {renderTaskGroup(t('tasks.cancelled'), groupedTasks.cancelled)}
         </>
       ) : (
         <div className="space-y-2">

@@ -30,6 +30,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 
 interface FilterPanelProps {
   filter: TaskFilter;
@@ -55,6 +56,7 @@ const FilterPanel = ({
   queryString = '',
   onQueryChange,
 }: FilterPanelProps) => {
+  const { t } = useI18n();
   // Search moved to sidebar; advanced query toggle appears when searching
   const [showAdvanced, setShowAdvanced] = useState(!!queryString);
 
@@ -152,16 +154,16 @@ const FilterPanel = ({
   };
 
   const statusOptions = [
-    { value: 'todo', label: 'To Do', icon: Circle, color: 'text-muted-foreground' },
-    { value: 'in_progress', label: 'In Progress', icon: Clock, color: 'text-blue-600' },
-    { value: 'done', label: 'Done', icon: CheckCircle2, color: 'text-green-600' },
-    { value: 'cancelled', label: 'Cancelled', icon: XCircle, color: 'text-muted-foreground' },
+    { value: 'todo', label: t('tasks.toDo'), icon: Circle, color: 'text-muted-foreground' },
+    { value: 'in_progress', label: t('tasks.inProgress'), icon: Clock, color: 'text-blue-600' },
+    { value: 'done', label: t('filters.done'), icon: CheckCircle2, color: 'text-green-600' },
+    { value: 'cancelled', label: t('tasks.cancelled'), icon: XCircle, color: 'text-muted-foreground' },
   ] as const;
 
   const priorityOptions = [
-    { value: 'high', label: 'High', emoji: '⏫', color: 'text-red-600' },
-    { value: 'medium', label: 'Medium', emoji: '🔼', color: 'text-yellow-600' },
-    { value: 'low', label: 'Low', emoji: '', color: 'text-muted-foreground' },
+    { value: 'high', label: t('tasks.high'), emoji: '⏫', color: 'text-red-600' },
+    { value: 'medium', label: t('tasks.medium'), emoji: '🔼', color: 'text-yellow-600' },
+    { value: 'low', label: t('tasks.low'), emoji: '', color: 'text-muted-foreground' },
   ] as const;
 
   return (
@@ -170,19 +172,19 @@ const FilterPanel = ({
       {onQueryChange && (filter.searchQuery?.trim()) ? (
         <div className="mt-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Advanced query</span>
+            <span className="text-xs text-muted-foreground">{t('filters.advancedQuery')}</span>
             <button
               type="button"
               className="text-sm text-blue-600 hover:text-blue-700"
               aria-expanded={showAdvanced}
               onClick={() => setShowAdvanced((s) => !s)}
             >
-              {showAdvanced ? 'Hide advanced query' : 'Show advanced query'}
+              {showAdvanced ? t('filters.hideAdvanced') : t('filters.showAdvanced')}
             </button>
           </div>
           {showAdvanced ? (
             <div className="mt-2 rounded-md border bg-card p-3 max-h-64 sm:max-h-80 overflow-y-auto">
-              <Label className="text-xs text-muted-foreground">Query (plugin-compatible)</Label>
+              <Label className="text-xs text-muted-foreground">{t('filters.queryLabel')}</Label>
               <textarea
                 className="mt-1 w-full min-h-[100px] rounded-md border bg-background p-2 font-mono text-sm"
                 placeholder={"tasks\nstatus: todo,in_progress\npriority: high\ndue: today\n-tag: sometag\npath: journal/*\nsort: due desc\nlimit: 50"}
@@ -192,11 +194,11 @@ const FilterPanel = ({
 
               {/* Query Helper */}
               <div className="mt-3">
-                <div className="text-xs font-medium text-foreground mb-2">Query Helper</div>
+                <div className="text-xs font-medium text-foreground mb-2">{t('filters.queryHelper')}</div>
 
                 {/* Status */}
                 <div className="mb-2">
-                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <Label className="text-xs text-muted-foreground">{t('filters.status')}</Label>
                   <div className="mt-1 flex flex-wrap gap-2">
                     {['todo','in_progress','done','cancelled'].map(s => (
                       <button
@@ -214,7 +216,7 @@ const FilterPanel = ({
 
                 {/* Priority */}
                 <div className="mb-2">
-                  <Label className="text-xs text-muted-foreground">Priority</Label>
+                  <Label className="text-xs text-muted-foreground">{t('filters.priority')}</Label>
                   <div className="mt-1 flex flex-wrap gap-2">
                     {['high','medium','low'].map(p => (
                       <button
@@ -232,30 +234,30 @@ const FilterPanel = ({
 
                 {/* Due */}
                 <div className="mb-2">
-                  <Label className="text-xs text-muted-foreground">Due</Label>
+                  <Label className="text-xs text-muted-foreground">{t('filters.due')}</Label>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setDueQuick('today')}>today</button>
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setDueQuick('tomorrow')}>tomorrow</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setDueQuick('today')}>{t('tasks.today')}</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setDueQuick('tomorrow')}>{t('tasks.tomorrow')}</button>
                     <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setDueDate(e.target.value)} />
-                    <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setDueQuick('clear')}>clear</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setDueQuick('clear')}>{t('common.clear')}</button>
                   </div>
                 </div>
 
                 {/* Starts */}
                 <div className="mb-2">
-                  <Label className="text-xs text-muted-foreground">Starts</Label>
+                  <Label className="text-xs text-muted-foreground">{t('filters.starts')}</Label>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setStartsQuick('today')}>today</button>
-                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setStartsQuick('tomorrow')}>tomorrow</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setStartsQuick('today')}>{t('tasks.today')}</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border bg-muted" onClick={() => setStartsQuick('tomorrow')}>{t('tasks.tomorrow')}</button>
                     <input type="date" className="text-xs px-2 py-1 rounded border" onChange={(e)=> setStartsDate(e.target.value)} />
-                    <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setStartsQuick('clear')}>clear</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded border" onClick={() => setStartsQuick('clear')}>{t('common.clear')}</button>
                   </div>
                 </div>
 
                 {/* Tags include */}
                 {availableTags.length > 0 && (
                   <div className="mb-2">
-                    <Label className="text-xs text-muted-foreground">Tags</Label>
+                    <Label className="text-xs text-muted-foreground">{t('filters.tags')}</Label>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {availableTags.slice(0,12).map(tag => (
                         <button
@@ -275,7 +277,7 @@ const FilterPanel = ({
                 {/* Sort and Limit */}
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-1">
-                    <Label className="text-xs text-muted-foreground">Sort</Label>
+                    <Label className="text-xs text-muted-foreground">{t('filters.sort')}</Label>
                     <select
                       className="text-xs px-2 py-1 rounded border bg-background"
                       onChange={(e) => {
@@ -285,19 +287,19 @@ const FilterPanel = ({
                       }}
                       defaultValue=""
                     >
-                      <option value="" disabled>Select</option>
-                      <option value="due:asc">Due ↑</option>
-                      <option value="due:desc">Due ↓</option>
-                      <option value="priority:asc">Priority ↑</option>
-                      <option value="priority:desc">Priority ↓</option>
-                      <option value="content:asc">A-Z</option>
-                      <option value="content:desc">Z-A</option>
+                      <option value="" disabled>{t('common.select')}</option>
+                      <option value="due:asc">{t('filters.dueDateAsc')}</option>
+                      <option value="due:desc">{t('filters.dueDateDesc')}</option>
+                      <option value="priority:asc">{t('filters.priorityAsc')}</option>
+                      <option value="priority:desc">{t('filters.priorityDesc')}</option>
+                      <option value="content:asc">{t('filters.az')}</option>
+                      <option value="content:desc">{t('filters.za')}</option>
                       <option value="start:asc">Start ↑</option>
                       <option value="start:desc">Start ↓</option>
                     </select>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Label className="text-xs text-muted-foreground">Limit</Label>
+                    <Label className="text-xs text-muted-foreground">{t('filters.limit')}</Label>
                     <input
                       type="number"
                       min={1}
@@ -327,7 +329,7 @@ const FilterPanel = ({
               )}
             >
               <Circle className="h-3 w-3 mr-1" />
-              Status
+              {t('filters.status')}
               {filter.status?.length && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
                   {filter.status.length}
@@ -337,7 +339,7 @@ const FilterPanel = ({
           </PopoverTrigger>
           <PopoverContent className="w-64 p-3" align="start">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Filter by Status</Label>
+              <Label className="text-sm font-medium">{t('filters.filterByStatus')}</Label>
               {statusOptions.map(({ value, label, icon: Icon, color }) => (
                 <div key={value} className="flex items-center space-x-2">
                   <input
@@ -369,7 +371,7 @@ const FilterPanel = ({
               )}
             >
               <span className="mr-1">⏫</span>
-              Priority
+              {t('tasks.priority')}
               {filter.priority?.length && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
                   {filter.priority.length}
@@ -379,7 +381,7 @@ const FilterPanel = ({
           </PopoverTrigger>
           <PopoverContent className="w-56 p-3" align="start">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Filter by Priority</Label>
+              <Label className="text-sm font-medium">{t('filters.filterByPriority')}</Label>
               {priorityOptions.map(({ value, label, emoji, color }) => (
                 <div key={value} className="flex items-center space-x-2">
                   <input
@@ -412,7 +414,7 @@ const FilterPanel = ({
               )}
               >
                 <Tag className="h-3 w-3 mr-1" />
-                Tags
+                {t('filters.tags')}
                 {filter.tags?.length && (
                   <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
                     {filter.tags.length}
@@ -422,7 +424,7 @@ const FilterPanel = ({
             </PopoverTrigger>
             <PopoverContent className="w-64 p-3 max-h-64 overflow-y-auto" align="start">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Filter by Tags</Label>
+              <Label className="text-sm font-medium">{t('filters.filterByTags')}</Label>
                 {availableTags.map((tag) => (
                   <div key={tag} className="flex items-center space-x-2">
                     <input
@@ -454,14 +456,14 @@ const FilterPanel = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="due-asc">Due Date ↑</SelectItem>
-            <SelectItem value="due-desc">Due Date ↓</SelectItem>
-            <SelectItem value="priority-asc">Priority ↑</SelectItem>
-            <SelectItem value="priority-desc">Priority ↓</SelectItem>
-            <SelectItem value="created-desc">Newest</SelectItem>
-            <SelectItem value="created-asc">Oldest</SelectItem>
-            <SelectItem value="content-asc">A-Z</SelectItem>
-            <SelectItem value="content-desc">Z-A</SelectItem>
+            <SelectItem value="due-asc">{t('filters.dueDateAsc')}</SelectItem>
+            <SelectItem value="due-desc">{t('filters.dueDateDesc')}</SelectItem>
+            <SelectItem value="priority-asc">{t('filters.priorityAsc')}</SelectItem>
+            <SelectItem value="priority-desc">{t('filters.priorityDesc')}</SelectItem>
+            <SelectItem value="created-desc">{t('filters.newest')}</SelectItem>
+            <SelectItem value="created-asc">{t('filters.oldest')}</SelectItem>
+            <SelectItem value="content-asc">{t('filters.az')}</SelectItem>
+            <SelectItem value="content-desc">{t('filters.za')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -474,7 +476,7 @@ const FilterPanel = ({
             className="h-8 text-muted-foreground hover:text-foreground"
           >
             <X className="h-3 w-3 mr-1" />
-            Clear ({getActiveFilterCount()})
+            {t('filters.clearN', { n: getActiveFilterCount() })}
           </Button>
         )}
       </div>

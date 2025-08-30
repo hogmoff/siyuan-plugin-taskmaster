@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 
 interface TaskItemProps {
   task: Task;
@@ -40,6 +41,7 @@ const TaskItem = ({
   onDelete, 
   className 
 }: TaskItemProps) => {
+  const { t, lang } = useI18n();
   const [isHovered, setIsHovered] = useState(false);
 
   const getPriorityColor = (priority: TaskPriority): string => {
@@ -97,11 +99,12 @@ const TaskItem = ({
     tomorrow.setDate(tomorrow.getDate() + 1);
     
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return t('tasks.today');
     } else if (date.toDateString() === tomorrow.toDateString()) {
-      return 'Tomorrow';
+      return t('tasks.tomorrow');
     } else {
-      return date.toLocaleDateString('en-US', { 
+      const loc = lang === 'de' ? 'de-DE' : 'en-US';
+      return date.toLocaleDateString(loc, { 
         month: 'short', 
         day: 'numeric',
         year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
@@ -193,7 +196,7 @@ const TaskItem = ({
           {task.recurrence?.rule && (
             <div className="flex items-center gap-1">
               <span>🔁</span>
-              <span>{task.recurrence.rule}{task.recurrence.baseOnDoneDate ? ' (when done)' : ''}</span>
+              <span>{task.recurrence.rule}{task.recurrence.baseOnDoneDate ? ` (${t('forms.baseOnDone')})` : ''}</span>
             </div>
           )}
 
@@ -257,11 +260,11 @@ const TaskItem = ({
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => onEdit(task)}>
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Task
+                {t('tasks.editTask')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onToggleStatus(task.id, task.status === 'done' ? 'todo' : 'done')}>
                 <CheckCircle2 className="h-4 w-4 mr-2" />
-                Mark as {task.status === 'done' ? 'Todo' : 'Done'}
+                {task.status === 'done' ? t('tasks.markAsTodo') : t('tasks.markAsDone')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
@@ -269,7 +272,7 @@ const TaskItem = ({
                 className="text-red-600 focus:text-red-600"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Task
+                {t('tasks.deleteTask')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
