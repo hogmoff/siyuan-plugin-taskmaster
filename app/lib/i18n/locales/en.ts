@@ -87,6 +87,7 @@ export const en = {
     contentPlaceholder: 'What needs to be done?',
     saving: 'Saving...',
     updateTask: 'Update Task',
+    openInSiyuan: 'Open task',
     noTasksYet: 'No tasks yet',
     noTasksMatch: 'No tasks match your filters',
     emptyCreateFirst: 'Create your first task to get started with your productivity journey.',

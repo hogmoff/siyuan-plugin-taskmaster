@@ -87,6 +87,7 @@ export const de = {
     contentPlaceholder: 'Was steht an?',
     saving: 'Speichern...',
     updateTask: 'Aufgabe aktualisieren',
+    openInSiyuan: 'Aufgabe öffnen',
     noTasksYet: 'Noch keine Aufgaben',
     noTasksMatch: 'Keine Aufgaben entsprechen deinen Filtern',
     emptyCreateFirst: 'Erstelle deine erste Aufgabe, um loszulegen.',

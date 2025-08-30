@@ -14,7 +14,8 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  CheckCircle2
+  CheckCircle2,
+  ExternalLink
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
+import { LocalStorageManager } from '@/lib/storage/local-storage';
 
 interface TaskItemProps {
   task: Task;
@@ -43,6 +45,9 @@ const TaskItem = ({
 }: TaskItemProps) => {
   const { t, lang } = useI18n();
   const [isHovered, setIsHovered] = useState(false);
+  const settings = LocalStorageManager.loadSettings();
+  const baseUrl = (settings.baseUrl || 'http://127.0.0.1:6806').replace(/\/+$/, '');
+  const siyuanLink = task.blockId ? `${baseUrl}/?id=${encodeURIComponent(task.blockId)}` : '';
 
   const getPriorityColor = (priority: TaskPriority): string => {
     switch (priority) {
@@ -232,6 +237,20 @@ const TaskItem = ({
                 <span className="text-orange-500">⛔</span>
                 <span className="text-xs">{task.dependencies.length} deps</span>
               </div>
+            )}
+
+            {/* Open in SiYuan */}
+            {task.blockId && (
+              <a
+                href={siyuanLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-blue-600 hover:underline ml-auto"
+                title={t('tasks.openInSiyuan')}
+              >
+                <ExternalLink className="h-3 w-3" />
+                <span className="hidden sm:inline">{t('tasks.openInSiyuan')}</span>
+              </a>
             )}
           </div>
         </div>
